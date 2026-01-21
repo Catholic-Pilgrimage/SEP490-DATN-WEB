@@ -21,10 +21,19 @@ export class AuthService {
     }
 
     /**
-     * Logout user
+     * Logout user - call backend API and clear local storage
      */
-    static logout(): void {
-        this.clearTokens();
+    static async logout(): Promise<void> {
+        try {
+            // Call backend logout API to invalidate refresh token
+            await ApiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+        } catch (error) {
+            // Even if API fails, still clear local tokens
+            console.error('Logout API error:', error);
+        } finally {
+            // Always clear local tokens
+            this.clearTokens();
+        }
     }
 
     /**
