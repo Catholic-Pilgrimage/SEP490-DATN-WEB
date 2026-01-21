@@ -6,6 +6,8 @@ import { ManagerDashboard } from './manager/ManagerDashboard';
 import { SiteManagement } from './admin/SiteManagement';
 import { UserManagement } from './admin/UserManagement';
 import { SOSCenter } from './shared/SOSCenter';
+import { ProfilePage } from './profile/ProfilePage';
+import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
 
 interface DashboardProps {
@@ -13,7 +15,7 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-export type ActiveView = 'dashboard' | 'sites' | 'users' | 'sos' | 'guides' | 'content' | 'analytics';
+export type ActiveView = 'dashboard' | 'sites' | 'users' | 'sos' | 'guides' | 'content' | 'analytics' | 'profile' | 'settings';
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
@@ -30,6 +32,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           return <UserManagement />;
         case 'sos':
           return <SOSCenter />;
+        case 'profile':
+          return <ProfilePage />;
+        case 'settings':
+          return <SettingsPage />;
         default:
           return <AdminDashboard />;
       }
@@ -39,6 +45,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           return <ManagerDashboard />;
         case 'sos':
           return <SOSCenter />;
+        case 'profile':
+          return <ProfilePage />;
+        case 'settings':
+          return <SettingsPage />;
         default:
           return <ManagerDashboard />;
       }
@@ -54,15 +64,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
+
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar
           user={user}
           activeView={activeView}
           onLogout={onLogout}
+          onViewChange={setActiveView}
           sidebarCollapsed={sidebarCollapsed}
         />
-        
+
         <main className="flex-1 overflow-auto p-6">
           {renderContent()}
         </main>

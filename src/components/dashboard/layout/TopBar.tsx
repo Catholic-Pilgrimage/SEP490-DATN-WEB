@@ -7,6 +7,7 @@ interface TopBarProps {
   user: User;
   activeView: ActiveView;
   onLogout: () => void;
+  onViewChange: (view: ActiveView) => void;
   sidebarCollapsed: boolean;
 }
 
@@ -14,6 +15,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   user,
   activeView,
   onLogout,
+  onViewChange,
 }) => {
   const getPageTitle = () => {
     const titles = {
@@ -23,7 +25,9 @@ export const TopBar: React.FC<TopBarProps> = ({
       sos: 'SOS Emergency Center',
       guides: 'My Guides',
       content: 'Content Review',
-      analytics: 'Site Analytics'
+      analytics: 'Site Analytics',
+      profile: 'Profile',
+      settings: 'Settings'
     };
     return titles[activeView] || 'Dashboard';
   };
@@ -95,15 +99,21 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <div className="text-xs text-slate-600 capitalize">{user.role}</div>
               </div>
             </button>
-            
+
             {/* Dropdown Menu */}
             <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="p-2">
-                <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg">
-                  Profile Settings
+                <button
+                  onClick={() => onViewChange('profile')}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg"
+                >
+                  Profile
                 </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg">
-                  Preferences
+                <button
+                  onClick={() => onViewChange('settings')}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg"
+                >
+                  Settings
                 </button>
                 <hr className="my-2 border-slate-200" />
                 <button

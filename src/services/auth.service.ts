@@ -1,5 +1,5 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
-import { ApiResponse, LoginRequest, LoginResponseData } from '../types/auth.types';
+import { ApiResponse, LoginRequest, LoginResponseData, UserProfile } from '../types/auth.types';
 import { ApiService } from './api.service';
 
 export class AuthService {
@@ -18,6 +18,15 @@ export class AuthService {
         }
 
         return response;
+    }
+
+    /**
+     * Get user profile from backend
+     */
+    static async getProfile(): Promise<ApiResponse<UserProfile>> {
+        return ApiService.get<ApiResponse<UserProfile>>(
+            API_CONFIG.ENDPOINTS.AUTH.PROFILE
+        );
     }
 
     /**

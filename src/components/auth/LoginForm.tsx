@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronRight, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
-import { User } from '../../App';
 import { AuthService } from '../../services/auth.service';
+import { UserProfile } from '../../types/auth.types';
 
 interface LoginFormProps {
-  onLogin: (user: User) => void;
+  onLogin: (profile: UserProfile) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
@@ -21,19 +21,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const response = await AuthService.login({ email, password });
+      const loginResponse = await AuthService.login({ email, password });
 
-      if (response.success && response.data) {
-        const user: User = {
-          id: '1',
-          name: email.split('@')[0],
-          email: email,
-          role: 'admin',
-        };
+      if (loginResponse.success && loginResponse.data) {
+        // Fetch user profile after successful login
+        const profileResponse = await AuthService.getProfile();
 
-        onLogin(user);
+        if (profileResponse.success && profileResponse.data) {
+          onLogin(profileResponse.data);
+        } else {
+          triggerError('Không thể lấy thông tin người dùng');
+        }
       } else {
-        triggerError(response.error?.message || 'Đăng nhập thất bại');
+        triggerError(loginResponse.error?.message || 'Đăng nhập thất bại');
       }
     } catch (err: any) {
       console.error('Login error:', err);

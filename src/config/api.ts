@@ -5,7 +5,8 @@ export const API_CONFIG = {
         AUTH: {
             LOGIN: '/api/auth/login',
             LOGOUT: '/api/auth/logout',
-            REFRESH: '/api/auth/refresh',
+            REFRESH: '/api/auth/refresh-token',
+            PROFILE: '/api/auth/profile',
         },
     },
     TIMEOUT: 10000, // 10 seconds
