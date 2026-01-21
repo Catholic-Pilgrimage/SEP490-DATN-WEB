@@ -1,5 +1,5 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
-import { ApiResponse, LoginRequest, LoginResponseData, UserProfile, UpdateProfileRequest, ChangePasswordRequest } from '../types/auth.types';
+import { ApiResponse, LoginRequest, LoginResponseData, UserProfile, UpdateProfileRequest, ChangePasswordRequest, RefreshTokenResponse } from '../types/auth.types';
 import { ApiService } from './api.service';
 
 export class AuthService {
@@ -55,6 +55,28 @@ export class AuthService {
             API_CONFIG.ENDPOINTS.AUTH.CHANGE_PASSWORD,
             data
         );
+    }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    static async refreshToken(): Promise<ApiResponse<RefreshTokenResponse>> {
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+            throw new Error('No refresh token available');
+        }
+
+        const response = await ApiService.post<ApiResponse<RefreshTokenResponse>>(
+            API_CONFIG.ENDPOINTS.AUTH.REFRESH,
+            { refreshToken }
+        );
+
+        // Update access token if successful
+        if (response.success && response.data) {
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        }
+
+        return response;
     }
 
     /**

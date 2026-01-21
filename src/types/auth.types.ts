@@ -62,3 +62,13 @@ export interface ChangePasswordRequest {
     new_password: string;
     confirm_password: string;
 }
+
+// Refresh Token Request
+export interface RefreshTokenRequest {
+    refreshToken: string;
+}
+
+// Refresh Token Response
+export interface RefreshTokenResponse {
+    accessToken: string;
+}
