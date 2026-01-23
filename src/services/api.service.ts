@@ -161,6 +161,16 @@ export class ApiService {
     }
 
     /**
+     * PATCH request
+     */
+    static async patch<T>(endpoint: string, body?: unknown): Promise<T> {
+        return this.request<T>(endpoint, {
+            method: 'PATCH',
+            body: body ? JSON.stringify(body) : undefined,
+        });
+    }
+
+    /**
      * PUT request with FormData (for file uploads)
      */
     static async putFormData<T>(endpoint: string, formData: FormData, isRetry: boolean = false): Promise<T> {

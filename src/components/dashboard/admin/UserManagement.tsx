@@ -6,14 +6,19 @@ import {
   UserCheck,
   Crown,
   Eye,
+  Edit,
+  Ban,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, Pagination, UserListParams } from '../../../types/admin.types';
 import { UserDetailModal } from './UserDetailModal';
+import { UserEditModal } from './UserEditModal';
 
 export const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -31,6 +36,15 @@ export const UserManagement: React.FC = () => {
   // Modal states
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Edit modal states
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<AdminUser | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Status toggle states
+  const [userToToggle, setUserToToggle] = useState<AdminUser | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   // Debounce search
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -90,6 +104,54 @@ export const UserManagement: React.FC = () => {
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedUserId(null);
+  };
+
+  // Handler để mở Edit modal
+  const handleEditUser = (user: AdminUser) => {
+    setSelectedUserForEdit(user);
+    setIsEditModalOpen(true);
+  };
+
+  // Handler để đóng Edit modal
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedUserForEdit(null);
+  };
+
+  // Handler khi edit thành công - refresh lại danh sách
+  const handleEditSuccess = () => {
+    fetchUsers();
+  };
+
+  // Handler mở confirm dialog cho ban/unban
+  const handleToggleStatusClick = (user: AdminUser) => {
+    // Không cho phép thay đổi status của admin
+    if (user.role === 'admin') return;
+    setUserToToggle(user);
+    setIsConfirmOpen(true);
+  };
+
+  // Handler xác nhận ban/unban
+  const handleConfirmToggleStatus = async () => {
+    if (!userToToggle) return;
+
+    try {
+      setStatusLoading(true);
+      const newStatus = userToToggle.status === 'active' ? 'banned' : 'active';
+      const response = await AdminService.updateUserStatus(userToToggle.id, { status: newStatus });
+
+      if (response.success) {
+        fetchUsers(); // Refresh list
+      } else {
+        setError(response.message || 'Failed to update status');
+      }
+    } catch (err: any) {
+      setError(err?.error?.message || 'Failed to update status');
+    } finally {
+      setStatusLoading(false);
+      setIsConfirmOpen(false);
+      setUserToToggle(null);
+    }
   };
 
   const getRoleInfo = (role: string) => {
@@ -246,13 +308,39 @@ export const UserManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-slate-600">{formatDate(user.created_at)}</td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleViewUser(user.id)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleViewUser(user.id)}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                          </button>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="p-2 hover:bg-amber-50 rounded-lg transition-colors group"
+                            title="Edit User"
+                          >
+                            <Edit className="w-4 h-4 text-slate-400 group-hover:text-amber-600" />
+                          </button>
+                          {/* Ban/Unban button - không hiện cho admin */}
+                          {user.role !== 'admin' && (
+                            <button
+                              onClick={() => handleToggleStatusClick(user)}
+                              className={`p-2 rounded-lg transition-colors group ${user.status === 'active'
+                                ? 'hover:bg-red-50'
+                                : 'hover:bg-green-50'
+                                }`}
+                              title={user.status === 'active' ? 'Ban User' : 'Unban User'}
+                            >
+                              {user.status === 'active' ? (
+                                <Ban className="w-4 h-4 text-slate-400 group-hover:text-red-600" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4 text-slate-400 group-hover:text-green-600" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -320,6 +408,88 @@ export const UserManagement: React.FC = () => {
         isOpen={isDetailModalOpen}
         onClose={handleCloseModal}
       />
+
+      {/* User Edit Modal */}
+      <UserEditModal
+        user={selectedUserForEdit}
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* Confirm Ban/Unban Dialog */}
+      {isConfirmOpen && userToToggle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setIsConfirmOpen(false); setUserToToggle(null); }}
+          />
+
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`p-3 rounded-full ${userToToggle.status === 'active' ? 'bg-red-100' : 'bg-green-100'}`}>
+                <AlertTriangle className={`w-6 h-6 ${userToToggle.status === 'active' ? 'text-red-600' : 'text-green-600'}`} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {userToToggle.status === 'active' ? 'Ban User' : 'Unban User'}
+                </h3>
+                <p className="text-sm text-slate-500">
+                  {userToToggle.full_name}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-600 mb-6">
+              {userToToggle.status === 'active'
+                ? 'Are you sure you want to ban this user? They will not be able to access the system.'
+                : 'Are you sure you want to unban this user? They will regain access to the system.'
+              }
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setIsConfirmOpen(false); setUserToToggle(null); }}
+                disabled={statusLoading}
+                className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmToggleStatus}
+                disabled={statusLoading}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-colors disabled:opacity-50 ${userToToggle.status === 'active'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                  }`}
+              >
+                {statusLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {userToToggle.status === 'active' ? (
+                      <>
+                        <Ban className="w-4 h-4" />
+                        Ban User
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Unban User
+                      </>
+                    )}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

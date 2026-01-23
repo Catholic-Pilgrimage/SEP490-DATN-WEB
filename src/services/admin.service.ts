@@ -1,6 +1,6 @@
 import { API_CONFIG } from '../config/api';
 import { ApiResponse } from '../types/auth.types';
-import { AdminUser, UserListData, UserListParams } from '../types/admin.types';
+import { AdminUser, UpdateUserData, UpdateUserStatusData, UserListData, UserListParams } from '../types/admin.types';
 import { ApiService } from './api.service';
 
 export class AdminService {
@@ -43,5 +43,25 @@ export class AdminService {
     static async getUserById(id: string): Promise<ApiResponse<AdminUser>> {
         const endpoint = API_CONFIG.ENDPOINTS.ADMIN.USER_DETAIL(id);
         return ApiService.get<ApiResponse<AdminUser>>(endpoint);
+    }
+
+    /**
+     * Update user information (Admin only)
+     * @param id - User ID (UUID)
+     * @param data - User data to update
+     */
+    static async updateUser(id: string, data: UpdateUserData): Promise<ApiResponse<AdminUser>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.USER_DETAIL(id);
+        return ApiService.put<ApiResponse<AdminUser>>(endpoint, data);
+    }
+
+    /**
+     * Update user status - Ban/Unban (Admin only)
+     * @param id - User ID (UUID)
+     * @param data - Status to update { status: 'active' | 'banned' }
+     */
+    static async updateUserStatus(id: string, data: UpdateUserStatusData): Promise<ApiResponse<AdminUser>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.USER_STATUS(id);
+        return ApiService.patch<ApiResponse<AdminUser>>(endpoint, data);
     }
 }

@@ -39,3 +39,17 @@ export interface UserListData {
     users: AdminUser[];
     pagination: Pagination;
 }
+
+// PUT /api/admin/users/{id} - Request Body
+export interface UpdateUserData {
+    full_name?: string;
+    phone?: string;
+    date_of_birth?: string;
+    role?: 'admin' | 'manager' | 'pilgrim' | 'local_guide';
+    site_id?: string | null;
+}
+
+// PATCH /api/admin/users/{id}/status - Request Body
+export interface UpdateUserStatusData {
+    status: 'active' | 'banned';
+}
