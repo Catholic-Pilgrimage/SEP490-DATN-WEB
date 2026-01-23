@@ -5,7 +5,7 @@ import {
   User as UserIcon,
   UserCheck,
   Crown,
-  MoreHorizontal,
+  Eye,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, Pagination, UserListParams } from '../../../types/admin.types';
+import { UserDetailModal } from './UserDetailModal';
 
 export const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -26,6 +27,10 @@ export const UserManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
+
+  // Modal states
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Debounce search
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -75,6 +80,16 @@ export const UserManagement: React.FC = () => {
     if (newPage >= 1 && (!pagination || newPage <= pagination.totalPages)) {
       setCurrentPage(newPage);
     }
+  };
+
+  const handleViewUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedUserId(null);
   };
 
   const getRoleInfo = (role: string) => {
@@ -231,8 +246,12 @@ export const UserManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-slate-600">{formatDate(user.created_at)}</td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                          <MoreHorizontal className="w-4 h-4 text-slate-600" />
+                        <button
+                          onClick={() => handleViewUser(user.id)}
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                         </button>
                       </td>
                     </tr>
@@ -294,6 +313,13 @@ export const UserManagement: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* User Detail Modal */}
+      <UserDetailModal
+        userId={selectedUserId}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

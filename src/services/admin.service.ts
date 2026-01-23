@@ -1,6 +1,6 @@
 import { API_CONFIG } from '../config/api';
 import { ApiResponse } from '../types/auth.types';
-import { UserListData, UserListParams } from '../types/admin.types';
+import { AdminUser, UserListData, UserListParams } from '../types/admin.types';
 import { ApiService } from './api.service';
 
 export class AdminService {
@@ -34,5 +34,14 @@ export class AdminService {
             : API_CONFIG.ENDPOINTS.ADMIN.USERS;
 
         return ApiService.get<ApiResponse<UserListData>>(endpoint);
+    }
+
+    /**
+     * Get user detail by ID
+     * @param id - User ID (UUID)
+     */
+    static async getUserById(id: string): Promise<ApiResponse<AdminUser>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.USER_DETAIL(id);
+        return ApiService.get<ApiResponse<AdminUser>>(endpoint);
     }
 }
