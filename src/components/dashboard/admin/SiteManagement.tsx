@@ -14,12 +14,15 @@ import {
   RefreshCw,
   Eye,
   Edit,
+  Trash2,
+  AlertTriangle,
   CheckCircle,
   XCircle
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
-import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType } from '../../../types/admin.types';
+import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail } from '../../../types/admin.types';
 import { SiteDetailModal } from './SiteDetailModal';
+import { SiteEditModal } from './SiteEditModal';
 
 export const SiteManagement: React.FC = () => {
   const [sites, setSites] = useState<AdminSite[]>([]);
@@ -38,6 +41,16 @@ export const SiteManagement: React.FC = () => {
   // Detail modal states
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Edit modal states
+  const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Delete states
+  const [siteToDelete, setSiteToDelete] = useState<AdminSite | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Debounce search
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -269,8 +282,41 @@ export const SiteManagement: React.FC = () => {
                         >
                           <Eye className="w-5 h-5 text-blue-600" />
                         </button>
-                        <button className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform" title="Edit">
-                          <Edit className="w-5 h-5 text-amber-600" />
+                        <button
+                          onClick={async () => {
+                            // Load site detail trước khi mở edit modal
+                            setEditLoading(true);
+                            try {
+                              const response = await AdminService.getSiteById(site.id);
+                              if (response.success && response.data) {
+                                setSiteForEdit(response.data);
+                                setIsEditModalOpen(true);
+                              }
+                            } catch (err) {
+                              console.error('Failed to load site for edit:', err);
+                            } finally {
+                              setEditLoading(false);
+                            }
+                          }}
+                          className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                          title="Edit"
+                          disabled={editLoading}
+                        >
+                          {editLoading ? (
+                            <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+                          ) : (
+                            <Edit className="w-5 h-5 text-amber-600" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSiteToDelete(site);
+                            setIsDeleteConfirmOpen(true);
+                          }}
+                          className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-600" />
                         </button>
                       </div>
                     </div>
@@ -378,6 +424,79 @@ export const SiteManagement: React.FC = () => {
           setSelectedSiteId(null);
         }}
       />
+
+      {/* Site Edit Modal */}
+      <SiteEditModal
+        site={siteForEdit}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSiteForEdit(null);
+        }}
+        onSuccess={() => {
+          fetchSites(); // Refresh list after edit
+        }}
+      />
+
+      {/* Delete Confirm Dialog */}
+      {isDeleteConfirmOpen && siteToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 rounded-full bg-red-100">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Delete Site</h3>
+                <p className="text-sm text-slate-500">{siteToDelete.code} - {siteToDelete.name}</p>
+              </div>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Are you sure you want to delete this site? This action will mark the site as inactive (soft delete).
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    setDeleteLoading(true);
+                    const response = await AdminService.deleteSite(siteToDelete.id);
+                    if (response.success) {
+                      fetchSites();
+                    } else {
+                      setError(response.message || 'Failed to delete site');
+                    }
+                  } catch (err: any) {
+                    setError(err?.error?.message || 'Failed to delete site');
+                  } finally {
+                    setDeleteLoading(false);
+                    setIsDeleteConfirmOpen(false);
+                    setSiteToDelete(null);
+                  }
+                }}
+                disabled={deleteLoading}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleteLoading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Delete Site</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

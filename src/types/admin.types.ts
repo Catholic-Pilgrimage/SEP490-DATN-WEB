@@ -129,3 +129,22 @@ export interface SiteDetail extends AdminSite {
     created_by: SiteCreatedBy | null;
     updated_at: string;
 }
+
+// PUT /api/admin/sites/{id} - Request Body (FormData)
+export interface UpdateSiteData {
+    name?: string;
+    description?: string;
+    history?: string;
+    address?: string;
+    province?: string;
+    district?: string;
+    latitude?: number;
+    longitude?: number;
+    region?: SiteRegion;
+    type?: SiteType;
+    patron_saint?: string;
+    cover_image?: File | null;  // File để upload ảnh mới
+    is_active?: boolean;
+    opening_hours?: SiteOpeningHours;
+    contact_info?: SiteContactInfo;
+}

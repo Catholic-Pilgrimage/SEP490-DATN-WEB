@@ -8,7 +8,8 @@ import {
     UserListParams,
     SiteListData,
     SiteListParams,
-    SiteDetail
+    SiteDetail,
+    UpdateSiteData
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -116,5 +117,50 @@ export class AdminService {
     static async getSiteById(id: string): Promise<ApiResponse<SiteDetail>> {
         const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_DETAIL(id);
         return ApiService.get<ApiResponse<SiteDetail>>(endpoint);
+    }
+
+    /**
+     * Update site information (Admin only)
+     * Dùng FormData vì API nhận multipart/form-data để upload ảnh
+     * @param id - Site ID (UUID)
+     * @param data - Site data to update
+     */
+    static async updateSite(id: string, data: UpdateSiteData): Promise<ApiResponse<SiteDetail>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_DETAIL(id);
+
+        // Tạo FormData từ data object
+        const formData = new FormData();
+
+        // Thêm các field vào FormData nếu có giá trị
+        if (data.name !== undefined) formData.append('name', data.name);
+        if (data.description !== undefined) formData.append('description', data.description);
+        if (data.history !== undefined) formData.append('history', data.history);
+        if (data.address !== undefined) formData.append('address', data.address);
+        if (data.province !== undefined) formData.append('province', data.province);
+        if (data.district !== undefined) formData.append('district', data.district);
+        if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
+        if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
+        if (data.region !== undefined) formData.append('region', data.region);
+        if (data.type !== undefined) formData.append('type', data.type);
+        if (data.patron_saint !== undefined) formData.append('patron_saint', data.patron_saint);
+        if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
+
+        // Upload file ảnh nếu có
+        if (data.cover_image) formData.append('cover_image', data.cover_image);
+
+        // opening_hours và contact_info gửi dạng JSON string
+        if (data.opening_hours) formData.append('opening_hours', JSON.stringify(data.opening_hours));
+        if (data.contact_info) formData.append('contact_info', JSON.stringify(data.contact_info));
+
+        return ApiService.putFormData<ApiResponse<SiteDetail>>(endpoint, formData);
+    }
+
+    /**
+     * Delete site - Soft Delete (Admin only)
+     * @param id - Site ID (UUID)
+     */
+    static async deleteSite(id: string): Promise<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_DETAIL(id);
+        return ApiService.delete<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>>(endpoint);
     }
 }
