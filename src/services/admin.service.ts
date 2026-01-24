@@ -163,4 +163,13 @@ export class AdminService {
         const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_DETAIL(id);
         return ApiService.delete<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>>(endpoint);
     }
+
+    /**
+     * Restore deleted site (Admin only)
+     * @param id - Site ID (UUID)
+     */
+    static async restoreSite(id: string): Promise<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_RESTORE(id);
+        return ApiService.patch<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>>(endpoint);
+    }
 }

@@ -15,6 +15,7 @@ import {
   Eye,
   Edit,
   Trash2,
+  RotateCcw,
   AlertTriangle,
   CheckCircle,
   XCircle
@@ -51,6 +52,9 @@ export const SiteManagement: React.FC = () => {
   const [siteToDelete, setSiteToDelete] = useState<AdminSite | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Restore states
+  const [restoreLoading, setRestoreLoading] = useState<string | null>(null);
 
   // Debounce search
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -318,6 +322,35 @@ export const SiteManagement: React.FC = () => {
                         >
                           <Trash2 className="w-5 h-5 text-red-600" />
                         </button>
+                        {/* Restore button - only show for inactive sites */}
+                        {!site.is_active && (
+                          <button
+                            onClick={async () => {
+                              setRestoreLoading(site.id);
+                              try {
+                                const response = await AdminService.restoreSite(site.id);
+                                if (response.success) {
+                                  fetchSites();
+                                } else {
+                                  setError(response.message || 'Failed to restore site');
+                                }
+                              } catch (err: any) {
+                                setError(err?.error?.message || 'Failed to restore site');
+                              } finally {
+                                setRestoreLoading(null);
+                              }
+                            }}
+                            className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                            title="Restore"
+                            disabled={restoreLoading === site.id}
+                          >
+                            {restoreLoading === site.id ? (
+                              <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
+                            ) : (
+                              <RotateCcw className="w-5 h-5 text-green-600" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
