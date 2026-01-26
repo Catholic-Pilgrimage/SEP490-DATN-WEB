@@ -1,14 +1,15 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  MapPin, 
-  Users, 
-  AlertTriangle, 
+import {
+  LayoutDashboard,
+  MapPin,
+  Users,
+  AlertTriangle,
   UserCheck,
   FileText,
   BarChart3,
   ChevronLeft,
-  Cross
+  Cross,
+  ClipboardCheck
 } from 'lucide-react';
 import { User } from '../../../App';
 import { ActiveView } from '../Dashboard';
@@ -32,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sites', label: 'Sites Management', icon: MapPin },
     { id: 'users', label: 'User Management', icon: Users },
+    { id: 'verifications', label: 'Verifications', icon: ClipboardCheck },
     { id: 'sos', label: 'SOS Center', icon: AlertTriangle },
   ];
 
@@ -65,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
           )}
-          
+
           <button
             onClick={onToggleCollapse}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -82,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const Icon = item.icon;
             const isActive = activeView === item.id;
             const isSOSItem = item.id === 'sos';
-            
+
             return (
               <li key={item.id}>
                 <button
@@ -90,8 +92,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`
                     w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left
                     transition-all duration-200 group relative
-                    ${isActive 
-                      ? 'bg-white/10 text-white shadow-lg border-l-4 border-amber-400' 
+                    ${isActive
+                      ? 'bg-white/10 text-white shadow-lg border-l-4 border-amber-400'
                       : 'text-white/70 hover:text-white hover:bg-white/5'
                     }
                     ${isSOSItem ? 'hover:bg-red-500/10' : ''}
@@ -101,17 +103,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {isActive && (
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-transparent rounded-xl" />
                   )}
-                  
+
                   <Icon className={`
                     w-5 h-5 flex-shrink-0 relative z-10
                     ${isSOSItem ? 'text-red-400' : ''}
                     ${isActive ? 'text-amber-400' : ''}
                   `} />
-                  
+
                   {!collapsed && (
                     <span className="font-medium relative z-10">{item.label}</span>
                   )}
-                  
+
                   {isSOSItem && !collapsed && (
                     <div className="ml-auto">
                       <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />

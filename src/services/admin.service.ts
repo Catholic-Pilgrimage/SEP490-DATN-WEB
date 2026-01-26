@@ -9,7 +9,12 @@ import {
     SiteListData,
     SiteListParams,
     SiteDetail,
-    UpdateSiteData
+    UpdateSiteData,
+    VerificationListData,
+    VerificationListParams,
+    VerificationRequestDetail,
+    UpdateVerificationStatusData,
+    VerificationUpdateResponse
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -171,5 +176,56 @@ export class AdminService {
     static async restoreSite(id: string): Promise<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>> {
         const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITE_RESTORE(id);
         return ApiService.patch<ApiResponse<{ id: string; code: string; name: string; is_active: boolean }>>(endpoint);
+    }
+
+    // ============ VERIFICATION REQUEST METHODS ============
+
+    /**
+     * Get list of verification requests with pagination and filters
+     */
+    static async getVerificationRequests(params: VerificationListParams = {}): Promise<ApiResponse<VerificationListData>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params.search && params.search.trim() !== '') {
+            queryParams.append('search', params.search.trim());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.VERIFICATION_REQUESTS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.VERIFICATION_REQUESTS;
+
+        return ApiService.get<ApiResponse<VerificationListData>>(endpoint);
+    }
+
+    /**
+     * Get verification request detail by ID
+     * @param id - Verification Request ID (UUID)
+     */
+    static async getVerificationRequestById(id: string): Promise<ApiResponse<VerificationRequestDetail>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.VERIFICATION_REQUEST_DETAIL(id);
+        return ApiService.get<ApiResponse<VerificationRequestDetail>>(endpoint);
+    }
+
+    /**
+     * Update verification request status (Approve/Reject)
+     * @param id - Verification Request ID (UUID)
+     * @param data - Status update data
+     */
+    static async updateVerificationStatus(
+        id: string,
+        data: UpdateVerificationStatusData
+    ): Promise<ApiResponse<VerificationUpdateResponse>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.VERIFICATION_REQUEST_DETAIL(id);
+        return ApiService.patch<ApiResponse<VerificationUpdateResponse>>(endpoint, data);
     }
 }

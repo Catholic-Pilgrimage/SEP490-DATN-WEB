@@ -16,6 +16,8 @@ export const API_CONFIG = {
             SITES: '/api/admin/sites',
             SITE_DETAIL: (id: string) => `/api/admin/sites/${id}`,
             SITE_RESTORE: (id: string) => `/api/admin/sites/${id}/restore`,
+            VERIFICATION_REQUESTS: '/api/admin/verification-requests',
+            VERIFICATION_REQUEST_DETAIL: (id: string) => `/api/admin/verification-requests/${id}`,
         },
     },
     TIMEOUT: 10000, // 10 seconds

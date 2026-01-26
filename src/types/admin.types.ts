@@ -148,3 +148,89 @@ export interface UpdateSiteData {
     opening_hours?: SiteOpeningHours;
     contact_info?: SiteContactInfo;
 }
+
+// ============ VERIFICATION REQUEST TYPES ============
+
+// Verification request status
+export type VerificationStatus = 'pending' | 'approved' | 'rejected';
+
+// Applicant info in verification request
+export interface VerificationApplicant {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url: string | null;
+}
+
+// Verification request item in list
+export interface VerificationRequest {
+    id: string;
+    code: string;
+    site_name: string;
+    site_province: string;
+    site_type: SiteType;
+    site_region: SiteRegion;
+    status: VerificationStatus;
+    created_at: string;
+    applicant: VerificationApplicant;
+}
+
+// GET /api/admin/verification-requests - Query Parameters
+export interface VerificationListParams {
+    page?: number;
+    limit?: number;
+    status?: VerificationStatus | '';
+    search?: string;
+}
+
+// GET /api/admin/verification-requests - Response Data
+export interface VerificationListData {
+    requests: VerificationRequest[];
+    pagination: Pagination;
+}
+
+// Applicant detail (with phone)
+export interface VerificationApplicantDetail extends VerificationApplicant {
+    phone: string | null;
+}
+
+// Reviewer info
+export interface VerificationReviewer {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+// GET /api/admin/verification-requests/{id} - Response Data
+export interface VerificationRequestDetail {
+    id: string;
+    code: string;
+    site_name: string;
+    site_address: string;
+    site_province: string;
+    site_type: SiteType;
+    site_region: SiteRegion;
+    certificate_url: string | null;
+    introduction: string | null;
+    status: VerificationStatus;
+    rejection_reason: string | null;
+    verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+    applicant: VerificationApplicantDetail;
+    reviewer: VerificationReviewer | null;
+}
+
+// PATCH /api/admin/verification-requests/{id} - Request Body
+export interface UpdateVerificationStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string; // Required when status is 'rejected'
+}
+
+// PATCH /api/admin/verification-requests/{id} - Response Data
+export interface VerificationUpdateResponse {
+    id: string;
+    code: string;
+    status: VerificationStatus;
+    verified_at: string;
+}
