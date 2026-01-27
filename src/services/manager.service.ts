@@ -3,7 +3,13 @@ import { ApiResponse } from '../types/auth.types';
 import {
     ManagerSite,
     CreateManagerSiteData,
-    UpdateManagerSiteData
+    UpdateManagerSiteData,
+    LocalGuideListParams,
+    LocalGuideListResponse,
+    CreateLocalGuideData,
+    CreateLocalGuideResponse,
+    UpdateLocalGuideStatusData,
+    UpdateLocalGuideStatusResponse
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -122,6 +128,72 @@ export class ManagerService {
         return ApiService.putFormData<ApiResponse<ManagerSite>>(
             API_CONFIG.ENDPOINTS.MANAGER.SITES,
             formData
+        );
+    }
+
+    // ============ LOCAL GUIDE METHODS ============
+
+    /**
+     * Get list of local guides for manager's site
+     * With filter and pagination
+     */
+    static async getLocalGuides(params?: LocalGuideListParams): Promise<ApiResponse<LocalGuideListResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params?.page) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params?.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params?.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params?.search) {
+            queryParams.append('search', params.search);
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.LOCAL_GUIDES}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.LOCAL_GUIDES;
+
+        return ApiService.get<ApiResponse<LocalGuideListResponse>>(url);
+    }
+
+    /**
+     * Create new Local Guide for manager's site
+     * Password sẽ được auto-generate và gửi qua email
+     * 
+     * Giải thích:
+     * - Gọi API POST với body là JSON (không phải FormData vì không có file upload)
+     * - ApiService.post() sẽ tự động thêm Content-Type: application/json
+     */
+    static async createLocalGuide(data: CreateLocalGuideData): Promise<ApiResponse<CreateLocalGuideResponse>> {
+        return ApiService.post<ApiResponse<CreateLocalGuideResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.LOCAL_GUIDES,
+            data  // { email, full_name, phone }
+        );
+    }
+
+    /**
+     * Update Local Guide status (ban/unban)
+     * 
+     * Giải thích:
+     * - PATCH request: cập nhật 1 phần dữ liệu (chỉ status)
+     * - Endpoint có {id} nên dùng hàm từ config: LOCAL_GUIDE_STATUS(id)
+     * - Body chỉ cần { status: 'active' | 'banned' }
+     * 
+     * @param id - ID của Local Guide cần cập nhật
+     * @param data - Object chứa status mới { status: 'active' | 'banned' }
+     */
+    static async updateLocalGuideStatus(
+        id: string,
+        data: UpdateLocalGuideStatusData
+    ): Promise<ApiResponse<UpdateLocalGuideStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateLocalGuideStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.LOCAL_GUIDE_STATUS(id),
+            data  // { status: 'active' hoặc 'banned' }
         );
     }
 }

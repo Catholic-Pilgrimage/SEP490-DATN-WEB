@@ -21,6 +21,8 @@ export const API_CONFIG = {
         },
         MANAGER: {
             SITES: '/api/manager/sites', // GET my site, POST create, PUT update
+            LOCAL_GUIDES: '/api/manager/local-guides', // GET list, POST create
+            LOCAL_GUIDE_STATUS: (id: string) => `/api/manager/local-guides/${id}/status`, // PATCH status
         },
     },
     TIMEOUT: 10000, // 10 seconds

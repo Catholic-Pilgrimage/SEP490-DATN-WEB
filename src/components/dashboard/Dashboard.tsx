@@ -7,6 +7,7 @@ import { SiteManagement } from './admin/SiteManagement';
 import { UserManagement } from './admin/UserManagement';
 import { VerificationRequests } from './admin/VerificationRequests';
 import { MySite } from './manager/MySite';
+import { LocalGuides } from './manager/LocalGuides';
 import { SOSCenter } from './shared/SOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
@@ -49,6 +50,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           return <ManagerDashboard />;
         case 'mysite':
           return <MySite />;
+        case 'guides':
+          return <LocalGuides />;
         case 'sos':
           return <SOSCenter />;
         case 'profile':
