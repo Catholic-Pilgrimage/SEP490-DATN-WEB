@@ -32,7 +32,13 @@ import {
     UpdateEventStatusData,
     UpdateEventStatusResponse,
     ToggleEventActiveData,
-    ToggleEventActiveResponse
+    ToggleEventActiveResponse,
+    NearbyPlaceListParams,
+    NearbyPlaceListResponse,
+    UpdateNearbyPlaceStatusData,
+    UpdateNearbyPlaceStatusResponse,
+    ToggleNearbyPlaceActiveData,
+    ToggleNearbyPlaceActiveResponse
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -505,6 +511,68 @@ export class ManagerService {
     ): Promise<ApiResponse<ToggleEventActiveResponse>> {
         return ApiService.patch<ApiResponse<ToggleEventActiveResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.CONTENT.EVENTS_ACTIVE(id),
+            data
+        );
+    }
+
+    // =====================================================================
+    // NEARBY PLACE MANAGEMENT
+    // =====================================================================
+
+    /**
+     * Get nearby place list
+     * 
+     * @param params - { page, limit, status, category, is_active }
+     */
+    static async getNearbyPlaceList(
+        params: NearbyPlaceListParams = {}
+    ): Promise<ApiResponse<NearbyPlaceListResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.status) queryParams.append('status', params.status);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.is_active !== undefined) {
+            queryParams.append('is_active', params.is_active.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.CONTENT.NEARBY_PLACES}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.CONTENT.NEARBY_PLACES;
+
+        return ApiService.get<ApiResponse<NearbyPlaceListResponse>>(url);
+    }
+
+    /**
+     * Update nearby place status (approve or reject)
+     * 
+     * @param id - NearbyPlace ID
+     * @param data - { status: 'approved' | 'rejected', rejection_reason? }
+     */
+    static async updateNearbyPlaceStatus(
+        id: string,
+        data: UpdateNearbyPlaceStatusData
+    ): Promise<ApiResponse<UpdateNearbyPlaceStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateNearbyPlaceStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.NEARBY_PLACES_STATUS(id),
+            data
+        );
+    }
+
+    /**
+     * Toggle nearby place active status (soft delete/restore)
+     * 
+     * @param id - NearbyPlace ID
+     * @param data - { is_active: boolean }
+     */
+    static async toggleNearbyPlaceActive(
+        id: string,
+        data: ToggleNearbyPlaceActiveData
+    ): Promise<ApiResponse<ToggleNearbyPlaceActiveResponse>> {
+        return ApiService.patch<ApiResponse<ToggleNearbyPlaceActiveResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.NEARBY_PLACES_ACTIVE(id),
             data
         );
     }

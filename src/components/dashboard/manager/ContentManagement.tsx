@@ -3,6 +3,7 @@ import { Image, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { MediaContent } from './MediaContent';
 import { ScheduleContent } from './ScheduleContent';
 import { EventContent } from './EventContent';
+import { NearbyPlaceContent } from './NearbyPlaceContent';
 
 type ContentTab = 'media' | 'schedules' | 'events' | 'nearby';
 
@@ -28,7 +29,7 @@ export const ContentManagement: React.FC = () => {
         { id: 'media', label: 'Media', icon: Image, component: <MediaContent /> },
         { id: 'schedules', label: 'Lịch lễ', icon: Calendar, component: <ScheduleContent /> },
         { id: 'events', label: 'Sự kiện', icon: Sparkles, component: <EventContent /> },
-        { id: 'nearby', label: 'Địa điểm lân cận', icon: MapPin, component: <div className="p-6 text-center text-slate-500">Đang phát triển...</div>, disabled: true },
+        { id: 'nearby', label: 'Địa điểm lân cận', icon: MapPin, component: <NearbyPlaceContent /> },
     ];
 
     const activeTabConfig = tabs.find(tab => tab.id === activeTab);

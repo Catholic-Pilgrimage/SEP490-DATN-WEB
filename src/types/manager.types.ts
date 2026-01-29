@@ -438,3 +438,70 @@ export interface ToggleEventActiveData {
 
 // PATCH /api/manager/content/events/{id}/is-active - Response
 export type ToggleEventActiveResponse = Event;
+
+// =====================================================================
+// NEARBY PLACE MANAGEMENT TYPES
+// =====================================================================
+
+// Category của địa điểm lân cận
+export type NearbyPlaceCategory = 'food' | 'lodging' | 'medical';
+
+// GET /api/manager/content/nearby-places - Response item
+export interface NearbyPlace {
+    id: string;
+    site_id: string;
+    code: string;
+    proposed_by: string;
+    name: string;
+    category: NearbyPlaceCategory;
+    address: string;
+    latitude: string;
+    longitude: string;
+    distance_meters: number;
+    phone: string | null;
+    description: string | null;
+    status: ContentStatus;
+    rejection_reason: string | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+    is_active: boolean;
+    created_at: string;
+    proposer?: ContentCreator;
+}
+
+// GET /api/manager/content/nearby-places - Query params
+export interface NearbyPlaceListParams {
+    page?: number;
+    limit?: number;
+    status?: ContentStatus;
+    category?: NearbyPlaceCategory;
+    is_active?: boolean;
+}
+
+// GET /api/manager/content/nearby-places - Response
+export interface NearbyPlaceListResponse {
+    data: NearbyPlace[];
+    pagination: {
+        page: number;
+        limit: number;
+        totalItems: number;
+        totalPages: number;
+    };
+}
+
+// PATCH /api/manager/content/nearby-places/{id}/status - Request
+export interface UpdateNearbyPlaceStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string;
+}
+
+// PATCH /api/manager/content/nearby-places/{id}/status - Response
+export type UpdateNearbyPlaceStatusResponse = NearbyPlace;
+
+// PATCH /api/manager/content/nearby-places/{id}/is-active - Request
+export interface ToggleNearbyPlaceActiveData {
+    is_active: boolean;
+}
+
+// PATCH /api/manager/content/nearby-places/{id}/is-active - Response
+export type ToggleNearbyPlaceActiveResponse = NearbyPlace;
