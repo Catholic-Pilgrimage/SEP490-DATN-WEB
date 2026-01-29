@@ -14,7 +14,13 @@ import {
     ShiftSubmissionListResponse,
     ShiftSubmissionDetail,
     UpdateShiftSubmissionStatusData,
-    UpdateShiftSubmissionStatusResponse
+    UpdateShiftSubmissionStatusResponse,
+    MediaListParams,
+    MediaListResponse,
+    UpdateMediaStatusData,
+    UpdateMediaStatusResponse,
+    ToggleMediaActiveData,
+    ToggleMediaActiveResponse
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -279,6 +285,89 @@ export class ManagerService {
     ): Promise<ApiResponse<UpdateShiftSubmissionStatusResponse>> {
         return ApiService.patch<ApiResponse<UpdateShiftSubmissionStatusResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.SHIFT_SUBMISSION_STATUS(id),
+            data
+        );
+    }
+
+    // ========================================================================
+    // CONTENT MANAGEMENT - MEDIA
+    // ========================================================================
+
+    /**
+     * Get list of media for the manager's site
+     * 
+     * Giải thích:
+     * - Lấy danh sách media (hình ảnh, video, panorama) của site
+     * - Hỗ trợ filter theo: type, status, is_active
+     * - Có pagination
+     * 
+     * @param params - { page, limit, type, status, is_active }
+     */
+    static async getMediaList(
+        params?: MediaListParams
+    ): Promise<ApiResponse<MediaListResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params?.page) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params?.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params?.type) {
+            queryParams.append('type', params.type);
+        }
+        if (params?.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params?.is_active !== undefined) {
+            queryParams.append('is_active', params.is_active.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA;
+
+        return ApiService.get<ApiResponse<MediaListResponse>>(url);
+    }
+
+    /**
+     * Update media status (approve or reject)
+     * 
+     * Giải thích:
+     * - Manager duyệt hoặc từ chối media
+     * - Nếu reject, phải có rejection_reason
+     * 
+     * @param id - ID của media
+     * @param data - { status: 'approved' | 'rejected', rejection_reason? }
+     */
+    static async updateMediaStatus(
+        id: string,
+        data: UpdateMediaStatusData
+    ): Promise<ApiResponse<UpdateMediaStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateMediaStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA_STATUS(id),
+            data
+        );
+    }
+
+    /**
+     * Toggle media active status (soft delete/restore)
+     * 
+     * Giải thích:
+     * - is_active = false: Ẩn media (soft delete)
+     * - is_active = true: Khôi phục media
+     * 
+     * @param id - ID của media
+     * @param data - { is_active: boolean }
+     */
+    static async toggleMediaActive(
+        id: string,
+        data: ToggleMediaActiveData
+    ): Promise<ApiResponse<ToggleMediaActiveResponse>> {
+        return ApiService.patch<ApiResponse<ToggleMediaActiveResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA_ACTIVE(id),
             data
         );
     }

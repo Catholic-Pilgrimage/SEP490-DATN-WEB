@@ -27,6 +27,21 @@ export const API_CONFIG = {
             SHIFT_SUBMISSIONS: '/api/manager/local-guides/shift-submissions', // GET list
             SHIFT_SUBMISSION_DETAIL: (id: string) => `/api/manager/local-guides/shift-submissions/${id}`, // GET detail
             SHIFT_SUBMISSION_STATUS: (id: string) => `/api/manager/local-guides/shift-submissions/${id}/status`, // PATCH approve/reject
+            // Content Management endpoints
+            CONTENT: {
+                MEDIA: '/api/manager/content/media', // GET list
+                MEDIA_STATUS: (id: string) => `/api/manager/content/media/${id}/status`, // PATCH approve/reject
+                MEDIA_ACTIVE: (id: string) => `/api/manager/content/media/${id}/is-active`, // PATCH soft delete/restore
+                SCHEDULES: '/api/manager/content/schedules', // GET list
+                SCHEDULES_STATUS: (id: string) => `/api/manager/content/schedules/${id}/status`,
+                SCHEDULES_ACTIVE: (id: string) => `/api/manager/content/schedules/${id}/is-active`,
+                EVENTS: '/api/manager/content/events', // GET list
+                EVENTS_STATUS: (id: string) => `/api/manager/content/events/${id}/status`,
+                EVENTS_ACTIVE: (id: string) => `/api/manager/content/events/${id}/is-active`,
+                NEARBY_PLACES: '/api/manager/content/nearby-places', // GET list
+                NEARBY_PLACES_STATUS: (id: string) => `/api/manager/content/nearby-places/${id}/status`,
+                NEARBY_PLACES_ACTIVE: (id: string) => `/api/manager/content/nearby-places/${id}/is-active`,
+            },
         },
     },
     TIMEOUT: 10000, // 10 seconds

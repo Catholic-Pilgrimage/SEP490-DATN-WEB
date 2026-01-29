@@ -241,3 +241,78 @@ export interface UpdateShiftSubmissionStatusData {
 // PATCH /api/manager/local-guides/shift-submissions/{id}/status - Response
 // Trả về submission đã cập nhật
 export type UpdateShiftSubmissionStatusResponse = ShiftSubmission;
+
+// ============================================================================
+// MANAGER CONTENT - MEDIA
+// ============================================================================
+
+// Loại media: hình ảnh, video, panorama
+export type MediaType = 'image' | 'video' | 'panorama';
+
+// Trạng thái duyệt content (dùng chung cho Media, Schedule, Event, NearbyPlace)
+export type ContentStatus = 'pending' | 'approved' | 'rejected';
+
+// Thông tin người tạo
+export interface ContentCreator {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+// GET /api/manager/content/media - Media item
+export interface Media {
+    id: string;
+    site_id: string;
+    code: string;                   // Mã media (VD: IMG0115001, VID0115001)
+    url: string;                    // URL của media (cloudinary hoặc youtube)
+    type: MediaType;                // 'image' | 'video' | 'panorama'
+    caption: string;                // Mô tả media
+    status: ContentStatus;          // 'pending' | 'approved' | 'rejected'
+    rejection_reason: string | null;
+    is_active: boolean;             // false = đã xóa mềm
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator: ContentCreator;        // Thông tin người tạo
+}
+
+// GET /api/manager/content/media - Query params
+export interface MediaListParams {
+    page?: number;
+    limit?: number;
+    type?: MediaType | '';          // Lọc theo loại media
+    status?: ContentStatus | '';    // Lọc theo trạng thái duyệt
+    is_active?: boolean;            // Lọc theo active (true = đang hoạt động, false = đã xóa)
+}
+
+// GET /api/manager/content/media - Response
+export interface MediaListResponse {
+    data: Media[];
+    pagination: {
+        page: number;
+        limit: number;
+        totalItems: number;
+        totalPages: number;
+    };
+}
+
+// PATCH /api/manager/content/media/{id}/status - Request
+// Duyệt hoặc từ chối media
+export interface UpdateMediaStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string;  // Bắt buộc khi status = 'rejected'
+}
+
+// PATCH /api/manager/content/media/{id}/status - Response
+// Trả về media đã cập nhật
+export type UpdateMediaStatusResponse = Media;
+
+// PATCH /api/manager/content/media/{id}/is-active - Request
+// Ẩn hoặc khôi phục media (soft delete/restore)
+export interface ToggleMediaActiveData {
+    is_active: boolean;  // true = khôi phục, false = ẩn (soft delete)
+}
+
+// PATCH /api/manager/content/media/{id}/is-active - Response
+// Trả về media đã cập nhật
+export type ToggleMediaActiveResponse = Media;
