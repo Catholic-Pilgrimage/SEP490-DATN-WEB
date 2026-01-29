@@ -26,7 +26,13 @@ import {
     UpdateScheduleStatusData,
     UpdateScheduleStatusResponse,
     ToggleScheduleActiveData,
-    ToggleScheduleActiveResponse
+    ToggleScheduleActiveResponse,
+    EventListParams,
+    EventListResponse,
+    UpdateEventStatusData,
+    UpdateEventStatusResponse,
+    ToggleEventActiveData,
+    ToggleEventActiveResponse
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -438,6 +444,67 @@ export class ManagerService {
     ): Promise<ApiResponse<ToggleScheduleActiveResponse>> {
         return ApiService.patch<ApiResponse<ToggleScheduleActiveResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.CONTENT.SCHEDULES_ACTIVE(id),
+            data
+        );
+    }
+
+    // =====================================================================
+    // EVENT MANAGEMENT
+    // =====================================================================
+
+    /**
+     * Get event list
+     * 
+     * @param params - { page, limit, status, is_active }
+     */
+    static async getEventList(
+        params: EventListParams = {}
+    ): Promise<ApiResponse<EventListResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.status) queryParams.append('status', params.status);
+        if (params.is_active !== undefined) {
+            queryParams.append('is_active', params.is_active.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.CONTENT.EVENTS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.CONTENT.EVENTS;
+
+        return ApiService.get<ApiResponse<EventListResponse>>(url);
+    }
+
+    /**
+     * Update event status (approve or reject)
+     * 
+     * @param id - Event ID
+     * @param data - { status: 'approved' | 'rejected', rejection_reason? }
+     */
+    static async updateEventStatus(
+        id: string,
+        data: UpdateEventStatusData
+    ): Promise<ApiResponse<UpdateEventStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateEventStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.EVENTS_STATUS(id),
+            data
+        );
+    }
+
+    /**
+     * Toggle event active status (soft delete/restore)
+     * 
+     * @param id - Event ID
+     * @param data - { is_active: boolean }
+     */
+    static async toggleEventActive(
+        id: string,
+        data: ToggleEventActiveData
+    ): Promise<ApiResponse<ToggleEventActiveResponse>> {
+        return ApiService.patch<ApiResponse<ToggleEventActiveResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.EVENTS_ACTIVE(id),
             data
         );
     }

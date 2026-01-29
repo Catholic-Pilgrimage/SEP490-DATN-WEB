@@ -375,3 +375,66 @@ export interface ToggleScheduleActiveData {
 
 // PATCH /api/manager/content/schedules/{id}/is-active - Response
 export type ToggleScheduleActiveResponse = Schedule;
+
+// =====================================================================
+// EVENT MANAGEMENT TYPES
+// =====================================================================
+
+// GET /api/manager/content/events - Response item
+// Mỗi event là một sự kiện của site
+export interface Event {
+    id: string;
+    site_id: string;
+    code: string;
+    name: string;
+    description: string;
+    start_date: string;       // "2026-01-29"
+    end_date: string;         // "2026-01-31"
+    start_time: string;       // "18:00:00"
+    end_time: string;         // "22:00:00"
+    location: string;
+    banner_url: string | null;
+    status: ContentStatus;
+    rejection_reason: string | null;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator?: ContentCreator;
+}
+
+// GET /api/manager/content/events - Query params
+export interface EventListParams {
+    page?: number;
+    limit?: number;
+    status?: ContentStatus;
+    is_active?: boolean;
+}
+
+// GET /api/manager/content/events - Response
+export interface EventListResponse {
+    data: Event[];
+    pagination: {
+        page: number;
+        limit: number;
+        totalItems: number;
+        totalPages: number;
+    };
+}
+
+// PATCH /api/manager/content/events/{id}/status - Request
+export interface UpdateEventStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string;
+}
+
+// PATCH /api/manager/content/events/{id}/status - Response
+export type UpdateEventStatusResponse = Event;
+
+// PATCH /api/manager/content/events/{id}/is-active - Request
+export interface ToggleEventActiveData {
+    is_active: boolean;
+}
+
+// PATCH /api/manager/content/events/{id}/is-active - Response
+export type ToggleEventActiveResponse = Event;
