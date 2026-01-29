@@ -9,7 +9,7 @@ import { VerificationRequests } from './admin/VerificationRequests';
 import { MySite } from './manager/MySite';
 import { LocalGuides } from './manager/LocalGuides';
 import { ShiftSubmissions } from './manager/ShiftSubmissions';  // Shift Submissions component
-import { MediaContent } from './manager/MediaContent';  // Media Content component
+import { ContentManagement } from './manager/ContentManagement';  // Content Management with tabs
 import { SOSCenter } from './shared/SOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
@@ -57,7 +57,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         case 'shifts':
           return <ShiftSubmissions />;  // Hiển Shift Submissions
         case 'content':
-          return <MediaContent />;  // Hiển Media Content
+          return <ContentManagement />;  // Content Management với tabs
         case 'sos':
           return <SOSCenter />;
         case 'profile':

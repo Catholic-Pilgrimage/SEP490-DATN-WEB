@@ -20,7 +20,13 @@ import {
     UpdateMediaStatusData,
     UpdateMediaStatusResponse,
     ToggleMediaActiveData,
-    ToggleMediaActiveResponse
+    ToggleMediaActiveResponse,
+    ScheduleListParams,
+    ScheduleListResponse,
+    UpdateScheduleStatusData,
+    UpdateScheduleStatusResponse,
+    ToggleScheduleActiveData,
+    ToggleScheduleActiveResponse
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -368,6 +374,70 @@ export class ManagerService {
     ): Promise<ApiResponse<ToggleMediaActiveResponse>> {
         return ApiService.patch<ApiResponse<ToggleMediaActiveResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA_ACTIVE(id),
+            data
+        );
+    }
+
+    // =====================================================================
+    // SCHEDULE MANAGEMENT
+    // =====================================================================
+
+    /**
+     * Get schedule list
+     * 
+     * @param params - { page, limit, status, day_of_week, is_active }
+     */
+    static async getScheduleList(
+        params: ScheduleListParams = {}
+    ): Promise<ApiResponse<ScheduleListResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.status) queryParams.append('status', params.status);
+        if (params.day_of_week !== undefined) {
+            queryParams.append('day_of_week', params.day_of_week.toString());
+        }
+        if (params.is_active !== undefined) {
+            queryParams.append('is_active', params.is_active.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.CONTENT.SCHEDULES}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.CONTENT.SCHEDULES;
+
+        return ApiService.get<ApiResponse<ScheduleListResponse>>(url);
+    }
+
+    /**
+     * Update schedule status (approve or reject)
+     * 
+     * @param id - Schedule ID
+     * @param data - { status: 'approved' | 'rejected', rejection_reason? }
+     */
+    static async updateScheduleStatus(
+        id: string,
+        data: UpdateScheduleStatusData
+    ): Promise<ApiResponse<UpdateScheduleStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateScheduleStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.SCHEDULES_STATUS(id),
+            data
+        );
+    }
+
+    /**
+     * Toggle schedule active status (soft delete/restore)
+     * 
+     * @param id - Schedule ID
+     * @param data - { is_active: boolean }
+     */
+    static async toggleScheduleActive(
+        id: string,
+        data: ToggleScheduleActiveData
+    ): Promise<ApiResponse<ToggleScheduleActiveResponse>> {
+        return ApiService.patch<ApiResponse<ToggleScheduleActiveResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.SCHEDULES_ACTIVE(id),
             data
         );
     }

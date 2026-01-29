@@ -316,3 +316,62 @@ export interface ToggleMediaActiveData {
 // PATCH /api/manager/content/media/{id}/is-active - Response
 // Trả về media đã cập nhật
 export type ToggleMediaActiveResponse = Media;
+
+// =====================================================================
+// SCHEDULE MANAGEMENT TYPES
+// =====================================================================
+
+// GET /api/manager/content/schedules - Response item
+// Mỗi schedule là một lịch lễ của site
+export interface Schedule {
+    id: string;
+    site_id: string;
+    code: string;
+    days_of_week: number[];  // 0=CN, 1=T2, ..., 6=T7
+    time: string;            // "17:30:00"
+    note: string;
+    status: ContentStatus;
+    rejection_reason: string | null;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator?: ContentCreator;
+}
+
+// GET /api/manager/content/schedules - Query params
+export interface ScheduleListParams {
+    page?: number;
+    limit?: number;
+    status?: ContentStatus;
+    day_of_week?: number;    // 0=CN, 1=T2, ..., 6=T7
+    is_active?: boolean;
+}
+
+// GET /api/manager/content/schedules - Response
+export interface ScheduleListResponse {
+    data: Schedule[];
+    pagination: {
+        page: number;
+        limit: number;
+        totalItems: number;
+        totalPages: number;
+    };
+}
+
+// PATCH /api/manager/content/schedules/{id}/status - Request
+export interface UpdateScheduleStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string;
+}
+
+// PATCH /api/manager/content/schedules/{id}/status - Response
+export type UpdateScheduleStatusResponse = Schedule;
+
+// PATCH /api/manager/content/schedules/{id}/is-active - Request
+export interface ToggleScheduleActiveData {
+    is_active: boolean;
+}
+
+// PATCH /api/manager/content/schedules/{id}/is-active - Response
+export type ToggleScheduleActiveResponse = Schedule;
