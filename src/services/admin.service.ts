@@ -14,7 +14,19 @@ import {
     VerificationListParams,
     VerificationRequestDetail,
     UpdateVerificationStatusData,
-    VerificationUpdateResponse
+    VerificationUpdateResponse,
+    SiteLocalGuidesParams,
+    SiteLocalGuidesResponse,
+    SiteShiftsParams,
+    SiteShiftsResponse,
+    SiteMediaParams,
+    SiteMediaResponse,
+    SiteSchedulesParams,
+    SiteSchedulesResponse,
+    SiteEventsParams,
+    SiteEventsResponse,
+    SiteNearbyPlacesParams,
+    SiteNearbyPlacesResponse
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -227,5 +239,184 @@ export class AdminService {
     ): Promise<ApiResponse<VerificationUpdateResponse>> {
         const endpoint = API_CONFIG.ENDPOINTS.ADMIN.VERIFICATION_REQUEST_DETAIL(id);
         return ApiService.patch<ApiResponse<VerificationUpdateResponse>>(endpoint, data);
+    }
+
+    // ============ SITE CONTENT APIs ============
+
+    /**
+     * Get list of local guides for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit }
+     */
+    static async getSiteLocalGuides(
+        siteId: string,
+        params: SiteLocalGuidesParams = {}
+    ): Promise<ApiResponse<SiteLocalGuidesResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_LOCAL_GUIDES(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_LOCAL_GUIDES(siteId);
+
+        return ApiService.get<ApiResponse<SiteLocalGuidesResponse>>(endpoint);
+    }
+
+    /**
+     * Get list of shift submissions for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit, status }
+     */
+    static async getSiteShifts(
+        siteId: string,
+        params: SiteShiftsParams = {}
+    ): Promise<ApiResponse<SiteShiftsResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_SHIFTS(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_SHIFTS(siteId);
+
+        return ApiService.get<ApiResponse<SiteShiftsResponse>>(endpoint);
+    }
+
+    /**
+     * Get list of media for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit, status, type }
+     */
+    static async getSiteMedia(
+        siteId: string,
+        params: SiteMediaParams = {}
+    ): Promise<ApiResponse<SiteMediaResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params.type) {
+            queryParams.append('type', params.type);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_MEDIA(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_MEDIA(siteId);
+
+        return ApiService.get<ApiResponse<SiteMediaResponse>>(endpoint);
+    }
+
+    /**
+     * Get list of mass schedules for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit, status }
+     */
+    static async getSiteSchedules(
+        siteId: string,
+        params: SiteSchedulesParams = {}
+    ): Promise<ApiResponse<SiteSchedulesResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_SCHEDULES(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_SCHEDULES(siteId);
+
+        return ApiService.get<ApiResponse<SiteSchedulesResponse>>(endpoint);
+    }
+
+    /**
+     * Get list of events for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit, status }
+     */
+    static async getSiteEvents(
+        siteId: string,
+        params: SiteEventsParams = {}
+    ): Promise<ApiResponse<SiteEventsResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_EVENTS(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_EVENTS(siteId);
+
+        return ApiService.get<ApiResponse<SiteEventsResponse>>(endpoint);
+    }
+
+    /**
+     * Get list of nearby places for a specific site
+     * @param siteId - Site ID (UUID)
+     * @param params - { page, limit, status, category }
+     */
+    static async getSiteNearbyPlaces(
+        siteId: string,
+        params: SiteNearbyPlacesParams = {}
+    ): Promise<ApiResponse<SiteNearbyPlacesResponse>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params.category) {
+            queryParams.append('category', params.category);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SITE_NEARBY_PLACES(siteId)}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SITE_NEARBY_PLACES(siteId);
+
+        return ApiService.get<ApiResponse<SiteNearbyPlacesResponse>>(endpoint);
     }
 }

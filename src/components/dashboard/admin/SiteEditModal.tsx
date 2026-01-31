@@ -12,7 +12,7 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
-import { SiteDetail, UpdateSiteData, SiteRegion, SiteType, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
+import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 
 interface SiteEditModalProps {
     site: SiteDetail | null;

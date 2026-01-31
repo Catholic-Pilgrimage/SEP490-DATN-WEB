@@ -234,3 +234,268 @@ export interface VerificationUpdateResponse {
     status: VerificationStatus;
     verified_at: string;
 }
+
+// ============ SITE CONTENT APIs (Admin) ============
+
+// Site basic info in response
+export interface SiteBasicInfo {
+    id: string;
+    code: string;
+    name: string;
+}
+
+// Local Guide in site
+export interface SiteLocalGuide {
+    id: string;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    avatar_url: string | null;
+    created_at: string;
+}
+
+// GET /api/admin/sites/{siteId}/local-guides - Query params
+export interface SiteLocalGuidesParams {
+    page?: number;
+    limit?: number;
+}
+
+// GET /api/admin/sites/{siteId}/local-guides - Response
+export interface SiteLocalGuidesResponse {
+    site: SiteBasicInfo;
+    guides: SiteLocalGuide[];
+    pagination: Pagination;
+}
+
+// ============ SITE SHIFTS APIs ============
+
+// Shift status
+export type ShiftSubmissionStatus = 'pending' | 'approved' | 'rejected';
+
+// Individual shift in a submission
+export interface SiteShift {
+    id: string;
+    day_of_week: number; // 0-6 (Sunday-Saturday)
+    start_time: string; // HH:mm:ss
+    end_time: string;   // HH:mm:ss
+}
+
+// Guide basic info in shift submission
+export interface ShiftGuide {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+// Shift submission in site
+export interface SiteShiftSubmission {
+    id: string;
+    guide_id: string;
+    site_id: string;
+    code: string | null;
+    week_start_date: string;
+    submission_type: 'new' | 'edit';
+    change_reason: string | null;
+    previous_submission_id: string | null;
+    status: ShiftSubmissionStatus;
+    total_shifts: number;
+    rejection_reason: string | null;
+    approved_by: string | null;
+    approved_at: string | null;
+    is_active: boolean;
+    createdAt: string;
+    updatedAt: string;
+    guide: ShiftGuide;
+    shifts: SiteShift[];
+}
+
+// GET /api/admin/sites/{siteId}/shifts - Query params
+export interface SiteShiftsParams {
+    page?: number;
+    limit?: number;
+    status?: ShiftSubmissionStatus;
+}
+
+// GET /api/admin/sites/{siteId}/shifts - Response
+export interface SiteShiftsResponse {
+    site: SiteBasicInfo;
+    submissions: SiteShiftSubmission[];
+    pagination: Pagination;
+}
+
+// ============ SITE MEDIA APIs ============
+
+// Media type
+export type MediaType = 'image' | 'video' | 'panorama';
+
+// Media status
+export type MediaStatus = 'pending' | 'approved' | 'rejected';
+
+// Creator info in media
+export interface MediaCreator {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+// Media item in site
+export interface SiteMedia {
+    id: string;
+    site_id: string;
+    code: string;
+    url: string;
+    type: MediaType;
+    caption: string | null;
+    status: MediaStatus;
+    rejection_reason: string | null;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator: MediaCreator;
+}
+
+// GET /api/admin/sites/{siteId}/media - Query params
+export interface SiteMediaParams {
+    page?: number;
+    limit?: number;
+    status?: MediaStatus;
+    type?: MediaType;
+}
+
+// GET /api/admin/sites/{siteId}/media - Response
+export interface SiteMediaResponse {
+    site: SiteBasicInfo;
+    media: SiteMedia[];
+    pagination: Pagination;
+}
+
+// ============ SITE SCHEDULES APIs ============
+
+// Schedule status (same as Media status but keeping separate for clarity)
+export type ScheduleStatus = 'pending' | 'approved' | 'rejected';
+
+// Schedule item in site
+export interface SiteSchedule {
+    id: string;
+    site_id: string;
+    code: string;
+    days_of_week: number[]; // 0-6 (Sunday-Saturday)
+    time: string; // HH:mm:ss
+    note: string | null;
+    status: ScheduleStatus;
+    rejection_reason: string | null;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator: MediaCreator; // Same structure as MediaCreator
+}
+
+// GET /api/admin/sites/{siteId}/schedules - Query params
+export interface SiteSchedulesParams {
+    page?: number;
+    limit?: number;
+    status?: ScheduleStatus;
+}
+
+// GET /api/admin/sites/{siteId}/schedules - Response
+export interface SiteSchedulesResponse {
+    site: SiteBasicInfo;
+    schedules: SiteSchedule[];
+    pagination: Pagination;
+}
+
+// ============ SITE EVENTS APIs ============
+
+// Event status
+export type EventStatus = 'pending' | 'approved' | 'rejected';
+
+// Event item in site
+export interface SiteEvent {
+    id: string;
+    site_id: string;
+    code: string;
+    name: string;
+    description: string | null;
+    start_date: string; // YYYY-MM-DD
+    end_date: string; // YYYY-MM-DD
+    start_time: string; // HH:mm:ss
+    end_time: string; // HH:mm:ss
+    location: string | null;
+    banner_url: string | null;
+    status: EventStatus;
+    rejection_reason: string | null;
+    is_active: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    creator: MediaCreator;
+}
+
+// GET /api/admin/sites/{siteId}/events - Query params
+export interface SiteEventsParams {
+    page?: number;
+    limit?: number;
+    status?: EventStatus;
+}
+
+// GET /api/admin/sites/{siteId}/events - Response
+export interface SiteEventsResponse {
+    site: SiteBasicInfo;
+    events: SiteEvent[];
+    pagination: Pagination;
+}
+
+// ============ SITE NEARBY PLACES APIs ============
+
+// Nearby place category
+export type NearbyPlaceCategory = 'food' | 'lodging' | 'medical';
+
+// Nearby place status
+export type NearbyPlaceStatus = 'pending' | 'approved' | 'rejected';
+
+// Proposer info
+export interface NearbyPlaceProposer {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+// Nearby place item in site
+export interface SiteNearbyPlace {
+    id: string;
+    site_id: string;
+    code: string;
+    proposed_by: string;
+    name: string;
+    category: NearbyPlaceCategory;
+    address: string | null;
+    latitude: string;
+    longitude: string;
+    distance_meters: number;
+    phone: string | null;
+    description: string | null;
+    status: NearbyPlaceStatus;
+    rejection_reason: string | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+    is_active: boolean;
+    created_at: string;
+    proposer: NearbyPlaceProposer;
+}
+
+// GET /api/admin/sites/{siteId}/nearby-places - Query params
+export interface SiteNearbyPlacesParams {
+    page?: number;
+    limit?: number;
+    status?: NearbyPlaceStatus;
+    category?: NearbyPlaceCategory;
+}
+
+// GET /api/admin/sites/{siteId}/nearby-places - Response
+export interface SiteNearbyPlacesResponse {
+    site: SiteBasicInfo;
+    nearby_places: SiteNearbyPlace[];
+    pagination: Pagination;
+}

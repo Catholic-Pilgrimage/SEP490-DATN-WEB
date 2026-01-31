@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     X,
     MapPin,
@@ -16,15 +16,33 @@ import {
     XCircle,
     Loader2,
     ExternalLink,
-    BookOpen
+    BookOpen,
+    Users,
+    Image,
+    Sparkles,
+    ChevronLeft,
+    ChevronRight,
+    AlertCircle,
+    Filter,
+    Play,
+    Eye
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
-import { SiteDetail, SiteType, SiteRegion } from '../../../types/admin.types';
+import { SiteDetail, SiteType, SiteRegion, SiteLocalGuide, SiteLocalGuidesResponse, SiteShiftSubmission, SiteShiftsResponse, ShiftSubmissionStatus, SiteMedia, SiteMediaResponse, MediaStatus, MediaType, SiteSchedule, SiteSchedulesResponse, ScheduleStatus, SiteEvent, SiteEventsResponse, EventStatus, SiteNearbyPlace, SiteNearbyPlacesResponse, NearbyPlaceStatus, NearbyPlaceCategory } from '../../../types/admin.types';
 
 interface SiteDetailModalProps {
     siteId: string | null;
     isOpen: boolean;
     onClose: () => void;
+}
+
+type TabType = 'info' | 'local-guides' | 'shifts' | 'media' | 'schedules' | 'events' | 'nearby-places';
+
+interface TabConfig {
+    id: TabType;
+    label: string;
+    icon: React.ElementType;
+    disabled?: boolean;
 }
 
 export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
@@ -35,10 +53,22 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
     const [site, setSite] = useState<SiteDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<TabType>('info');
+
+    const tabs: TabConfig[] = [
+        { id: 'info', label: 'Thông tin', icon: BookOpen },
+        { id: 'local-guides', label: 'Local Guides', icon: Users },
+        { id: 'shifts', label: 'Lịch trực', icon: Clock },
+        { id: 'media', label: 'Media', icon: Image },
+        { id: 'schedules', label: 'Lịch lễ', icon: Calendar },
+        { id: 'events', label: 'Sự kiện', icon: Sparkles },
+        { id: 'nearby-places', label: 'Lân cận', icon: MapPin },
+    ];
 
     useEffect(() => {
         if (isOpen && siteId) {
             fetchSiteDetail();
+            setActiveTab('info');
         } else {
             setSite(null);
             setError(null);
@@ -116,7 +146,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Close button */}
                 <button
                     onClick={onClose}
@@ -144,7 +174,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                 ) : site ? (
                     <>
                         {/* Header with cover image */}
-                        <div className="relative h-56">
+                        <div className="relative h-40 flex-shrink-0">
                             {site.cover_image ? (
                                 <img
                                     src={site.cover_image}
@@ -159,8 +189,8 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                             {/* Badges on image */}
                             <div className="absolute top-4 left-4 flex gap-2">
                                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm ${site.is_active
-                                        ? 'bg-green-500/90 text-white'
-                                        : 'bg-red-500/90 text-white'
+                                    ? 'bg-green-500/90 text-white'
+                                    : 'bg-red-500/90 text-white'
                                     }`}>
                                     {site.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                                     {site.is_active ? 'Active' : 'Inactive'}
@@ -174,120 +204,72 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                             {/* Site info on image */}
                             <div className="absolute bottom-4 left-4 right-4 text-white">
                                 <p className="text-sm opacity-80 font-mono">{site.code}</p>
-                                <h2 className="text-2xl font-bold mb-1">{site.name}</h2>
+                                <h2 className="text-xl font-bold mb-1">{site.name}</h2>
                                 {site.patron_saint && (
                                     <p className="text-sm opacity-90">🙏 {site.patron_saint}</p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="p-6 max-h-[calc(90vh-14rem)] overflow-y-auto space-y-5">
-                            {/* Location */}
-                            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <MapPin className="w-5 h-5 text-blue-600" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-xs text-slate-500 mb-1">Address</p>
-                                    <p className="text-sm font-medium text-slate-900">
-                                        {site.address && `${site.address}, `}
-                                        {site.district && `${site.district}, `}
-                                        {site.province}
-                                    </p>
-                                    <span className={`inline-flex items-center mt-2 px-2 py-0.5 rounded text-xs font-medium ${regionInfo?.color}`}>
-                                        {regionInfo?.label}
-                                    </span>
-                                </div>
-                                {site.latitude && site.longitude && (
-                                    <button
-                                        onClick={openGoogleMaps}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        title="Open in Google Maps"
-                                    >
-                                        <ExternalLink className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </div>
+                        {/* Tabs Navigation */}
+                        <div className="bg-white border-b border-slate-200 px-4 flex-shrink-0">
+                            <div className="flex items-center gap-1 overflow-x-auto">
+                                {tabs.map((tab) => {
+                                    const Icon = tab.icon;
+                                    const isActive = activeTab === tab.id;
 
-                            {/* Description */}
-                            {site.description && (
-                                <div className="p-4 bg-slate-50 rounded-xl">
-                                    <p className="text-xs text-slate-500 mb-2">Description</p>
-                                    <p className="text-sm text-slate-700 leading-relaxed">{site.description}</p>
-                                </div>
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => !tab.disabled && setActiveTab(tab.id)}
+                                            disabled={tab.disabled}
+                                            className={`
+                                                flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap
+                                                border-b-2 transition-colors
+                                                ${isActive
+                                                    ? 'border-blue-600 text-blue-600'
+                                                    : tab.disabled
+                                                        ? 'border-transparent text-slate-300 cursor-not-allowed'
+                                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                                                }
+                                            `}
+                                        >
+                                            <Icon className="w-3.5 h-3.5" />
+                                            {tab.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="flex-1 overflow-y-auto">
+                            {activeTab === 'info' && (
+                                <SiteInfoTab
+                                    site={site}
+                                    regionInfo={regionInfo}
+                                    formatDate={formatDate}
+                                    openGoogleMaps={openGoogleMaps}
+                                />
                             )}
-
-                            {/* History */}
-                            {site.history && (
-                                <div className="p-4 bg-amber-50 rounded-xl">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <BookOpen className="w-4 h-4 text-amber-600" />
-                                        <p className="text-xs text-amber-700 font-medium">History</p>
-                                    </div>
-                                    <p className="text-sm text-slate-700 leading-relaxed">{site.history}</p>
-                                </div>
+                            {activeTab === 'local-guides' && siteId && (
+                                <SiteLocalGuidesTab siteId={siteId} />
                             )}
-
-                            {/* Contact & Opening Hours */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Contact Info */}
-                                {site.contact_info && (site.contact_info.phone || site.contact_info.email) && (
-                                    <div className="p-4 bg-slate-50 rounded-xl">
-                                        <p className="text-xs text-slate-500 mb-3">Contact</p>
-                                        {site.contact_info.phone && (
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Phone className="w-4 h-4 text-green-600" />
-                                                <span className="text-sm text-slate-700">{site.contact_info.phone}</span>
-                                            </div>
-                                        )}
-                                        {site.contact_info.email && (
-                                            <div className="flex items-center gap-2">
-                                                <Mail className="w-4 h-4 text-blue-600" />
-                                                <span className="text-sm text-slate-700">{site.contact_info.email}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Opening Hours */}
-                                {site.opening_hours && Object.keys(site.opening_hours).length > 0 && (
-                                    <div className="p-4 bg-slate-50 rounded-xl">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Clock className="w-4 h-4 text-slate-500" />
-                                            <p className="text-xs text-slate-500">Opening Hours</p>
-                                        </div>
-                                        <div className="space-y-1 text-sm">
-                                            {Object.entries(site.opening_hours).map(([day, hours]) => (
-                                                <div key={day} className="flex justify-between">
-                                                    <span className="text-slate-500 capitalize">{day}</span>
-                                                    <span className="text-slate-700 font-medium">{hours}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Created By & Dates */}
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                                {site.created_by && (
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-slate-400" />
-                                        <div>
-                                            <p className="text-xs text-slate-500">Created by</p>
-                                            <p className="text-sm font-medium text-slate-700">{site.created_by.full_name}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-slate-400" />
-                                    <div>
-                                        <p className="text-xs text-slate-500">Created at</p>
-                                        <p className="text-sm font-medium text-slate-700">{formatDate(site.created_at)}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            {activeTab === 'shifts' && siteId && (
+                                <SiteShiftsTab siteId={siteId} />
+                            )}
+                            {activeTab === 'media' && siteId && (
+                                <SiteMediaTab siteId={siteId} />
+                            )}
+                            {activeTab === 'schedules' && siteId && (
+                                <SiteSchedulesTab siteId={siteId} />
+                            )}
+                            {activeTab === 'events' && siteId && (
+                                <SiteEventsTab siteId={siteId} />
+                            )}
+                            {activeTab === 'nearby-places' && siteId && (
+                                <SiteNearbyPlacesTab siteId={siteId} />
+                            )}
                         </div>
                     </>
                 ) : null}
@@ -295,3 +277,1468 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
         </div>
     );
 };
+
+// ============ INFO TAB ============
+interface SiteInfoTabProps {
+    site: SiteDetail;
+    regionInfo: { label: string; color: string; gradient: string } | null;
+    formatDate: (date: string) => string;
+    openGoogleMaps: () => void;
+}
+
+const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate, openGoogleMaps }) => {
+    return (
+        <div className="p-6 space-y-5">
+            {/* Location */}
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                    <p className="text-xs text-slate-500 mb-1">Address</p>
+                    <p className="text-sm font-medium text-slate-900">
+                        {site.address && `${site.address}, `}
+                        {site.district && `${site.district}, `}
+                        {site.province}
+                    </p>
+                    <span className={`inline-flex items-center mt-2 px-2 py-0.5 rounded text-xs font-medium ${regionInfo?.color}`}>
+                        {regionInfo?.label}
+                    </span>
+                </div>
+                {site.latitude && site.longitude && (
+                    <button
+                        onClick={openGoogleMaps}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Open in Google Maps"
+                    >
+                        <ExternalLink className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+
+            {/* Description */}
+            {site.description && (
+                <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-2">Description</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">{site.description}</p>
+                </div>
+            )}
+
+            {/* History */}
+            {site.history && (
+                <div className="p-4 bg-amber-50 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="w-4 h-4 text-amber-600" />
+                        <p className="text-xs text-amber-700 font-medium">History</p>
+                    </div>
+                    <p className="text-sm text-slate-700 leading-relaxed">{site.history}</p>
+                </div>
+            )}
+
+            {/* Contact & Opening Hours */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Contact Info */}
+                {site.contact_info && (site.contact_info.phone || site.contact_info.email) && (
+                    <div className="p-4 bg-slate-50 rounded-xl">
+                        <p className="text-xs text-slate-500 mb-3">Contact</p>
+                        {site.contact_info.phone && (
+                            <div className="flex items-center gap-2 mb-2">
+                                <Phone className="w-4 h-4 text-green-600" />
+                                <span className="text-sm text-slate-700">{site.contact_info.phone}</span>
+                            </div>
+                        )}
+                        {site.contact_info.email && (
+                            <div className="flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm text-slate-700">{site.contact_info.email}</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Opening Hours */}
+                {site.opening_hours && Object.keys(site.opening_hours).length > 0 && (
+                    <div className="p-4 bg-slate-50 rounded-xl">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Clock className="w-4 h-4 text-slate-500" />
+                            <p className="text-xs text-slate-500">Opening Hours</p>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                            {Object.entries(site.opening_hours).map(([day, hours]) => (
+                                <div key={day} className="flex justify-between">
+                                    <span className="text-slate-500 capitalize">{day}</span>
+                                    <span className="text-slate-700 font-medium">{hours}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Created By & Dates */}
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                {site.created_by && (
+                    <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-slate-400" />
+                        <div>
+                            <p className="text-xs text-slate-500">Created by</p>
+                            <p className="text-sm font-medium text-slate-700">{site.created_by.full_name}</p>
+                        </div>
+                    </div>
+                )}
+                <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    <div>
+                        <p className="text-xs text-slate-500">Created at</p>
+                        <p className="text-sm font-medium text-slate-700">{formatDate(site.created_at)}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ============ LOCAL GUIDES TAB ============
+interface SiteLocalGuidesTabProps {
+    siteId: string;
+}
+
+const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteLocalGuidesResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(10);
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteLocalGuides(siteId, {
+                page: currentPage,
+                limit
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách Local Guides');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách Local Guides');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const guides = data?.guides || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} Local Guide đang làm việc tại site này
+                </p>
+            </div>
+
+            {/* Content */}
+            {guides.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Users className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có Local Guide
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Site này chưa có Local Guide nào được phân công
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Guides List */}
+                    <div className="space-y-3">
+                        {guides.map((guide: SiteLocalGuide) => (
+                            <div
+                                key={guide.id}
+                                className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                            >
+                                {/* Avatar */}
+                                {guide.avatar_url ? (
+                                    <img
+                                        src={guide.avatar_url}
+                                        alt={guide.full_name}
+                                        className="w-12 h-12 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                        <User className="w-6 h-6 text-white" />
+                                    </div>
+                                )}
+
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-slate-900">{guide.full_name}</h4>
+                                    <div className="flex items-center gap-4 mt-1">
+                                        <div className="flex items-center gap-1 text-sm text-slate-500">
+                                            <Mail className="w-3.5 h-3.5" />
+                                            <span className="truncate">{guide.email}</span>
+                                        </div>
+                                        {guide.phone && (
+                                            <div className="flex items-center gap-1 text-sm text-slate-500">
+                                                <Phone className="w-3.5 h-3.5" />
+                                                <span>{guide.phone}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Badge */}
+                                <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                                    Local Guide
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+// ============ SHIFTS TAB ============
+interface SiteShiftsTabProps {
+    siteId: string;
+}
+
+const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteShiftsResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(10);
+    const [statusFilter, setStatusFilter] = useState<ShiftSubmissionStatus | ''>('');
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteShifts(siteId, {
+                page: currentPage,
+                limit,
+                status: statusFilter || undefined
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách lịch trực');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách lịch trực');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit, statusFilter]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const getDayName = (dayOfWeek: number): string => {
+        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        return days[dayOfWeek] || `Day ${dayOfWeek}`;
+    };
+
+    const formatTime = (time: string): string => {
+        return time.substring(0, 5); // HH:mm
+    };
+
+    const getStatusBadge = (status: ShiftSubmissionStatus) => {
+        const configs = {
+            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
+            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
+            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+        };
+        return configs[status] || configs.pending;
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const submissions = data?.submissions || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header with Filter */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} đăng ký lịch trực
+                </p>
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as ShiftSubmissionStatus | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="approved">Đã duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Content */}
+            {submissions.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Clock className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có lịch trực
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Không có đăng ký lịch trực nào
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Submissions List */}
+                    <div className="space-y-3">
+                        {submissions.map((submission: SiteShiftSubmission) => {
+                            const statusBadge = getStatusBadge(submission.status);
+
+                            return (
+                                <div
+                                    key={submission.id}
+                                    className="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition-colors"
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                                <User className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-slate-900">{submission.guide.full_name}</h4>
+                                                <p className="text-xs text-slate-500">{submission.guide.email}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
+                                            {statusBadge.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Week Info */}
+                                    <div className="flex items-center gap-4 mb-3 text-sm text-slate-600">
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="w-4 h-4 text-slate-400" />
+                                            <span>Tuần {new Date(submission.week_start_date).toLocaleDateString('vi-VN')}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock className="w-4 h-4 text-slate-400" />
+                                            <span>{submission.total_shifts} ca</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Shifts */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {submission.shifts.map((shift) => (
+                                            <div
+                                                key={shift.id}
+                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs"
+                                            >
+                                                <span className="font-medium text-blue-600">{getDayName(shift.day_of_week)}</span>
+                                                <span className="text-slate-400">|</span>
+                                                <span className="text-slate-600">
+                                                    {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Rejection reason if rejected */}
+                                    {submission.status === 'rejected' && submission.rejection_reason && (
+                                        <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600">
+                                            <strong>Lý do từ chối:</strong> {submission.rejection_reason}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+// ============ MEDIA TAB ============
+interface SiteMediaTabProps {
+    siteId: string;
+}
+
+const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteMediaResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(12);
+    const [statusFilter, setStatusFilter] = useState<MediaStatus | ''>('');
+    const [typeFilter, setTypeFilter] = useState<MediaType | ''>('');
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteMedia(siteId, {
+                page: currentPage,
+                limit,
+                status: statusFilter || undefined,
+                type: typeFilter || undefined
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách media');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách media');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit, statusFilter, typeFilter]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const getStatusBadge = (status: MediaStatus) => {
+        const configs = {
+            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
+            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
+            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+        };
+        return configs[status] || configs.pending;
+    };
+
+    const getTypeBadge = (type: MediaType) => {
+        const configs = {
+            image: { color: 'bg-blue-100 text-blue-700', label: 'Hình ảnh', icon: Image },
+            video: { color: 'bg-purple-100 text-purple-700', label: 'Video', icon: Play },
+            panorama: { color: 'bg-amber-100 text-amber-700', label: 'Panorama', icon: Eye }
+        };
+        return configs[type] || configs.image;
+    };
+
+    const isYouTubeUrl = (url: string): boolean => {
+        return url.includes('youtube.com') || url.includes('youtu.be');
+    };
+
+    const getYouTubeThumbnail = (url: string): string => {
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+        if (match) {
+            return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+        }
+        return '';
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const mediaList = data?.media || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header with Filters */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} media files
+                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as MediaStatus | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="approved">Đã duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                    </select>
+                    <select
+                        value={typeFilter}
+                        onChange={(e) => {
+                            setTypeFilter(e.target.value as MediaType | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả loại</option>
+                        <option value="image">Hình ảnh</option>
+                        <option value="video">Video</option>
+                        <option value="panorama">Panorama</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Content */}
+            {mediaList.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Image className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có media
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Không có media nào
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Media Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {mediaList.map((media: SiteMedia) => {
+                            const statusBadge = getStatusBadge(media.status);
+                            const typeBadge = getTypeBadge(media.type);
+                            const TypeIcon = typeBadge.icon;
+
+                            const thumbnailUrl = media.type === 'video' && isYouTubeUrl(media.url)
+                                ? getYouTubeThumbnail(media.url)
+                                : media.type === 'image' || media.type === 'panorama'
+                                    ? media.url
+                                    : '';
+
+                            return (
+                                <div
+                                    key={media.id}
+                                    className="relative group rounded-xl overflow-hidden bg-slate-100 aspect-video cursor-pointer"
+                                    onClick={() => setPreviewUrl(media.url)}
+                                >
+                                    {/* Thumbnail */}
+                                    {thumbnailUrl ? (
+                                        <img
+                                            src={thumbnailUrl}
+                                            alt={media.caption || 'Media'}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                                            <TypeIcon className="w-8 h-8 text-slate-400" />
+                                        </div>
+                                    )}
+
+                                    {/* Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                    {/* Type Badge */}
+                                    <div className="absolute top-2 left-2">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${typeBadge.color}`}>
+                                            <TypeIcon className="w-3 h-3" />
+                                            {typeBadge.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Status Badge */}
+                                    <div className="absolute top-2 right-2">
+                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge.color}`}>
+                                            {statusBadge.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Video Play Button */}
+                                    {media.type === 'video' && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                                                <Play className="w-5 h-5 text-slate-700 ml-1" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Caption on hover */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {media.caption && (
+                                            <p className="text-xs text-white truncate">{media.caption}</p>
+                                        )}
+                                        <p className="text-xs text-white/70">{media.creator.full_name}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Preview Modal */}
+            {previewUrl && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setPreviewUrl(null)}
+                >
+                    <button
+                        onClick={() => setPreviewUrl(null)}
+                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                    >
+                        <X className="w-6 h-6 text-white" />
+                    </button>
+
+                    {isYouTubeUrl(previewUrl) ? (
+                        <iframe
+                            src={previewUrl.replace('watch?v=', 'embed/')}
+                            className="w-full max-w-4xl aspect-video rounded-lg"
+                            allowFullScreen
+                        />
+                    ) : (
+                        <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ============ SCHEDULES TAB ============
+interface SiteSchedulesTabProps {
+    siteId: string;
+}
+
+const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteSchedulesResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(20);
+    const [statusFilter, setStatusFilter] = useState<ScheduleStatus | ''>('');
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteSchedules(siteId, {
+                page: currentPage,
+                limit,
+                status: statusFilter || undefined
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách lịch lễ');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách lịch lễ');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit, statusFilter]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const getDayName = (dayOfWeek: number): string => {
+        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        return days[dayOfWeek] || `Day ${dayOfWeek}`;
+    };
+
+    const formatTime = (time: string): string => {
+        return time.substring(0, 5); // HH:mm
+    };
+
+    const getStatusBadge = (status: ScheduleStatus) => {
+        const configs = {
+            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
+            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
+            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+        };
+        return configs[status] || configs.pending;
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const schedules = data?.schedules || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header with Filter */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} lịch lễ
+                </p>
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as ScheduleStatus | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="approved">Đã duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Content */}
+            {schedules.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Calendar className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có lịch lễ
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Không có lịch lễ nào
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Schedules List */}
+                    <div className="space-y-3">
+                        {schedules.map((schedule: SiteSchedule) => {
+                            const statusBadge = getStatusBadge(schedule.status);
+
+                            return (
+                                <div
+                                    key={schedule.id}
+                                    className="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition-colors"
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                                <span className="text-white font-bold text-lg">{formatTime(schedule.time)}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-500 font-mono">{schedule.code}</p>
+                                                {schedule.note && (
+                                                    <h4 className="font-medium text-slate-900">{schedule.note}</h4>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
+                                            {statusBadge.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Days */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-xs text-slate-500">Ngày lễ:</span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {schedule.days_of_week.map((day) => (
+                                                <span
+                                                    key={day}
+                                                    className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded"
+                                                >
+                                                    {getDayName(day)}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Creator info */}
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <User className="w-3.5 h-3.5" />
+                                        <span>{schedule.creator.full_name}</span>
+                                    </div>
+
+                                    {/* Rejection reason if rejected */}
+                                    {schedule.status === 'rejected' && schedule.rejection_reason && (
+                                        <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600">
+                                            <strong>Lý do từ chối:</strong> {schedule.rejection_reason}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+// ============ EVENTS TAB ============
+interface SiteEventsTabProps {
+    siteId: string;
+}
+
+const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteEventsResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(10);
+    const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteEvents(siteId, {
+                page: currentPage,
+                limit,
+                status: statusFilter || undefined
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách sự kiện');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách sự kiện');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit, statusFilter]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const formatDate = (dateStr: string): string => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    const formatTime = (time: string): string => {
+        return time.substring(0, 5); // HH:mm
+    };
+
+    const getStatusBadge = (status: EventStatus) => {
+        const configs = {
+            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
+            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
+            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+        };
+        return configs[status] || configs.pending;
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const events = data?.events || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header with Filter */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} sự kiện
+                </p>
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as EventStatus | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="approved">Đã duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Content */}
+            {events.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Sparkles className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có sự kiện
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Không có sự kiện nào
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Events List */}
+                    <div className="space-y-4">
+                        {events.map((event: SiteEvent) => {
+                            const statusBadge = getStatusBadge(event.status);
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                                >
+                                    {/* Banner */}
+                                    {event.banner_url && (
+                                        <div className="relative h-32 bg-slate-100">
+                                            <img
+                                                src={event.banner_url}
+                                                alt={event.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute top-2 right-2">
+                                                <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
+                                                    {statusBadge.label}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Content */}
+                                    <div className="p-4">
+                                        {/* Header without banner */}
+                                        {!event.banner_url && (
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-xs text-slate-500 font-mono">{event.code}</span>
+                                                <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
+                                                    {statusBadge.label}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {event.banner_url && (
+                                            <p className="text-xs text-slate-500 font-mono mb-1">{event.code}</p>
+                                        )}
+
+                                        <h4 className="font-semibold text-slate-900 text-lg mb-2">{event.name}</h4>
+
+                                        {event.description && (
+                                            <p className="text-sm text-slate-600 mb-3 line-clamp-2">{event.description}</p>
+                                        )}
+
+                                        {/* Date & Time */}
+                                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 mb-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="w-4 h-4 text-slate-400" />
+                                                <span>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="w-4 h-4 text-slate-400" />
+                                                <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Location */}
+                                        {event.location && (
+                                            <div className="flex items-center gap-1.5 text-sm text-slate-600 mb-3">
+                                                <MapPin className="w-4 h-4 text-slate-400" />
+                                                <span>{event.location}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Creator */}
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <User className="w-3.5 h-3.5" />
+                                            <span>{event.creator.full_name}</span>
+                                        </div>
+
+                                        {/* Rejection reason */}
+                                        {event.status === 'rejected' && event.rejection_reason && (
+                                            <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600">
+                                                <strong>Lý do từ chối:</strong> {event.rejection_reason}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+// ============ NEARBY PLACES TAB ============
+interface SiteNearbyPlacesTabProps {
+    siteId: string;
+}
+
+const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<SiteNearbyPlacesResponse | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(10);
+    const [statusFilter, setStatusFilter] = useState<NearbyPlaceStatus | ''>('');
+    const [categoryFilter, setCategoryFilter] = useState<NearbyPlaceCategory | ''>('');
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await AdminService.getSiteNearbyPlaces(siteId, {
+                page: currentPage,
+                limit,
+                status: statusFilter || undefined,
+                category: categoryFilter || undefined
+            });
+
+            if (response.success && response.data) {
+                setData(response.data);
+            } else {
+                setError(response.message || 'Không thể tải danh sách địa điểm lân cận');
+            }
+        } catch (err: any) {
+            setError(err?.error?.message || 'Không thể tải danh sách địa điểm lân cận');
+        } finally {
+            setLoading(false);
+        }
+    }, [siteId, currentPage, limit, statusFilter, categoryFilter]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const getStatusBadge = (status: NearbyPlaceStatus) => {
+        const configs = {
+            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
+            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
+            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+        };
+        return configs[status] || configs.pending;
+    };
+
+    const getCategoryInfo = (category: NearbyPlaceCategory) => {
+        const configs = {
+            food: { color: 'bg-orange-100 text-orange-700', label: 'Ẩm thực', icon: '🍴' },
+            lodging: { color: 'bg-blue-100 text-blue-700', label: 'Lưu trú', icon: '🏨' },
+            medical: { color: 'bg-red-100 text-red-700', label: 'Y tế', icon: '🏥' }
+        };
+        return configs[category] || configs.food;
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            </div>
+        );
+    }
+
+    const places = data?.nearby_places || [];
+    const pagination = data?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+
+    return (
+        <div className="p-6 space-y-4">
+            {/* Header with Filters */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <p className="text-sm text-slate-500">
+                    {pagination?.total || 0} địa điểm
+                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as NearbyPlaceStatus | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="approved">Đã duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                    </select>
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => {
+                            setCategoryFilter(e.target.value as NearbyPlaceCategory | '');
+                            setCurrentPage(1);
+                        }}
+                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Tất cả loại</option>
+                        <option value="food">Ẩm thực</option>
+                        <option value="lodging">Lưu trú</option>
+                        <option value="medical">Y tế</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Content */}
+            {places.length === 0 ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <MapPin className="w-6 h-6 text-teal-600" />
+                    </div>
+                    <h3 className="font-medium text-slate-900 mb-1">
+                        Chưa có địa điểm lân cận
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                        Không có địa điểm nào
+                    </p>
+                </div>
+            ) : (
+                <>
+                    {/* Places List */}
+                    <div className="space-y-3">
+                        {places.map((place: SiteNearbyPlace) => {
+                            const statusBadge = getStatusBadge(place.status);
+                            const categoryInfo = getCategoryInfo(place.category);
+
+                            return (
+                                <div
+                                    key={place.id}
+                                    className="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition-colors"
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-xl">
+                                                {categoryInfo.icon}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`px-2 py-0.5 text-xs font-medium rounded ${categoryInfo.color}`}>
+                                                        {categoryInfo.label}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 font-mono">{place.code}</span>
+                                                </div>
+                                                <h4 className="font-semibold text-slate-900">{place.name}</h4>
+                                            </div>
+                                        </div>
+                                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
+                                            {statusBadge.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Description */}
+                                    {place.description && (
+                                        <p className="text-sm text-slate-600 mb-3">{place.description}</p>
+                                    )}
+
+                                    {/* Details */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        {place.address && (
+                                            <div className="flex items-center gap-1.5 text-slate-600">
+                                                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                                <span className="truncate">{place.address}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-1.5 text-slate-600">
+                                            <span className="text-slate-400">K/c:</span>
+                                            <span className="font-medium">{place.distance_meters}m</span>
+                                        </div>
+                                        {place.phone && (
+                                            <div className="flex items-center gap-1.5 text-slate-600">
+                                                <span className="text-slate-400">SĐT:</span>
+                                                <span>{place.phone}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Proposer */}
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-3">
+                                        <User className="w-3.5 h-3.5" />
+                                        <span>Đề xuất bởi: {place.proposer.full_name}</span>
+                                    </div>
+
+                                    {/* Rejection reason */}
+                                    {place.status === 'rejected' && place.rejection_reason && (
+                                        <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600">
+                                            <strong>Lý do từ chối:</strong> {place.rejection_reason}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-sm text-slate-500">
+                                Trang {currentPage} / {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
