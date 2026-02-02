@@ -80,8 +80,8 @@ function App() {
   // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent"></div>
+      <div className="min-h-screen bg-[#f5f3ee] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#d4af37] border-t-transparent"></div>
       </div>
     );
   }

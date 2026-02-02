@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Bell, ChevronRight, AlertTriangle } from 'lucide-react';
 import { User } from '../../../App';
 import { ActiveView } from '../Dashboard';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface TopBarProps {
   user: User;
@@ -17,25 +18,28 @@ export const TopBar: React.FC<TopBarProps> = ({
   onLogout,
   onViewChange,
 }) => {
+  const { language, setLanguage, t } = useLanguage();
+
   const getPageTitle = () => {
     const titles: Record<ActiveView, string> = {
-      dashboard: 'Dashboard',
-      sites: 'Sites Management',
-      mysite: 'My Site',
-      users: 'User Management',
-      verifications: 'Verification Requests',
-      sos: 'SOS Emergency Center',
-      guides: 'My Guides',
-      content: 'Content Review',
-      analytics: 'Site Analytics',
-      profile: 'Profile',
-      settings: 'Settings'
+      dashboard: t('menu.dashboard'),
+      sites: t('menu.sites'),
+      mysite: t('menu.mysite'),
+      users: t('menu.users'),
+      verifications: t('menu.verifications'),
+      sos: t('menu.sos'),
+      guides: t('menu.guides'),
+      content: t('menu.content'),
+      analytics: t('menu.analytics'),
+      profile: t('menu.profile'),
+      settings: t('menu.settings'),
+      shifts: t('menu.shifts')
     };
-    return titles[activeView] || 'Dashboard';
+    return titles[activeView] || t('menu.dashboard');
   };
 
   const getBreadcrumbs = () => {
-    const breadcrumbs = ['Dashboard'];
+    const breadcrumbs = [t('nav.dashboard')];
     if (activeView !== 'dashboard') {
       breadcrumbs.push(getPageTitle());
     }
@@ -43,7 +47,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-4">
+    <header className="bg-white border-b border-[#d4af37]/20 px-6 py-4 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Left side - Breadcrumbs */}
         <div className="flex items-center gap-2">
@@ -51,12 +55,12 @@ export const TopBar: React.FC<TopBarProps> = ({
             {getBreadcrumbs().map((crumb, index) => (
               <React.Fragment key={crumb}>
                 {index > 0 && (
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-[#8a6d1c]/50" />
                 )}
                 <span className={
                   index === getBreadcrumbs().length - 1
-                    ? 'font-semibold text-slate-900'
-                    : 'text-slate-600 hover:text-slate-900 cursor-pointer'
+                    ? 'font-semibold text-[#8a6d1c]'
+                    : 'text-gray-500 hover:text-[#8a6d1c] cursor-pointer'
                 }>
                   {crumb}
                 </span>
@@ -65,23 +69,34 @@ export const TopBar: React.FC<TopBarProps> = ({
           </nav>
         </div>
 
-        {/* Right side - Search, Notifications, User */}
+        {/* Right side - Language, Search, Notifications, User */}
         <div className="flex items-center gap-4">
-          {/* Global Search */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search sites, users, content..."
-              className="pl-10 pr-4 py-2 w-64 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
+          {/* Language Switcher */}
+          <div className="flex h-9 items-center justify-center rounded-lg bg-[#f5f3ee] p-1 border border-[#d4af37]/20">
+            <button
+              onClick={() => setLanguage('vi')}
+              className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'vi'
+                  ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
+                  : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
+                }`}
+            >
+              VI
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'en'
+                  ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
+                  : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
+                }`}
+            >
+              EN
+            </button>
           </div>
-
+          
           {/* Notifications */}
           <div className="relative">
-            <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative">
-              <Bell className="w-5 h-5 text-slate-600" />
-              {/* SOS Badge */}
+            <button className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors relative border border-[#d4af37]/20">
+              <Bell className="w-5 h-5 text-[#8a6d1c]" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-2 h-2 text-white" />
               </div>
@@ -90,39 +105,39 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           {/* User Menu */}
           <div className="relative group">
-            <button className="flex items-center gap-3 p-2 hover:bg-slate-100 rounded-lg transition-colors">
+            <button className="flex items-center gap-3 p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors border border-[#d4af37]/20">
               <img
                 src={user.avatar || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150'}
                 alt={user.name}
-                className="w-8 h-8 rounded-lg object-cover"
+                className="w-8 h-8 rounded-lg object-cover border border-[#d4af37]/30"
               />
               <div className="text-left">
-                <div className="text-sm font-medium text-slate-900">{user.name}</div>
-                <div className="text-xs text-slate-600 capitalize">{user.role}</div>
+                <div className="text-sm font-medium text-gray-800">{user.name}</div>
+                <div className="text-xs text-[#8a6d1c] capitalize">{user.role}</div>
               </div>
             </button>
 
             {/* Dropdown Menu */}
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#d4af37]/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="p-2">
                 <button
                   onClick={() => onViewChange('profile')}
-                  className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg"
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#d4af37]/10 hover:text-[#8a6d1c] rounded-lg transition-colors"
                 >
-                  Profile
+                  {t('common.profile')}
                 </button>
                 <button
                   onClick={() => onViewChange('settings')}
-                  className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg"
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#d4af37]/10 hover:text-[#8a6d1c] rounded-lg transition-colors"
                 >
-                  Settings
+                  {t('common.settings')}
                 </button>
-                <hr className="my-2 border-slate-200" />
+                <hr className="my-2 border-[#d4af37]/20" />
                 <button
                   onClick={onLogout}
-                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 >
-                  Sign Out
+                  {t('common.signOut')}
                 </button>
               </div>
             </div>

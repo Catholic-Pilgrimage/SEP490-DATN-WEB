@@ -104,15 +104,15 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     const roleInfo = getRoleInfo(user.role);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop - click để đóng modal */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
 
             {/* Modal container */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 my-8 overflow-hidden flex-shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
                     <div className="flex items-center gap-3">

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface SiteEditModalProps {
     site: SiteDetail | null;
@@ -27,6 +28,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     onClose,
     onSuccess
 }) => {
+    const { t } = useLanguage();
     // Form state
     const [formData, setFormData] = useState<UpdateSiteData>({});
     const [openingHours, setOpeningHours] = useState<SiteOpeningHours>({});
@@ -128,16 +130,16 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 my-8 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="text-white">
-                        <h2 className="text-lg font-semibold">Edit Site</h2>
+                        <h2 className="text-lg font-semibold">{t('modal.editSite')}</h2>
                         <p className="text-sm opacity-80">{site.code} - {site.name}</p>
                     </div>
                     <button onClick={onClose} className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
@@ -158,13 +160,13 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                     <div className="space-y-6">
                         {/* Basic Info Section */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Basic Information</h3>
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">{t('edit.basicInfo')}</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Name */}
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Name <span className="text-red-500">*</span>
+                                        {t('edit.name')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -172,39 +174,39 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         value={formData.name || ''}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                     />
                                 </div>
 
                                 {/* Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.type')}</label>
                                     <select
                                         name="type"
                                         value={formData.type || 'church'}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
-                                        <option value="church">Church</option>
-                                        <option value="shrine">Shrine</option>
-                                        <option value="monastery">Monastery</option>
-                                        <option value="center">Center</option>
-                                        <option value="other">Other</option>
+                                        <option value="church">{t('type.church')}</option>
+                                        <option value="shrine">{t('type.shrine')}</option>
+                                        <option value="monastery">{t('type.monastery')}</option>
+                                        <option value="center">{t('type.center')}</option>
+                                        <option value="other">{t('type.other')}</option>
                                     </select>
                                 </div>
 
                                 {/* Region */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.region')}</label>
                                     <select
                                         name="region"
                                         value={formData.region || 'Nam'}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
-                                        <option value="Bac">Miền Bắc</option>
-                                        <option value="Trung">Miền Trung</option>
-                                        <option value="Nam">Miền Nam</option>
+                                        <option value="Bac">{t('region.bac')}</option>
+                                        <option value="Trung">{t('region.trung')}</option>
+                                        <option value="Nam">{t('region.nam')}</option>
                                     </select>
                                 </div>
 
@@ -319,9 +321,9 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                 {imagePreview && (
                                     <img src={imagePreview} alt="Preview" className="w-32 h-24 object-cover rounded-lg border border-slate-200" />
                                 )}
-                                <label className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer">
-                                    <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                                    <span className="text-sm text-slate-500">Click to upload new image</span>
+                                <label className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#d4af37]/30 rounded-xl hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-colors cursor-pointer">
+                                    <Upload className="w-6 h-6 text-[#8a6d1c] mb-1" />
+                                    <span className="text-sm text-[#8a6d1c]">Click to upload new image</span>
                                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                 </label>
                             </div>
@@ -380,14 +382,14 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                         </div>
 
                         {/* Status */}
-                        <div className="pt-4 border-t border-slate-200">
+                        <div className="pt-4 border-t border-[#d4af37]/20">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     name="is_active"
                                     checked={formData.is_active || false}
                                     onChange={handleInputChange}
-                                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    className="w-5 h-5 rounded border-[#d4af37]/50 text-[#d4af37] focus:ring-[#d4af37]"
                                 />
                                 <span className="text-sm font-medium text-slate-700">Site is Active</span>
                             </label>
@@ -395,19 +397,19 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-200">
+                    <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                            className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
                         >
                             {loading ? (
                                 <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>

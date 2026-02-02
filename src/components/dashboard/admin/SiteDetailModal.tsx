@@ -138,26 +138,26 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
     const regionInfo = site ? getRegionInfo(site.region) : null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 my-8 max-h-[90vh] overflow-hidden flex flex-col border border-[#d4af37]/20 flex-shrink-0">
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-[#d4af37]/20 rounded-full shadow-lg transition-all hover:scale-110"
                 >
-                    <X className="w-5 h-5 text-slate-600" />
+                    <X className="w-5 h-5 text-[#8a6d1c]" />
                 </button>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-80">
-                        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
+                        <Loader2 className="w-10 h-10 animate-spin text-[#d4af37] mb-4" />
                         <p className="text-slate-500">Loading site details...</p>
                     </div>
                 ) : error ? (
@@ -166,7 +166,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                         <p className="text-red-600 text-center">{error}</p>
                         <button
                             onClick={fetchSiteDetail}
-                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="mt-4 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all"
                         >
                             Try Again
                         </button>
@@ -212,7 +212,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                         </div>
 
                         {/* Tabs Navigation */}
-                        <div className="bg-white border-b border-slate-200 px-4 flex-shrink-0">
+                        <div className="bg-white border-b border-[#d4af37]/20 px-4 flex-shrink-0">
                             <div className="flex items-center gap-1 overflow-x-auto">
                                 {tabs.map((tab) => {
                                     const Icon = tab.icon;
@@ -227,10 +227,10 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                                                 flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap
                                                 border-b-2 transition-colors
                                                 ${isActive
-                                                    ? 'border-blue-600 text-blue-600'
+                                                    ? 'border-[#d4af37] text-[#8a6d1c]'
                                                     : tab.disabled
                                                         ? 'border-transparent text-slate-300 cursor-not-allowed'
-                                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                                                        : 'border-transparent text-slate-500 hover:text-[#8a6d1c] hover:border-[#d4af37]/50'
                                                 }
                                             `}
                                         >
@@ -290,9 +290,9 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
     return (
         <div className="p-6 space-y-5">
             {/* Location */}
-            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+            <div className="flex items-start gap-3 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                    <MapPin className="w-5 h-5 text-[#8a6d1c]" />
                 </div>
                 <div className="flex-1">
                     <p className="text-xs text-slate-500 mb-1">Address</p>
@@ -308,7 +308,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                 {site.latitude && site.longitude && (
                     <button
                         onClick={openGoogleMaps}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-[#8a6d1c] hover:bg-[#d4af37]/20 rounded-lg transition-colors"
                         title="Open in Google Maps"
                     >
                         <ExternalLink className="w-4 h-4" />
@@ -318,7 +318,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
 
             {/* Description */}
             {site.description && (
-                <div className="p-4 bg-slate-50 rounded-xl">
+                <div className="p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
                     <p className="text-xs text-slate-500 mb-2">Description</p>
                     <p className="text-sm text-slate-700 leading-relaxed">{site.description}</p>
                 </div>
@@ -326,10 +326,10 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
 
             {/* History */}
             {site.history && (
-                <div className="p-4 bg-amber-50 rounded-xl">
+                <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20">
                     <div className="flex items-center gap-2 mb-2">
-                        <BookOpen className="w-4 h-4 text-amber-600" />
-                        <p className="text-xs text-amber-700 font-medium">History</p>
+                        <BookOpen className="w-4 h-4 text-[#8a6d1c]" />
+                        <p className="text-xs text-[#8a6d1c] font-medium">History</p>
                     </div>
                     <p className="text-sm text-slate-700 leading-relaxed">{site.history}</p>
                 </div>

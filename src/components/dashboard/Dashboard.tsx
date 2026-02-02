@@ -8,12 +8,13 @@ import { UserManagement } from './admin/UserManagement';
 import { VerificationRequests } from './admin/VerificationRequests';
 import { MySite } from './manager/MySite';
 import { LocalGuides } from './manager/LocalGuides';
-import { ShiftSubmissions } from './manager/ShiftSubmissions';  // Shift Submissions component
-import { ContentManagement } from './manager/ContentManagement';  // Content Management with tabs
+import { ShiftSubmissions } from './manager/ShiftSubmissions';
+import { ContentManagement } from './manager/ContentManagement';
 import { SOSCenter } from './shared/SOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 
 interface DashboardProps {
   user: User;
@@ -22,7 +23,7 @@ interface DashboardProps {
 
 export type ActiveView = 'dashboard' | 'sites' | 'mysite' | 'users' | 'verifications' | 'sos' | 'guides' | 'shifts' | 'content' | 'analytics' | 'profile' | 'settings';
 
-export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -55,9 +56,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         case 'guides':
           return <LocalGuides />;
         case 'shifts':
-          return <ShiftSubmissions />;  // Hiển Shift Submissions
+          return <ShiftSubmissions />;
         case 'content':
-          return <ContentManagement />;  // Content Management với tabs
+          return <ContentManagement />;
         case 'sos':
           return <SOSCenter />;
         case 'profile':
@@ -71,7 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="h-screen bg-slate-50 flex overflow-hidden">
+    <div className="h-screen bg-[#f5f3ee] flex overflow-hidden">
       <Sidebar
         user={user}
         activeView={activeView}
@@ -94,5 +95,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </main>
       </div>
     </div>
+  );
+};
+
+export const Dashboard: React.FC<DashboardProps> = (props) => {
+  return (
+    <LanguageProvider>
+      <DashboardContent {...props} />
+    </LanguageProvider>
   );
 };

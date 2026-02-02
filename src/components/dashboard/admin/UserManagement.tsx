@@ -19,8 +19,10 @@ import { AdminService } from '../../../services/admin.service';
 import { AdminUser, Pagination, UserListParams } from '../../../types/admin.types';
 import { UserDetailModal } from './UserDetailModal';
 import { UserEditModal } from './UserEditModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const UserManagement: React.FC = () => {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -156,10 +158,10 @@ export const UserManagement: React.FC = () => {
 
   const getRoleInfo = (role: string) => {
     const roles = {
-      admin: { label: 'Admin', icon: Crown, color: 'bg-purple-100 text-purple-700' },
-      manager: { label: 'Manager', icon: UserCheck, color: 'bg-blue-100 text-blue-700' },
-      pilgrim: { label: 'Pilgrim', icon: UserIcon, color: 'bg-amber-100 text-amber-700' },
-      local_guide: { label: 'Local Guide', icon: UserCheck, color: 'bg-green-100 text-green-700' }
+      admin: { label: t('role.admin'), icon: Crown, color: 'bg-purple-100 text-purple-700' },
+      manager: { label: t('role.manager'), icon: UserCheck, color: 'bg-blue-100 text-blue-700' },
+      pilgrim: { label: t('role.pilgrim'), icon: UserIcon, color: 'bg-amber-100 text-amber-700' },
+      local_guide: { label: t('role.localGuide'), icon: UserCheck, color: 'bg-green-100 text-green-700' }
     };
     return roles[role as keyof typeof roles] || roles.pilgrim;
   };
@@ -185,8 +187,8 @@ export const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-          <p className="text-slate-600 mt-1">Manage all users in the system</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t('users.title')}</h1>
+          <p className="text-slate-600 mt-1">{t('users.subtitle')}</p>
         </div>
         <button
           onClick={fetchUsers}
@@ -194,7 +196,7 @@ export const UserManagement: React.FC = () => {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('common.refresh')}
         </button>
       </div>
 
@@ -207,7 +209,7 @@ export const UserManagement: React.FC = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by email, name, or phone..."
+                placeholder={t('users.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -223,11 +225,11 @@ export const UserManagement: React.FC = () => {
               onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
               className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="pilgrim">Pilgrim</option>
-              <option value="local_guide">Local Guide</option>
+              <option value="">{t('users.allRoles')}</option>
+              <option value="admin">{t('role.admin')}</option>
+              <option value="manager">{t('role.manager')}</option>
+              <option value="pilgrim">{t('role.pilgrim')}</option>
+              <option value="local_guide">{t('role.localGuide')}</option>
             </select>
           </div>
 
@@ -237,9 +239,9 @@ export const UserManagement: React.FC = () => {
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="banned">Banned</option>
+            <option value="">{t('users.allStatus')}</option>
+            <option value="active">{t('status.active')}</option>
+            <option value="banned">{t('status.banned')}</option>
           </select>
         </div>
       </div>
@@ -260,20 +262,20 @@ export const UserManagement: React.FC = () => {
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-500">
             <UserIcon className="w-12 h-12 mb-4 text-slate-300" />
-            <p>No users found</p>
+            <p>{t('users.noUsers')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">User</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">Email</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">Phone</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">Role</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">Status</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">Created</th>
-                  <th className="text-right px-6 py-4 text-sm font-semibold text-slate-700">Actions</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.user')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.email')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.phone')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.role')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.status')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.created')}</th>
+                  <th className="text-right px-6 py-4 text-sm font-semibold text-slate-700">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -461,8 +463,8 @@ export const UserManagement: React.FC = () => {
                 onClick={handleConfirmToggleStatus}
                 disabled={statusLoading}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-colors disabled:opacity-50 ${userToToggle.status === 'active'
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-green-600 hover:bg-green-700'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-green-600 hover:bg-green-700'
                   }`}
               >
                 {statusLoading ? (

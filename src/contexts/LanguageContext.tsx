@@ -1,0 +1,386 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+type Language = 'vi' | 'en';
+
+interface LanguageContextType {
+    language: Language;
+    setLanguage: (lang: Language) => void;
+    t: (key: string) => string;
+}
+
+const translations: Record<Language, Record<string, string>> = {
+    vi: {
+        // Sidebar
+        'menu.dashboard': 'Tổng quan',
+        'menu.sites': 'Quản lý Sites',
+        'menu.mysite': 'Site của tôi',
+        'menu.users': 'Quản lý Users',
+        'menu.verifications': 'Xác minh',
+        'menu.sos': 'SOS Khẩn cấp',
+        'menu.guides': 'Hướng dẫn viên',
+        'menu.content': 'Duyệt nội dung',
+        'menu.analytics': 'Thống kê',
+        'menu.profile': 'Hồ sơ',
+        'menu.settings': 'Cài đặt',
+        'menu.shifts': 'Lịch trực',
+
+        // TopBar
+        'search.placeholder': 'Tìm kiếm sites, users, nội dung...',
+        'nav.dashboard': 'Tổng quan',
+
+        // Common
+        'common.profile': 'Hồ sơ',
+        'common.settings': 'Cài đặt',
+        'common.signOut': 'Đăng xuất',
+        'common.refresh': 'Làm mới',
+        'common.cancel': 'Hủy',
+        'common.save': 'Lưu thay đổi',
+        'common.delete': 'Xóa',
+        'common.edit': 'Chỉnh sửa',
+        'common.view': 'Xem',
+        'common.active': 'Hoạt động',
+        'common.inactive': 'Không hoạt động',
+        'portal.admin': 'Portal Quản trị',
+        'portal.manager': 'Portal Quản lý',
+
+        // Site Management
+        'sites.title': 'Quản lý Sites',
+        'sites.subtitle': 'Quản lý các điểm hành hương trên toàn Việt Nam',
+        'sites.searchPlaceholder': 'Tìm theo tên, mã, hoặc địa chỉ...',
+        'sites.allRegions': 'Tất cả vùng',
+        'sites.allTypes': 'Tất cả loại',
+        'sites.allStatus': 'Tất cả trạng thái',
+        'sites.noSites': 'Không tìm thấy site nào',
+        'sites.showing': 'Đang hiển thị',
+        'sites.to': 'đến',
+        'sites.of': 'trong tổng số',
+        'sites.sites': 'sites',
+
+        // Regions
+        'region.bac': 'Miền Bắc',
+        'region.trung': 'Miền Trung',
+        'region.nam': 'Miền Nam',
+
+        // Site Types
+        'type.church': 'Nhà thờ',
+        'type.shrine': 'Đền thánh',
+        'type.monastery': 'Tu viện',
+        'type.center': 'Trung tâm',
+        'type.other': 'Khác',
+
+        // Delete Modal
+        'delete.title': 'Xóa Site',
+        'delete.confirm': 'Bạn có chắc chắn muốn xóa site này? Hành động này sẽ đánh dấu site là không hoạt động.',
+        'delete.deleting': 'Đang xóa...',
+        'delete.deleteSite': 'Xóa Site',
+
+        // Edit Modal
+        'edit.title': 'Chỉnh sửa Site',
+        'edit.basicInfo': 'Thông tin cơ bản',
+        'edit.name': 'Tên',
+        'edit.type': 'Loại',
+        'edit.region': 'Vùng',
+        'edit.patronSaint': 'Bổn mạng',
+        'edit.description': 'Mô tả',
+        'edit.history': 'Lịch sử',
+        'edit.location': 'Vị trí',
+        'edit.address': 'Địa chỉ',
+        'edit.district': 'Quận/Huyện',
+        'edit.province': 'Tỉnh/Thành phố',
+        'edit.latitude': 'Vĩ độ',
+        'edit.longitude': 'Kinh độ',
+        'edit.coverImage': 'Ảnh bìa',
+        'edit.uploadImage': 'Nhấn để tải ảnh mới',
+        'edit.contactInfo': 'Thông tin liên hệ',
+        'edit.phone': 'Điện thoại',
+        'edit.email': 'Email',
+        'edit.openingHours': 'Giờ mở cửa',
+        'edit.siteActive': 'Site đang hoạt động',
+        'edit.saving': 'Đang lưu...',
+
+        // User Management
+        'users.title': 'Quản lý Người dùng',
+        'users.subtitle': 'Quản lý tất cả người dùng trong hệ thống',
+        'users.searchPlaceholder': 'Tìm theo email, tên, hoặc điện thoại...',
+        'users.allRoles': 'Tất cả vai trò',
+        'users.allStatus': 'Tất cả trạng thái',
+        'users.noUsers': 'Không tìm thấy người dùng',
+        'users.showing': 'Hiển thị',
+        'users.to': 'đến',
+        'users.of': 'trong tổng số',
+        'users.users': 'người dùng',
+
+        // Table Headers
+        'table.user': 'Người dùng',
+        'table.email': 'Email',
+        'table.phone': 'Điện thoại',
+        'table.role': 'Vai trò',
+        'table.status': 'Trạng thái',
+        'table.created': 'Ngày tạo',
+        'table.actions': 'Thao tác',
+
+        // User Roles
+        'role.admin': 'Quản trị viên',
+        'role.manager': 'Quản lý',
+        'role.pilgrim': 'Khách hành hương',
+        'role.localGuide': 'Hướng dẫn viên',
+
+        // User Status
+        'status.active': 'Hoạt động',
+        'status.banned': 'Bị khóa',
+
+        // Ban/Unban
+        'ban.title': 'Khóa tài khoản',
+        'unban.title': 'Mở khóa tài khoản',
+        'ban.confirm': 'Bạn có chắc chắn muốn khóa người dùng này? Họ sẽ không thể truy cập hệ thống.',
+        'unban.confirm': 'Bạn có chắc chắn muốn mở khóa người dùng này? Họ sẽ có thể truy cập hệ thống.',
+        'ban.processing': 'Đang xử lý...',
+        'ban.banUser': 'Khóa tài khoản',
+        'ban.unbanUser': 'Mở khóa',
+
+        // Modal Common
+        'modal.editSite': 'Chỉnh sửa Site',
+        'modal.siteDetails': 'Chi tiết Site',
+        'modal.loading': 'Đang tải...',
+        'modal.retry': 'Thử lại',
+        'modal.errorLoading': 'Không thể tải thông tin site',
+
+        // Days of Week
+        'day.monday': 'Thứ Hai',
+        'day.tuesday': 'Thứ Ba',
+        'day.wednesday': 'Thứ Tư',
+        'day.thursday': 'Thứ Năm',
+        'day.friday': 'Thứ Sáu',
+        'day.saturday': 'Thứ Bảy',
+        'day.sunday': 'Chủ Nhật',
+
+        // Detail Modal Tabs
+        'tab.info': 'Thông tin',
+        'tab.localGuides': 'Hướng dẫn viên',
+        'tab.shifts': 'Lịch trực',
+        'tab.media': 'Media',
+        'tab.schedules': 'Lịch lễ',
+        'tab.events': 'Sự kiện',
+        'tab.nearbyPlaces': 'Địa điểm lân cận',
+
+        // Detail Modal Info
+        'detail.typeLabel': 'Loại',
+        'detail.regionLabel': 'Vùng miền',
+        'detail.statusLabel': 'Trạng thái',
+        'detail.patronSaintLabel': 'Bổn mạng',
+        'detail.description': 'Mô tả',
+        'detail.history': 'Lịch sử',
+        'detail.location': 'Vị trí',
+        'detail.openInMaps': 'Mở trong Google Maps',
+        'detail.openingHours': 'Giờ mở cửa',
+        'detail.contact': 'Liên hệ',
+        'detail.createdAt': 'Ngày tạo',
+        'detail.updatedAt': 'Cập nhật',
+        'detail.noDescription': 'Không có mô tả',
+        'detail.noHistory': 'Không có lịch sử',
+        'detail.noData': 'Không có dữ liệu',
+    },
+    en: {
+        // Sidebar
+        'menu.dashboard': 'Dashboard',
+        'menu.sites': 'Sites Management',
+        'menu.mysite': 'My Site',
+        'menu.users': 'User Management',
+        'menu.verifications': 'Verifications',
+        'menu.sos': 'SOS Emergency',
+        'menu.guides': 'My Guides',
+        'menu.content': 'Content Review',
+        'menu.analytics': 'Analytics',
+        'menu.profile': 'Profile',
+        'menu.settings': 'Settings',
+        'menu.shifts': 'Shift Submissions',
+
+        // TopBar
+        'search.placeholder': 'Search sites, users, content...',
+        'nav.dashboard': 'Dashboard',
+
+        // Common
+        'common.profile': 'Profile',
+        'common.settings': 'Settings',
+        'common.signOut': 'Sign Out',
+        'common.refresh': 'Refresh',
+        'common.cancel': 'Cancel',
+        'common.save': 'Save Changes',
+        'common.delete': 'Delete',
+        'common.edit': 'Edit',
+        'common.view': 'View',
+        'common.active': 'Active',
+        'common.inactive': 'Inactive',
+        'portal.admin': 'Admin Portal',
+        'portal.manager': 'Manager Portal',
+
+        // Site Management
+        'sites.title': 'Site Management',
+        'sites.subtitle': 'Manage pilgrimage sites across Vietnam',
+        'sites.searchPlaceholder': 'Search by name, code, or address...',
+        'sites.allRegions': 'All Regions',
+        'sites.allTypes': 'All Types',
+        'sites.allStatus': 'All Status',
+        'sites.noSites': 'No sites found',
+        'sites.showing': 'Showing',
+        'sites.to': 'to',
+        'sites.of': 'of',
+        'sites.sites': 'sites',
+
+        // Regions
+        'region.bac': 'Northern',
+        'region.trung': 'Central',
+        'region.nam': 'Southern',
+
+        // Site Types
+        'type.church': 'Church',
+        'type.shrine': 'Shrine',
+        'type.monastery': 'Monastery',
+        'type.center': 'Center',
+        'type.other': 'Other',
+
+        // Delete Modal
+        'delete.title': 'Delete Site',
+        'delete.confirm': 'Are you sure you want to delete this site? This action will mark the site as inactive (soft delete).',
+        'delete.deleting': 'Deleting...',
+        'delete.deleteSite': 'Delete Site',
+
+        // Edit Modal
+        'edit.title': 'Edit Site',
+        'edit.basicInfo': 'Basic Information',
+        'edit.name': 'Name',
+        'edit.type': 'Type',
+        'edit.region': 'Region',
+        'edit.patronSaint': 'Patron Saint',
+        'edit.description': 'Description',
+        'edit.history': 'History',
+        'edit.location': 'Location',
+        'edit.address': 'Address',
+        'edit.district': 'District',
+        'edit.province': 'Province',
+        'edit.latitude': 'Latitude',
+        'edit.longitude': 'Longitude',
+        'edit.coverImage': 'Cover Image',
+        'edit.uploadImage': 'Click to upload new image',
+        'edit.contactInfo': 'Contact Info',
+        'edit.phone': 'Phone',
+        'edit.email': 'Email',
+        'edit.openingHours': 'Opening Hours',
+        'edit.siteActive': 'Site is Active',
+        'edit.saving': 'Saving...',
+
+        // User Management
+        'users.title': 'User Management',
+        'users.subtitle': 'Manage all users in the system',
+        'users.searchPlaceholder': 'Search by email, name, or phone...',
+        'users.allRoles': 'All Roles',
+        'users.allStatus': 'All Status',
+        'users.noUsers': 'No users found',
+        'users.showing': 'Showing',
+        'users.to': 'to',
+        'users.of': 'of',
+        'users.users': 'users',
+
+        // Table Headers
+        'table.user': 'User',
+        'table.email': 'Email',
+        'table.phone': 'Phone',
+        'table.role': 'Role',
+        'table.status': 'Status',
+        'table.created': 'Created',
+        'table.actions': 'Actions',
+
+        // User Roles
+        'role.admin': 'Admin',
+        'role.manager': 'Manager',
+        'role.pilgrim': 'Pilgrim',
+        'role.localGuide': 'Local Guide',
+
+        // User Status
+        'status.active': 'Active',
+        'status.banned': 'Banned',
+
+        // Ban/Unban
+        'ban.title': 'Ban User',
+        'unban.title': 'Unban User',
+        'ban.confirm': 'Are you sure you want to ban this user? They will not be able to access the system.',
+        'unban.confirm': 'Are you sure you want to unban this user? They will regain access to the system.',
+        'ban.processing': 'Processing...',
+        'ban.banUser': 'Ban User',
+        'ban.unbanUser': 'Unban User',
+
+        // Modal Common
+        'modal.editSite': 'Edit Site',
+        'modal.siteDetails': 'Site Details',
+        'modal.loading': 'Loading...',
+        'modal.retry': 'Retry',
+        'modal.errorLoading': 'Failed to load site information',
+
+        // Days of Week
+        'day.monday': 'Monday',
+        'day.tuesday': 'Tuesday',
+        'day.wednesday': 'Wednesday',
+        'day.thursday': 'Thursday',
+        'day.friday': 'Friday',
+        'day.saturday': 'Saturday',
+        'day.sunday': 'Sunday',
+
+        // Detail Modal Tabs
+        'tab.info': 'Info',
+        'tab.localGuides': 'Local Guides',
+        'tab.shifts': 'Shifts',
+        'tab.media': 'Media',
+        'tab.schedules': 'Schedules',
+        'tab.events': 'Events',
+        'tab.nearbyPlaces': 'Nearby Places',
+
+        // Detail Modal Info
+        'detail.typeLabel': 'Type',
+        'detail.regionLabel': 'Region',
+        'detail.statusLabel': 'Status',
+        'detail.patronSaintLabel': 'Patron Saint',
+        'detail.description': 'Description',
+        'detail.history': 'History',
+        'detail.location': 'Location',
+        'detail.openInMaps': 'Open in Google Maps',
+        'detail.openingHours': 'Opening Hours',
+        'detail.contact': 'Contact',
+        'detail.createdAt': 'Created',
+        'detail.updatedAt': 'Updated',
+        'detail.noDescription': 'No description',
+        'detail.noHistory': 'No history',
+        'detail.noData': 'No data available',
+    }
+};
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [language, setLanguageState] = useState<Language>(() => {
+        const saved = localStorage.getItem('language');
+        return (saved === 'en' || saved === 'vi') ? saved : 'vi';
+    });
+
+    const setLanguage = (lang: Language) => {
+        setLanguageState(lang);
+        localStorage.setItem('language', lang);
+    };
+
+    const t = (key: string): string => {
+        return translations[language][key] || key;
+    };
+
+    return (
+        <LanguageContext.Provider value={{ language, setLanguage, t }}>
+            {children}
+        </LanguageContext.Provider>
+    );
+};
+
+export const useLanguage = () => {
+    const context = useContext(LanguageContext);
+    if (!context) {
+        throw new Error('useLanguage must be used within a LanguageProvider');
+    }
+    return context;
+};

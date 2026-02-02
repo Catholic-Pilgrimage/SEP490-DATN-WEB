@@ -99,15 +99,15 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
     const RoleIcon = roleInfo?.icon || UserIcon;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 my-8 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex-shrink-0">
                 {/* Close button */}
                 <button
                     onClick={onClose}

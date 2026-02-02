@@ -24,39 +24,33 @@ import { AdminService } from '../../../services/admin.service';
 import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail } from '../../../types/admin.types';
 import { SiteDetailModal } from './SiteDetailModal';
 import { SiteEditModal } from './SiteEditModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const SiteManagement: React.FC = () => {
+  const { t } = useLanguage();
   const [sites, setSites] = useState<AdminSite[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter states
   const [search, setSearch] = useState('');
   const [regionFilter, setRegionFilter] = useState<SiteRegion | ''>('');
   const [typeFilter, setTypeFilter] = useState<SiteType | ''>('');
   const [activeFilter, setActiveFilter] = useState<boolean | ''>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(9); // 3x3 grid
+  const [limit] = useState(9);
 
-  // Detail modal states
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
-  // Edit modal states
   const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
-  // Delete states
   const [siteToDelete, setSiteToDelete] = useState<AdminSite | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  // Restore states
   const [restoreLoading, setRestoreLoading] = useState<string | null>(null);
 
-  // Debounce search
   const [searchDebounce, setSearchDebounce] = useState('');
 
   useEffect(() => {
@@ -72,11 +66,7 @@ export const SiteManagement: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const params: SiteListParams = {
-        page: currentPage,
-        limit: limit,
-      };
-
+      const params: SiteListParams = { page: currentPage, limit };
       if (searchDebounce) params.search = searchDebounce;
       if (regionFilter) params.region = regionFilter;
       if (typeFilter) params.type = typeFilter;
@@ -109,20 +99,20 @@ export const SiteManagement: React.FC = () => {
 
   const getTypeInfo = (type: SiteType) => {
     const types = {
-      church: { label: 'Church', icon: Church, color: 'bg-blue-100 text-blue-700' },
-      shrine: { label: 'Shrine', icon: Mountain, color: 'bg-purple-100 text-purple-700' },
-      monastery: { label: 'Monastery', icon: Building, color: 'bg-amber-100 text-amber-700' },
-      center: { label: 'Center', icon: Home, color: 'bg-green-100 text-green-700' },
-      other: { label: 'Other', icon: HelpCircle, color: 'bg-slate-100 text-slate-700' }
+      church: { label: t('type.church'), icon: Church, color: 'bg-[#d4af37]/10 text-[#8a6d1c] border border-[#d4af37]/30' },
+      shrine: { label: t('type.shrine'), icon: Mountain, color: 'bg-purple-50 text-purple-700 border border-purple-200' },
+      monastery: { label: t('type.monastery'), icon: Building, color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+      center: { label: t('type.center'), icon: Home, color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+      other: { label: t('type.other'), icon: HelpCircle, color: 'bg-gray-50 text-gray-700 border border-gray-200' }
     };
     return types[type] || types.other;
   };
 
   const getRegionInfo = (region: SiteRegion) => {
     const regions = {
-      Bac: { label: 'Miền Bắc', color: 'bg-red-50 text-red-600 border-red-200' },
-      Trung: { label: 'Miền Trung', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
-      Nam: { label: 'Miền Nam', color: 'bg-blue-50 text-blue-600 border-blue-200' }
+      Bac: { label: t('region.bac'), color: 'bg-red-50 text-red-700 border-red-200' },
+      Trung: { label: t('region.trung'), color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+      Nam: { label: t('region.nam'), color: 'bg-blue-50 text-blue-700 border-blue-200' }
     };
     return regions[region] || regions.Nam;
   };
@@ -132,66 +122,62 @@ export const SiteManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Site Management</h1>
-          <p className="text-slate-600 mt-1">Manage pilgrimage sites across Vietnam</p>
+          <h1 className="text-2xl font-serif font-bold text-[#8a6d1c]">{t('sites.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('sites.subtitle')}</p>
         </div>
         <button
           onClick={fetchSites}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('common.refresh')}
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-4">
-          {/* Search */}
           <div className="flex-1 min-w-[250px]">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
               <input
                 type="text"
-                placeholder="Search by name, code, or address..."
+                placeholder={t('sites.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
               />
             </div>
           </div>
 
-          {/* Region Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-slate-400" />
+            <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
             <select
               value={regionFilter}
               onChange={(e) => { setRegionFilter(e.target.value as SiteRegion | ''); setCurrentPage(1); }}
-              className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
             >
-              <option value="">All Regions</option>
-              <option value="Bac">Miền Bắc</option>
-              <option value="Trung">Miền Trung</option>
-              <option value="Nam">Miền Nam</option>
+              <option value="">{t('sites.allRegions')}</option>
+              <option value="Bac">{t('region.bac')}</option>
+              <option value="Trung">{t('region.trung')}</option>
+              <option value="Nam">{t('region.nam')}</option>
             </select>
           </div>
 
-          {/* Type Filter */}
           <select
             value={typeFilter}
             onChange={(e) => { setTypeFilter(e.target.value as SiteType | ''); setCurrentPage(1); }}
-            className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
           >
-            <option value="">All Types</option>
-            <option value="church">Church</option>
-            <option value="shrine">Shrine</option>
-            <option value="monastery">Monastery</option>
-            <option value="center">Center</option>
-            <option value="other">Other</option>
+            <option value="">{t('sites.allTypes')}</option>
+            <option value="church">{t('type.church')}</option>
+            <option value="shrine">{t('type.shrine')}</option>
+            <option value="monastery">{t('type.monastery')}</option>
+            <option value="center">{t('type.center')}</option>
+            <option value="other">{t('type.other')}</option>
           </select>
 
-          {/* Active Filter */}
           <select
             value={activeFilter === '' ? '' : activeFilter.toString()}
             onChange={(e) => {
@@ -199,31 +185,32 @@ export const SiteManagement: React.FC = () => {
               setActiveFilter(val === '' ? '' : val === 'true');
               setCurrentPage(1);
             }}
-            className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
           >
-            <option value="">All Status</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
+            <option value="">{t('sites.allStatus')}</option>
+            <option value="true">{t('common.active')}</option>
+            <option value="false">{t('common.inactive')}</option>
           </select>
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
           {error}
         </div>
       )}
 
       {/* Sites Grid */}
       {loading ? (
-        <div className="flex items-center justify-center h-64 bg-white rounded-2xl shadow-sm border border-slate-200">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
         </div>
       ) : sites.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-500">
-          <MapPin className="w-12 h-12 mb-4 text-slate-300" />
-          <p>No sites found</p>
+        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20 text-gray-400">
+          <MapPin className="w-12 h-12 mb-4 text-[#d4af37]/40" />
+          <p>{t('sites.noSites')}</p>
         </div>
       ) : (
         <>
@@ -236,7 +223,7 @@ export const SiteManagement: React.FC = () => {
               return (
                 <div
                   key={site.id}
-                  className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                  className="bg-white rounded-2xl border border-[#d4af37]/20 overflow-hidden hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300 group"
                 >
                   {/* Cover Image */}
                   <div className="relative h-48 overflow-hidden">
@@ -247,21 +234,21 @@ export const SiteManagement: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                        <MapPin className="w-12 h-12 text-slate-400" />
+                      <div className="w-full h-full bg-gradient-to-br from-[#f5f3ee] to-[#e8e4db] flex items-center justify-center">
+                        <Church className="w-12 h-12 text-[#d4af37]/40" />
                       </div>
                     )}
 
                     {/* Status badge */}
                     <div className="absolute top-3 left-3">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${site.is_active
-                        ? 'bg-green-500/90 text-white'
-                        : 'bg-red-500/90 text-white'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}>
                         {site.is_active ? (
-                          <><CheckCircle className="w-3 h-3" /> Active</>
+                          <><CheckCircle className="w-3 h-3" /> {t('common.active')}</>
                         ) : (
-                          <><XCircle className="w-3 h-3" /> Inactive</>
+                          <><XCircle className="w-3 h-3" /> {t('common.inactive')}</>
                         )}
                       </span>
                     </div>
@@ -274,21 +261,17 @@ export const SiteManagement: React.FC = () => {
                     </div>
 
                     {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            setSelectedSiteId(site.id);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                          onClick={() => { setSelectedSiteId(site.id); setIsDetailModalOpen(true); }}
+                          className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
                           title="View"
                         >
-                          <Eye className="w-5 h-5 text-blue-600" />
+                          <Eye className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
                         </button>
                         <button
                           onClick={async () => {
-                            // Load site detail trước khi mở edit modal
                             setEditLoading(true);
                             try {
                               const response = await AdminService.getSiteById(site.id);
@@ -302,52 +285,45 @@ export const SiteManagement: React.FC = () => {
                               setEditLoading(false);
                             }
                           }}
-                          className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                          className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
                           title="Edit"
                           disabled={editLoading}
                         >
                           {editLoading ? (
-                            <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+                            <Loader2 className="w-5 h-5 text-[#8a6d1c] animate-spin" />
                           ) : (
-                            <Edit className="w-5 h-5 text-amber-600" />
+                            <Edit className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
                           )}
                         </button>
                         <button
-                          onClick={() => {
-                            setSiteToDelete(site);
-                            setIsDeleteConfirmOpen(true);
-                          }}
-                          className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                          onClick={() => { setSiteToDelete(site); setIsDeleteConfirmOpen(true); }}
+                          className="p-3 bg-white border border-red-300 rounded-full shadow-lg hover:scale-110 hover:bg-red-500 transition-all group/btn"
                           title="Delete"
                         >
-                          <Trash2 className="w-5 h-5 text-red-600" />
+                          <Trash2 className="w-5 h-5 text-red-500 group-hover/btn:text-white" />
                         </button>
-                        {/* Restore button - only show for inactive sites */}
                         {!site.is_active && (
                           <button
                             onClick={async () => {
                               setRestoreLoading(site.id);
                               try {
                                 const response = await AdminService.restoreSite(site.id);
-                                if (response.success) {
-                                  fetchSites();
-                                } else {
-                                  setError(response.message || 'Failed to restore site');
-                                }
+                                if (response.success) fetchSites();
+                                else setError(response.message || 'Failed to restore site');
                               } catch (err: any) {
                                 setError(err?.error?.message || 'Failed to restore site');
                               } finally {
                                 setRestoreLoading(null);
                               }
                             }}
-                            className="p-3 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                            className="p-3 bg-white border border-emerald-300 rounded-full shadow-lg hover:scale-110 hover:bg-emerald-500 transition-all group/btn"
                             title="Restore"
                             disabled={restoreLoading === site.id}
                           >
                             {restoreLoading === site.id ? (
-                              <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
+                              <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
                             ) : (
-                              <RotateCcw className="w-5 h-5 text-green-600" />
+                              <RotateCcw className="w-5 h-5 text-emerald-500 group-hover/btn:text-white" />
                             )}
                           </button>
                         )}
@@ -357,9 +333,8 @@ export const SiteManagement: React.FC = () => {
 
                   {/* Content */}
                   <div className="p-5">
-                    {/* Code & Type */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                      <span className="text-xs font-mono text-[#8a6d1c] bg-[#d4af37]/10 px-2 py-1 rounded border border-[#d4af37]/20">
                         {site.code}
                       </span>
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
@@ -368,21 +343,14 @@ export const SiteManagement: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Name */}
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2 line-clamp-1">
-                      {site.name}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{site.name}</h3>
 
-                    {/* Patron Saint */}
                     {site.patron_saint && (
-                      <p className="text-sm text-slate-500 mb-2 line-clamp-1">
-                        🙏 {site.patron_saint}
-                      </p>
+                      <p className="text-sm text-[#8a6d1c] mb-2 line-clamp-1">🙏 {site.patron_saint}</p>
                     )}
 
-                    {/* Address */}
-                    <div className="flex items-start gap-2 text-sm text-slate-600">
-                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-slate-400" />
+                    <div className="flex items-start gap-2 text-sm text-gray-500">
+                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#d4af37]" />
                       <span className="line-clamp-2">
                         {site.address && `${site.address}, `}
                         {site.district && `${site.district}, `}
@@ -397,37 +365,32 @@ export const SiteManagement: React.FC = () => {
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl shadow-sm border border-slate-200">
-              <div className="text-sm text-slate-600">
+            <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl border border-[#d4af37]/20">
+              <div className="text-sm text-gray-500">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} sites
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                     let pageNum: number;
-                    if (pagination.totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= pagination.totalPages - 2) {
-                      pageNum = pagination.totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
+                    if (pagination.totalPages <= 5) pageNum = i + 1;
+                    else if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= pagination.totalPages - 2) pageNum = pagination.totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
                     return (
                       <button
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
-                        className={`w-10 h-10 rounded-lg text-sm font-medium ${currentPage === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-slate-200 hover:bg-slate-100'
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                          ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md'
+                          : 'border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10'
                           }`}
                       >
                         {pageNum}
@@ -438,7 +401,7 @@ export const SiteManagement: React.FC = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === pagination.totalPages}
-                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -448,27 +411,18 @@ export const SiteManagement: React.FC = () => {
         </>
       )}
 
-      {/* Site Detail Modal */}
+      {/* Modals */}
       <SiteDetailModal
         siteId={selectedSiteId}
         isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedSiteId(null);
-        }}
+        onClose={() => { setIsDetailModalOpen(false); setSelectedSiteId(null); }}
       />
 
-      {/* Site Edit Modal */}
       <SiteEditModal
         site={siteForEdit}
         isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSiteForEdit(null);
-        }}
-        onSuccess={() => {
-          fetchSites(); // Refresh list after edit
-        }}
+        onClose={() => { setIsEditModalOpen(false); setSiteForEdit(null); }}
+        onSuccess={() => fetchSites()}
       />
 
       {/* Delete Confirm Dialog */}
@@ -478,24 +432,24 @@ export const SiteManagement: React.FC = () => {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
           />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-white border border-[#d4af37]/30 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 rounded-full bg-red-100">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="p-3 rounded-full bg-red-50 border border-red-200">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Delete Site</h3>
-                <p className="text-sm text-slate-500">{siteToDelete.code} - {siteToDelete.name}</p>
+                <h3 className="text-lg font-semibold text-gray-800">Delete Site</h3>
+                <p className="text-sm text-[#8a6d1c]">{siteToDelete.code} - {siteToDelete.name}</p>
               </div>
             </div>
-            <p className="text-slate-600 mb-6">
+            <p className="text-gray-600 mb-6">
               Are you sure you want to delete this site? This action will mark the site as inactive (soft delete).
             </p>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
                 disabled={deleteLoading}
-                className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -504,11 +458,8 @@ export const SiteManagement: React.FC = () => {
                   try {
                     setDeleteLoading(true);
                     const response = await AdminService.deleteSite(siteToDelete.id);
-                    if (response.success) {
-                      fetchSites();
-                    } else {
-                      setError(response.message || 'Failed to delete site');
-                    }
+                    if (response.success) fetchSites();
+                    else setError(response.message || 'Failed to delete site');
                   } catch (err: any) {
                     setError(err?.error?.message || 'Failed to delete site');
                   } finally {
@@ -518,7 +469,7 @@ export const SiteManagement: React.FC = () => {
                   }
                 }}
                 disabled={deleteLoading}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
               >
                 {deleteLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>

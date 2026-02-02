@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Loader2, Eye, EyeOff, Mail, Lock, LogIn, Church, Check } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
 
@@ -13,7 +13,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [shake, setShake] = useState(false);
+  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,30 +26,29 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       const loginResponse = await AuthService.login({ email, password });
 
       if (loginResponse.success && loginResponse.data) {
-        // Fetch user profile after successful login
         const profileResponse = await AuthService.getProfile();
 
         if (profileResponse.success && profileResponse.data) {
           onLogin(profileResponse.data);
         } else {
-          triggerError('Không thể lấy thông tin người dùng');
+          triggerError(language === 'vi' ? 'Không thể lấy thông tin người dùng' : 'Unable to get user information');
         }
       } else {
-        triggerError(loginResponse.error?.message || 'Đăng nhập thất bại');
+        triggerError(loginResponse.error?.message || (language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed'));
       }
     } catch (err: any) {
       console.error('Login error:', err);
 
       if (err.status === 401) {
-        triggerError('Email hoặc mật khẩu không đúng');
+        triggerError(language === 'vi' ? 'Email hoặc mật khẩu không đúng' : 'Invalid email or password');
       } else if (err.status === 403) {
-        triggerError('Tài khoản của bạn đã bị khóa');
+        triggerError(language === 'vi' ? 'Tài khoản của bạn đã bị khóa' : 'Your account has been locked');
       } else if (err.status === 500) {
-        triggerError('Lỗi server. Vui lòng thử lại sau.');
+        triggerError(language === 'vi' ? 'Lỗi server. Vui lòng thử lại sau.' : 'Server error. Please try again later.');
       } else if (err.error?.message) {
         triggerError(err.error.message);
       } else {
-        triggerError('Không thể kết nối đến server.');
+        triggerError(language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
       }
     } finally {
       setLoading(false);
@@ -60,79 +61,201 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setTimeout(() => setShake(false), 500);
   };
 
-  const fillDemoCredentials = () => {
-    setEmail('admin@gmail.com');
-    setPassword('Admin@123');
-    setError('');
+  const texts = {
+    vi: {
+      welcome: 'Chào Mừng Trở Lại',
+      subtitle: 'Đăng nhập để truy cập hệ thống quản trị.',
+      emailLabel: 'Email hoặc Tên đăng nhập',
+      emailPlaceholder: 'admin@pilgrimage.vn',
+      passwordLabel: 'Mật khẩu',
+      passwordPlaceholder: '••••••••',
+      rememberMe: 'Ghi nhớ đăng nhập',
+      forgotPassword: 'Quên mật khẩu?',
+      signIn: 'Đăng Nhập',
+      signingIn: 'Đang đăng nhập...',
+      quote: '"Ta đã chọn và thánh hiến đền thờ này để danh Ta ở đó mãi mãi."',
+      quoteSource: '— 2 Sử Ký 7:16',
+      copyright: '© 2026 Catholic Pilgrimage Guide. Bản quyền được bảo lưu.',
+      privacy: 'Chính sách bảo mật',
+      terms: 'Điều khoản sử dụng',
+    },
+    en: {
+      welcome: 'Welcome Back',
+      subtitle: 'Enter your credentials to access the admin sanctuary.',
+      emailLabel: 'Email or Username',
+      emailPlaceholder: 'admin@pilgrimage.vn',
+      passwordLabel: 'Password',
+      passwordPlaceholder: '••••••••',
+      rememberMe: 'Remember me',
+      forgotPassword: 'Forgot password?',
+      signIn: 'Sign In',
+      signingIn: 'Signing in...',
+      quote: '"I have chosen and consecrated this temple so that my Name may be there forever."',
+      quoteSource: '— 2 Chronicles 7:16',
+      copyright: '© 2026 Catholic Pilgrimage Guide. All rights reserved.',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+    }
   };
 
+  const t = texts[language];
+
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+    <div className="min-h-screen flex w-full bg-[#1a1610]">
+      {/* Left Panel - Image & Quote */}
+      <div className="hidden lg:flex w-1/2 relative border-r border-[#aa8c30]/30">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=1920&auto=format&fit=crop')`
+          }}
+        />
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1610]/95 via-[#1a1610]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
+
+        {/* Quote & Branding */}
+        <div className="absolute bottom-0 left-0 p-16 w-full text-white z-10">
+          <blockquote className="border-l-4 border-[#d4af37] pl-6 mb-6">
+            <p className="text-xl font-serif italic opacity-90 leading-relaxed text-[#fdf5e6]" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              {t.quote}
+            </p>
+            <footer className="text-sm mt-2 text-[#d4af37] font-medium">{t.quoteSource}</footer>
+          </blockquote>
+          <h2 className="text-4xl font-serif font-bold tracking-tight text-white mb-2" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+            Catholic Pilgrimage Guide
+          </h2>
+          <div className="flex items-center gap-2 text-[#d4af37]/80">
+            <Check className="w-4 h-4" />
+            <p className="text-sm font-medium tracking-wide uppercase">Web Administration Portal v2.4</p>
+          </div>
+        </div>
       </div>
 
-      {/* Login Card */}
-      <div className={`max-w-md w-full animate-fadeIn ${shake ? 'animate-shake' : ''}`}>
-        <div className="glass rounded-3xl p-8 shadow-2xl">
-          {/* Logo & Title */}
-          <div className="text-center mb-8 animate-slideIn">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mb-6 shadow-lg animate-pulse-glow">
-              <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 2v20M5 8h14" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+      {/* Right Panel - Login Form */}
+      <div
+        className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 relative bg-cover bg-center"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1507692812060-98338d07aca3?q=80&w=1920&auto=format&fit=crop')`
+        }}
+      >
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-[#2a2216]/95 backdrop-blur-[2px]" />
+
+        {/* Language Switcher */}
+        <div className="absolute top-8 right-8 z-20">
+          <div className="flex h-10 items-center justify-center rounded-lg bg-black/20 p-1 border border-[#d4af37]/20 backdrop-blur-sm">
+            <button
+              onClick={() => setLanguage('vi')}
+              className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'vi'
+                ? 'bg-[#d4af37] text-black shadow-md'
+                : 'text-[#d4af37]/70 hover:text-[#d4af37]'
+                }`}
+            >
+              Tiếng Việt
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'en'
+                ? 'bg-[#d4af37] text-black shadow-md'
+                : 'text-[#d4af37]/70 hover:text-[#d4af37]'
+                }`}
+            >
+              English
+            </button>
+          </div>
+        </div>
+
+        {/* Form Container */}
+        <div className={`w-full max-w-[440px] space-y-8 relative z-10 ${shake ? 'animate-shake' : ''}`}>
+          {/* Header */}
+          <div className="text-center lg:text-left animate-fadeIn">
+            <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
+              <div className="bg-gradient-to-br from-[#d4af37] to-[#8a6d1c] p-3 rounded-lg shadow-lg shadow-[#d4af37]/20">
+                <Church className="w-8 h-8 text-white" />
+              </div>
+              <span className="text-white font-serif font-bold text-2xl tracking-wide">Pilgrimage Guide</span>
             </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
-              Pilgrimage Guide
+            <h1 className="text-[#d4af37] text-4xl font-serif font-bold tracking-tight mb-2">
+              {t.welcome}
             </h1>
-            <p className="text-slate-400">Dashboard Portal</p>
+            <p className="text-gray-400 text-sm">{t.subtitle}</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 mb-6 animate-slideIn">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-300">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
-            <div className="relative animate-slideIn" style={{ animationDelay: '0.1s' }}>
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 input-glow transition-all duration-300"
-                placeholder="Email Address"
-                required
-                disabled={loading}
-              />
+            <div className="space-y-2 group animate-slideIn" style={{ animationDelay: '0.1s' }}>
+              <label className="text-[#d4af37]/90 text-xs font-medium tracking-wide uppercase" htmlFor="email">
+                {t.emailLabel}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]/50 transition-colors group-focus-within:text-[#d4af37]" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex h-12 w-full rounded-lg border border-[#d4af37]/30 bg-black/30 px-3 py-2 pl-10 text-sm placeholder:text-gray-500 text-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-inner hover:border-[#d4af37]/50"
+                  placeholder={t.emailPlaceholder}
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             {/* Password Input */}
-            <div className="relative animate-slideIn" style={{ animationDelay: '0.2s' }}>
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 input-glow transition-all duration-300"
-                placeholder="Password"
-                required
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            <div className="space-y-2 group animate-slideIn" style={{ animationDelay: '0.2s' }}>
+              <label className="text-[#d4af37]/90 text-xs font-medium tracking-wide uppercase" htmlFor="password">
+                {t.passwordLabel}
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]/50 transition-colors group-focus-within:text-[#d4af37]" />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="flex h-12 w-full rounded-lg border border-[#d4af37]/30 bg-black/30 px-3 py-2 pl-10 pr-12 text-sm placeholder:text-gray-500 text-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-inner hover:border-[#d4af37]/50"
+                  placeholder={t.passwordPlaceholder}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#d4af37]/50 hover:text-[#d4af37] focus:outline-none transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between animate-slideIn" style={{ animationDelay: '0.3s' }}>
+              <div className="flex items-center space-x-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-[#d4af37]/40 text-[#d4af37] bg-black/30 focus:ring-[#d4af37] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="remember" className="text-sm font-medium leading-none text-gray-400 hover:text-[#d4af37] transition-colors cursor-pointer select-none">
+                  {t.rememberMe}
+                </label>
+              </div>
+              <button type="button" className="text-sm font-semibold text-[#d4af37] hover:text-white transition-colors underline decoration-[#d4af37]/30 hover:decoration-[#d4af37]">
+                {t.forgotPassword}
               </button>
             </div>
 
@@ -140,54 +263,35 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 btn-glow transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed animate-slideIn"
-              style={{ animationDelay: '0.3s' }}
+              className="relative overflow-hidden inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-black hover:brightness-110 h-12 w-full shadow-lg shadow-[#d4af37]/10 tracking-widest uppercase border border-[#d4af37]/50 animate-slideIn"
+              style={{ animationDelay: '0.4s' }}
             >
               {loading ? (
-                <>
+                <span className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Đang đăng nhập...</span>
-                </>
+                  {t.signingIn}
+                </span>
               ) : (
-                <>
-                  <span>Sign In</span>
-                  <ChevronRight className="w-5 h-5" />
-                </>
+                <span className="flex items-center gap-2">
+                  {t.signIn}
+                  <LogIn className="w-5 h-5" />
+                </span>
               )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-slate-500 text-sm">hoặc</span>
-            <div className="flex-1 h-px bg-white/10"></div>
-          </div>
-
-          {/* Demo Login */}
-          <button
-            type="button"
-            onClick={fillDemoCredentials}
-            disabled={loading}
-            className="w-full py-3 border border-white/10 rounded-xl text-slate-300 hover:bg-white/5 hover:border-amber-500/30 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 animate-slideIn"
-            style={{ animationDelay: '0.4s' }}
-          >
-            <div className="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="font-medium text-white">Demo Admin</div>
-              <div className="text-xs text-slate-500">admin@gmail.com</div>
-            </div>
-          </button>
-
           {/* Footer */}
-          <p className="text-center text-slate-500 text-sm mt-6 animate-slideIn" style={{ animationDelay: '0.5s' }}>
-            © 2026 Pilgrimage Guide. All rights reserved.
-          </p>
+          <div className="pt-8 text-center border-t border-[#d4af37]/10 mt-8 animate-slideIn" style={{ animationDelay: '0.5s' }}>
+            <p className="text-xs text-gray-500 font-serif italic">
+              {t.copyright}
+              <br className="hidden sm:inline" />
+              <span className="not-italic font-sans mt-2 inline-block">
+                <button className="hover:text-[#d4af37] transition-colors">{t.privacy}</button>
+                {' · '}
+                <button className="hover:text-[#d4af37] transition-colors">{t.terms}</button>
+              </span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
