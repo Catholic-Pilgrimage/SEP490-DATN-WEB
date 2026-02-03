@@ -138,6 +138,24 @@ const translations: Record<Language, Record<string, string>> = {
         'ban.banUser': 'Khóa tài khoản',
         'ban.unbanUser': 'Mở khóa',
 
+        // User Detail Modal
+        'userDetail.dateOfBirth': 'Ngày sinh',
+        'userDetail.language': 'Ngôn ngữ',
+        'userDetail.siteId': 'Mã Site',
+        'userDetail.site': 'Site',
+        'userDetail.created': 'Ngày tạo',
+        'userDetail.updated': 'Cập nhật',
+        'userDetail.verified': 'Xác thực',
+
+        // User Edit Modal
+        'userEdit.title': 'Chỉnh sửa người dùng',
+        'userEdit.fullName': 'Họ và tên',
+        'userEdit.cancel': 'Hủy',
+        'userEdit.saving': 'Đang lưu...',
+        'userEdit.saveChanges': 'Lưu thay đổi',
+        'userEdit.cannotChangeAdmin': 'Không thể đổi vai trò quản trị viên',
+        'userEdit.enterSiteUuid': 'Nhập UUID site',
+
         // Modal Common
         'modal.editSite': 'Chỉnh sửa Site',
         'modal.siteDetails': 'Chi tiết Site',
@@ -356,6 +374,24 @@ const translations: Record<Language, Record<string, string>> = {
         'ban.processing': 'Processing...',
         'ban.banUser': 'Ban User',
         'ban.unbanUser': 'Unban User',
+
+        // User Detail Modal
+        'userDetail.dateOfBirth': 'Date of Birth',
+        'userDetail.language': 'Language',
+        'userDetail.siteId': 'Site ID',
+        'userDetail.site': 'Site',
+        'userDetail.created': 'Created',
+        'userDetail.updated': 'Updated',
+        'userDetail.verified': 'Verified',
+
+        // User Edit Modal
+        'userEdit.title': 'Edit User',
+        'userEdit.fullName': 'Full Name',
+        'userEdit.cancel': 'Cancel',
+        'userEdit.saving': 'Saving...',
+        'userEdit.saveChanges': 'Save Changes',
+        'userEdit.cannotChangeAdmin': 'Cannot change admin role',
+        'userEdit.enterSiteUuid': 'Enter site UUID',
 
         // Modal Common
         'modal.editSite': 'Edit Site',

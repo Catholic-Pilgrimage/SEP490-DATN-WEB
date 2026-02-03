@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser } from '../../../types/admin.types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface UserDetailModalProps {
     userId: string | null;
@@ -29,7 +30,10 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
     isOpen,
     onClose
 }) => {
+    const { t } = useLanguage();
     const [user, setUser] = useState<AdminUser | null>(null);
+    const [siteName, setSiteName] = useState<string | null>(null);
+    const [siteLoading, setSiteLoading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +43,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         } else {
             // Reset state when modal closes
             setUser(null);
+            setSiteName(null);
             setError(null);
         }
     }, [isOpen, userId]);
@@ -53,6 +58,10 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 
             if (response.success && response.data) {
                 setUser(response.data);
+                // Fetch site name if user has site_id
+                if (response.data.site_id) {
+                    fetchSiteName(response.data.site_id);
+                }
             } else {
                 setError(response.message || 'Failed to load user details');
             }
@@ -63,14 +72,30 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         }
     };
 
+    const fetchSiteName = async (siteId: string) => {
+        try {
+            setSiteLoading(true);
+            const response = await AdminService.getSiteById(siteId);
+            if (response.success && response.data) {
+                setSiteName(response.data.name);
+            }
+        } catch (err) {
+            // Fallback to site_id if fetch fails
+            setSiteName(null);
+        } finally {
+            setSiteLoading(false);
+        }
+    };
+
     const getRoleInfo = (role: string) => {
         const roles = {
-            admin: { label: 'Admin', icon: Crown, color: 'bg-purple-100 text-purple-700', bgGradient: 'from-purple-500 to-indigo-600' },
-            manager: { label: 'Manager', icon: UserCheck, color: 'bg-blue-100 text-blue-700', bgGradient: 'from-blue-500 to-cyan-600' },
-            pilgrim: { label: 'Pilgrim', icon: UserIcon, color: 'bg-amber-100 text-amber-700', bgGradient: 'from-amber-500 to-orange-600' },
-            local_guide: { label: 'Local Guide', icon: UserCheck, color: 'bg-green-100 text-green-700', bgGradient: 'from-green-500 to-emerald-600' }
+            admin: { labelKey: 'role.admin', icon: Crown, color: 'bg-purple-100 text-purple-700', bgGradient: 'from-[#8a6d1c] to-[#d4af37]' },
+            manager: { labelKey: 'role.manager', icon: UserCheck, color: 'bg-blue-100 text-blue-700', bgGradient: 'from-[#8a6d1c] to-[#d4af37]' },
+            pilgrim: { labelKey: 'role.pilgrim', icon: UserIcon, color: 'bg-amber-100 text-amber-700', bgGradient: 'from-[#8a6d1c] to-[#d4af37]' },
+            local_guide: { labelKey: 'role.localGuide', icon: UserCheck, color: 'bg-green-100 text-green-700', bgGradient: 'from-[#8a6d1c] to-[#d4af37]' }
         };
-        return roles[role as keyof typeof roles] || roles.pilgrim;
+        const config = roles[role as keyof typeof roles] || roles.pilgrim;
+        return { ...config, label: t(config.labelKey) };
     };
 
     const formatDate = (dateString: string | null) => {
@@ -107,19 +132,19 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 my-8 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex-shrink-0">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 my-8 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-[#d4af37]/20 flex-shrink-0">
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 border border-[#d4af37]/20"
                 >
-                    <X className="w-5 h-5 text-slate-600" />
+                    <X className="w-5 h-5 text-[#8a6d1c]" />
                 </button>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-80">
-                        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
-                        <p className="text-slate-500">Loading user details...</p>
+                        <Loader2 className="w-10 h-10 animate-spin text-[#d4af37] mb-4" />
+                        <p className="text-gray-500">{t('modal.loading')}</p>
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center h-80 p-6">
@@ -127,9 +152,9 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                         <p className="text-red-600 text-center">{error}</p>
                         <button
                             onClick={fetchUserDetail}
-                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="mt-4 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20"
                         >
-                            Try Again
+                            {t('modal.retry')}
                         </button>
                     </div>
                 ) : user ? (
@@ -162,101 +187,109 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 
                         {/* User name and status */}
                         <div className="text-center px-6 pt-3 pb-4">
-                            <h2 className="text-xl font-bold text-slate-900">{user.full_name}</h2>
+                            <h2 className="text-xl font-bold text-[#8a6d1c]">{user.full_name}</h2>
                             <span className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {user.status === 'active' ? 'Active' : 'Banned'}
+                                {user.status === 'active' ? t('status.active') : t('status.banned')}
                             </span>
                         </div>
 
-                        {/* User details */}
                         <div className="px-6 pb-6 space-y-4 max-h-[40vh] overflow-y-auto">
                             {/* Email */}
-                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Mail className="w-4 h-4 text-blue-600" />
+                            <div className="flex items-center gap-3 p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                                <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                    <Mail className="w-4 h-4 text-[#8a6d1c]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">Email</p>
-                                    <p className="text-sm font-medium text-slate-900">{user.email}</p>
+                                    <p className="text-xs text-gray-500">{t('table.email')}</p>
+                                    <p className="text-sm font-medium text-gray-900">{user.email}</p>
                                 </div>
                             </div>
 
                             {/* Phone */}
-                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                <div className="p-2 bg-green-100 rounded-lg">
-                                    <Phone className="w-4 h-4 text-green-600" />
+                            <div className="flex items-center gap-3 p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                                <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                    <Phone className="w-4 h-4 text-[#8a6d1c]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">Phone</p>
-                                    <p className="text-sm font-medium text-slate-900">{user.phone || '—'}</p>
+                                    <p className="text-xs text-gray-500">{t('table.phone')}</p>
+                                    <p className="text-sm font-medium text-gray-900">{user.phone || '—'}</p>
                                 </div>
                             </div>
 
                             {/* Date of Birth */}
-                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                <div className="p-2 bg-amber-100 rounded-lg">
-                                    <Calendar className="w-4 h-4 text-amber-600" />
+                            <div className="flex items-center gap-3 p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                                <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                    <Calendar className="w-4 h-4 text-[#8a6d1c]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">Date of Birth</p>
-                                    <p className="text-sm font-medium text-slate-900">{formatDate(user.date_of_birth)}</p>
+                                    <p className="text-xs text-gray-500">{t('userDetail.dateOfBirth')}</p>
+                                    <p className="text-sm font-medium text-gray-900">{formatDate(user.date_of_birth)}</p>
                                 </div>
                             </div>
 
                             {/* Language */}
-                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                <div className="p-2 bg-indigo-100 rounded-lg">
-                                    <Globe className="w-4 h-4 text-indigo-600" />
+                            <div className="flex items-center gap-3 p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                                <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                    <Globe className="w-4 h-4 text-[#8a6d1c]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500">Language</p>
-                                    <p className="text-sm font-medium text-slate-900">{user.language === 'vi' ? 'Tiếng Việt' : user.language === 'en' ? 'English' : user.language}</p>
+                                    <p className="text-xs text-gray-500">{t('userDetail.language')}</p>
+                                    <p className="text-sm font-medium text-gray-900">{user.language === 'vi' ? 'Tiếng Việt' : user.language === 'en' ? 'English' : user.language}</p>
                                 </div>
                             </div>
 
-                            {/* Site ID */}
+                            {/* Site */}
                             {user.site_id && (
-                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                    <div className="p-2 bg-purple-100 rounded-lg">
-                                        <MapPin className="w-4 h-4 text-purple-600" />
+                                <div className="flex items-center gap-3 p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                                    <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                        <MapPin className="w-4 h-4 text-[#8a6d1c]" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500">Site ID</p>
-                                        <p className="text-sm font-medium text-slate-900 truncate max-w-[280px]">{user.site_id}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-gray-500">{t('userDetail.site')}</p>
+                                        {siteLoading ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="w-3 h-3 animate-spin text-[#d4af37]" />
+                                                <span className="text-sm text-gray-400">{t('modal.loading')}</span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                                {siteName || user.site_id}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
                             {/* Divider */}
-                            <hr className="border-slate-200" />
+                            <hr className="border-[#d4af37]/20" />
 
                             {/* Dates section */}
                             <div className="grid grid-cols-3 gap-3">
                                 {/* Created At */}
-                                <div className="p-3 bg-slate-50 rounded-xl">
+                                <div className="p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Clock className="w-3 h-3 text-slate-400" />
-                                        <p className="text-xs text-slate-500">Created</p>
+                                        <Clock className="w-3 h-3 text-[#8a6d1c]/50" />
+                                        <p className="text-xs text-gray-500">{t('userDetail.created')}</p>
                                     </div>
-                                    <p className="text-xs font-medium text-slate-700">{formatDateTime(user.created_at)}</p>
+                                    <p className="text-xs font-medium text-gray-700">{formatDateTime(user.created_at)}</p>
                                 </div>
 
                                 {/* Updated At */}
-                                <div className="p-3 bg-slate-50 rounded-xl">
+                                <div className="p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Clock className="w-3 h-3 text-slate-400" />
-                                        <p className="text-xs text-slate-500">Updated</p>
+                                        <Clock className="w-3 h-3 text-[#8a6d1c]/50" />
+                                        <p className="text-xs text-gray-500">{t('userDetail.updated')}</p>
                                     </div>
-                                    <p className="text-xs font-medium text-slate-700">{formatDateTime(user.updated_at)}</p>
+                                    <p className="text-xs font-medium text-gray-700">{formatDateTime(user.updated_at)}</p>
                                 </div>
 
                                 {/* Verified At */}
-                                <div className="p-3 bg-slate-50 rounded-xl">
+                                <div className="p-3 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Shield className="w-3 h-3 text-slate-400" />
-                                        <p className="text-xs text-slate-500">Verified</p>
+                                        <Shield className="w-3 h-3 text-[#8a6d1c]/50" />
+                                        <p className="text-xs text-gray-500">{t('userDetail.verified')}</p>
                                     </div>
-                                    <p className="text-xs font-medium text-slate-700">{formatDateTime(user.verified_at)}</p>
+                                    <p className="text-xs font-medium text-gray-700">{formatDateTime(user.verified_at)}</p>
                                 </div>
                             </div>
                         </div>

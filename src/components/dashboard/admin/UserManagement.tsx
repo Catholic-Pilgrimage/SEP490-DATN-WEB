@@ -187,13 +187,13 @@ export const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t('users.title')}</h1>
-          <p className="text-slate-600 mt-1">{t('users.subtitle')}</p>
+          <h1 className="text-2xl font-serif font-bold text-[#8a6d1c]">{t('users.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('users.subtitle')}</p>
         </div>
         <button
           onClick={fetchUsers}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           {t('common.refresh')}
@@ -201,29 +201,29 @@ export const UserManagement: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="flex-1 min-w-[250px]">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
               <input
                 type="text"
                 placeholder={t('users.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
               />
             </div>
           </div>
 
           {/* Role Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-slate-400" />
+            <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
-              className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
             >
               <option value="">{t('users.allRoles')}</option>
               <option value="admin">{t('role.admin')}</option>
@@ -237,7 +237,7 @@ export const UserManagement: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
           >
             <option value="">{t('users.allStatus')}</option>
             <option value="active">{t('status.active')}</option>
@@ -248,37 +248,38 @@ export const UserManagement: React.FC = () => {
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
           </div>
         ) : users.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-            <UserIcon className="w-12 h-12 mb-4 text-slate-300" />
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+            <UserIcon className="w-12 h-12 mb-4 text-[#d4af37]/40" />
             <p>{t('users.noUsers')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-[#f5f3ee] border-b-2 border-[#d4af37]/30">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.user')}</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.email')}</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.phone')}</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.role')}</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.status')}</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">{t('table.created')}</th>
-                  <th className="text-right px-6 py-4 text-sm font-semibold text-slate-700">{t('table.actions')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.user')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.email')}</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.phone')}</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.role')}</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.status')}</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.created')}</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c]">{t('table.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#d4af37]/10">
                 {users.map((user) => {
                   const roleInfo = getRoleInfo(user.role);
                   const RoleIcon = roleInfo.icon;
@@ -303,9 +304,9 @@ export const UserManagement: React.FC = () => {
                           {roleInfo.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-center">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(user.status)}`}>
-                          {user.status}
+                          {user.status === 'active' ? t('status.active') : t('status.banned')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-slate-600">{formatDate(user.created_at)}</td>
@@ -313,17 +314,17 @@ export const UserManagement: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleViewUser(user.id)}
-                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
                             title="View Details"
                           >
-                            <Eye className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                            <Eye className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
                           </button>
                           <button
                             onClick={() => handleEditUser(user)}
-                            className="p-2 hover:bg-amber-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
                             title="Edit User"
                           >
-                            <Edit className="w-4 h-4 text-slate-400 group-hover:text-amber-600" />
+                            <Edit className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
                           </button>
                           {/* Ban/Unban button - không hiện cho admin */}
                           {user.role !== 'admin' && (
@@ -354,15 +355,15 @@ export const UserManagement: React.FC = () => {
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
-            <div className="text-sm text-slate-600">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#d4af37]/20 bg-[#f5f3ee]">
+            <div className="text-sm text-gray-500">
               Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -382,9 +383,9 @@ export const UserManagement: React.FC = () => {
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`w-10 h-10 rounded-lg text-sm font-medium ${currentPage === pageNum
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-slate-200 hover:bg-slate-100'
+                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                        ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md'
+                        : 'border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10'
                         }`}
                     >
                       {pageNum}
@@ -395,7 +396,7 @@ export const UserManagement: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === pagination.totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
