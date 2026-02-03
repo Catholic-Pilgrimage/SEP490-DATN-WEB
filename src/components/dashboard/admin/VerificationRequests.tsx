@@ -28,8 +28,10 @@ import {
     SiteRegion
 } from '../../../types/admin.types';
 import { VerificationDetailModal } from './VerificationDetailModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const VerificationRequests: React.FC = () => {
+    const { t } = useLanguage();
     const [requests, setRequests] = useState<VerificationRequest[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(true);
@@ -95,9 +97,9 @@ export const VerificationRequests: React.FC = () => {
 
     const getStatusInfo = (status: VerificationStatus) => {
         const statuses = {
-            pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Approved', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
@@ -137,46 +139,48 @@ export const VerificationRequests: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Verification Requests</h1>
-                    <p className="text-slate-500 mt-1">Manage site verification requests from pilgrims</p>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] bg-clip-text text-transparent">{t('verification.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('verification.subtitle')}</p>
                 </div>
                 <button
                     onClick={fetchRequests}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20 disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
+                    {t('common.refresh')}
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
-                    <div className="flex-1 min-w-[250px] relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search by code or site name..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                    <div className="flex-1 min-w-[250px]">
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder={t('verification.searchPlaceholder')}
+                                className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                            />
+                        </div>
                     </div>
 
                     {/* Status Filter */}
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-slate-400" />
+                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
                         <select
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as VerificationStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
+                            <option value="">{t('status.allStatus')}</option>
+                            <option value="pending">{t('status.pending')}</option>
+                            <option value="approved">{t('status.approved')}</option>
+                            <option value="rejected">{t('status.rejected')}</option>
                         </select>
                     </div>
                 </div>
@@ -193,29 +197,29 @@ export const VerificationRequests: React.FC = () => {
             {/* Loading */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                 </div>
             ) : (
                 <>
                     {/* Table */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-200">
-                                        <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</th>
-                                        <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Site</th>
-                                        <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Applicant</th>
-                                        <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                                        <th className="text-center px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                                <thead className="bg-[#f5f3ee] border-b-2 border-[#d4af37]/30">
+                                    <tr>
+                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.code') || 'Mã'}</th>
+                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.site') || 'Site'}</th>
+                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.applicant') || 'Người nộp'}</th>
+                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.status')}</th>
+                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.created')}</th>
+                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c]">{t('table.actions')}</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-[#d4af37]/10">
                                     {requests.length === 0 ? (
                                         <tr>
                                             <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                                No verification requests found
+                                                {t('verification.noRequests')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -237,8 +241,8 @@ export const VerificationRequests: React.FC = () => {
                                                     {/* Site */}
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="p-2 bg-blue-100 rounded-lg">
-                                                                <TypeIcon className="w-4 h-4 text-blue-600" />
+                                                            <div className="p-2 bg-[#d4af37]/20 rounded-lg">
+                                                                <TypeIcon className="w-4 h-4 text-[#8a6d1c]" />
                                                             </div>
                                                             <div>
                                                                 <p className="font-medium text-slate-900 text-sm">{request.site_name}</p>
@@ -293,10 +297,10 @@ export const VerificationRequests: React.FC = () => {
                                                                     setSelectedRequestId(request.id);
                                                                     setIsDetailModalOpen(true);
                                                                 }}
-                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
                                                                 title="View Details"
                                                             >
-                                                                <Eye className="w-5 h-5" />
+                                                                <Eye className="w-5 h-5 text-gray-400 group-hover:text-[#8a6d1c]" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -319,18 +323,18 @@ export const VerificationRequests: React.FC = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
-                                    <ChevronLeft className="w-5 h-5" />
+                                    <ChevronLeft className="w-5 h-5 text-[#8a6d1c]" />
                                 </button>
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
                                         <button
                                             key={pageNum}
                                             onClick={() => handlePageChange(pageNum)}
-                                            className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                ? 'bg-blue-600 text-white'
-                                                : 'hover:bg-slate-100 text-slate-600'
+                                            className={`w-10 h-10 rounded-lg font-medium transition-all ${pageNum === currentPage
+                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
+                                                : 'hover:bg-[#d4af37]/10 text-[#8a6d1c]'
                                                 }`}
                                         >
                                             {pageNum}
@@ -340,9 +344,9 @@ export const VerificationRequests: React.FC = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === pagination.totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
+                                    <ChevronRight className="w-5 h-5 text-[#8a6d1c]" />
                                 </button>
                             </div>
                         </div>

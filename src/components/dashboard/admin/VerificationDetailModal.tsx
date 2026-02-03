@@ -4,8 +4,6 @@ import {
     Loader2,
     MapPin,
     User,
-    Mail,
-    Phone,
     FileText,
     Clock,
     CheckCircle,
@@ -23,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { VerificationRequestDetail, VerificationStatus, SiteType, SiteRegion } from '../../../types/admin.types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface VerificationDetailModalProps {
     requestId: string | null;
@@ -37,6 +36,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     onClose,
     onSuccess
 }) => {
+    const { t } = useLanguage();
     const [request, setRequest] = useState<VerificationRequestDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -124,9 +124,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
 
     const getStatusInfo = (status: VerificationStatus) => {
         const statuses = {
-            pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Approved', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
@@ -143,7 +143,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     };
 
     const getRegionLabel = (region: SiteRegion) => {
-        const labels = { Bac: 'Miền Bắc', Trung: 'Miền Trung', Nam: 'Miền Nam' };
+        const labels = { Bac: t('region.bac'), Trung: t('region.trung'), Nam: t('region.nam') };
         return labels[region] || region;
     };
 
@@ -160,16 +160,16 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
+                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="text-white">
-                        <h2 className="text-lg font-semibold">Verification Request Detail</h2>
+                        <h2 className="text-lg font-semibold">{t('verificationDetail.title')}</h2>
                         {request && <p className="text-sm opacity-80">{request.code}</p>}
                     </div>
                     <button onClick={onClose} className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
@@ -181,7 +181,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                 <div className="p-6 max-h-[calc(90vh-8rem)] overflow-y-auto">
                     {loading && (
                         <div className="flex items-center justify-center h-48">
-                            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                            <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                         </div>
                     )}
 
@@ -193,171 +193,183 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                     )}
 
                     {request && !loading && (
-                        <div className="space-y-6">
-                            {/* Status Badge */}
+                        <div className="space-y-5">
+                            {/* Status Badge - Centered and prominent */}
                             {(() => {
                                 const statusInfo = getStatusInfo(request.status);
                                 const StatusIcon = statusInfo.icon;
                                 return (
-                                    <div className="flex items-center justify-between">
-                                        <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${statusInfo.color}`}>
-                                            <StatusIcon className="w-4 h-4" />
+                                    <div className="flex flex-col items-center text-center pb-4 border-b border-[#d4af37]/20">
+                                        <span className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold border-2 ${statusInfo.color} shadow-sm`}>
+                                            <StatusIcon className="w-5 h-5" />
                                             {statusInfo.label}
                                         </span>
                                         {request.verified_at && (
-                                            <span className="text-sm text-slate-500">
-                                                Verified: {formatDate(request.verified_at)}
+                                            <span className="text-xs text-gray-500 mt-2">
+                                                {t('verificationDetail.verified')}: {formatDate(request.verified_at)}
                                             </span>
                                         )}
                                     </div>
                                 );
                             })()}
 
-                            {/* Site Info */}
-                            <div className="bg-slate-50 rounded-xl p-4">
-                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    {(() => {
-                                        const TypeIcon = getTypeIcon(request.site_type);
-                                        return <TypeIcon className="w-4 h-4" />;
-                                    })()}
-                                    Site Information
-                                </h3>
-                                <div className="space-y-2">
-                                    <p className="text-lg font-semibold text-slate-900">{request.site_name}</p>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <MapPin className="w-4 h-4" />
-                                        <span>{request.site_address}, {request.site_province}</span>
+                            {/* Site Info Card - Main highlight */}
+                            <div className="bg-gradient-to-br from-[#f5f3ee] to-white rounded-xl p-5 border border-[#d4af37]/20 shadow-sm">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-3 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] rounded-xl shadow-lg shadow-[#d4af37]/20">
+                                        {(() => {
+                                            const TypeIcon = getTypeIcon(request.site_type);
+                                            return <TypeIcon className="w-6 h-6 text-white" />;
+                                        })()}
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm">
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">{request.site_type}</span>
-                                        <span className="text-slate-500">{getRegionLabel(request.site_region)}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg font-bold text-[#8a6d1c] truncate">{request.site_name}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                                            <MapPin className="w-4 h-4 flex-shrink-0 text-[#d4af37]" />
+                                            <span className="truncate">{request.site_address}, {request.site_province}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="px-2.5 py-1 bg-[#d4af37]/20 text-[#8a6d1c] rounded-lg text-xs font-medium capitalize">{request.site_type}</span>
+                                            <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">{getRegionLabel(request.site_region)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Introduction */}
                             {request.introduction && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <FileText className="w-4 h-4" />
-                                        Introduction
-                                    </h3>
-                                    <p className="text-slate-600 bg-slate-50 rounded-xl p-4">{request.introduction}</p>
+                                <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <FileText className="w-4 h-4 text-[#8a6d1c]" />
+                                        <h4 className="text-sm font-semibold text-[#8a6d1c]">{t('verificationDetail.introduction')}</h4>
+                                    </div>
+                                    <p className="text-gray-700 text-sm leading-relaxed">{request.introduction}</p>
                                 </div>
                             )}
 
                             {/* Certificate */}
                             {request.certificate_url && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-2">Certificate</h3>
-                                    <a
-                                        href={request.certificate_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors"
-                                    >
-                                        <FileText className="w-5 h-5" />
-                                        <span>View Certificate</span>
-                                        <ExternalLink className="w-4 h-4" />
-                                    </a>
-                                </div>
+                                <a
+                                    href={request.certificate_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/20 hover:border-[#d4af37]/50 hover:shadow-md transition-all group"
+                                >
+                                    <div className="p-2 bg-[#d4af37]/20 rounded-lg group-hover:bg-[#d4af37]/30 transition-colors">
+                                        <FileText className="w-5 h-5 text-[#8a6d1c]" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-[#8a6d1c]">{t('verificationDetail.certificate')}</p>
+                                        <p className="text-xs text-gray-500">{t('verificationDetail.viewCertificate')}</p>
+                                    </div>
+                                    <ExternalLink className="w-4 h-4 text-[#d4af37] group-hover:translate-x-1 transition-transform" />
+                                </a>
                             )}
 
-                            {/* Rejection Reason (for already rejected) */}
+                            {/* Rejection Reason */}
                             {request.status === 'rejected' && request.rejection_reason && (
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-red-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <XCircle className="w-4 h-4" />
-                                        Rejection Reason
-                                    </h3>
-                                    <p className="text-red-600">{request.rejection_reason}</p>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <XCircle className="w-4 h-4 text-red-600" />
+                                        <h4 className="text-sm font-semibold text-red-700">{t('verificationDetail.rejectionReason')}</h4>
+                                    </div>
+                                    <p className="text-red-600 text-sm">{request.rejection_reason}</p>
                                 </div>
                             )}
 
-                            {/* Applicant */}
-                            <div className="border border-slate-200 rounded-xl p-4">
-                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <User className="w-4 h-4" />
-                                    Applicant
-                                </h3>
-                                <div className="flex items-center gap-4">
-                                    {request.applicant?.avatar_url ? (
-                                        <img src={request.applicant.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                                            <User className="w-6 h-6 text-white" />
-                                        </div>
-                                    )}
-                                    <div>
-                                        <p className="font-semibold text-slate-900">{request.applicant?.full_name || 'Không rõ'}</p>
-                                        <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
-                                            <span className="flex items-center gap-1">
-                                                <Mail className="w-3 h-3" />
-                                                {request.applicant?.email || 'N/A'}
-                                            </span>
-                                            {request.applicant?.phone && (
-                                                <span className="flex items-center gap-1">
-                                                    <Phone className="w-3 h-3" />
-                                                    {request.applicant.phone}
-                                                </span>
-                                            )}
+                            {/* Applicant & Reviewer Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Applicant Card */}
+                                <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <User className="w-4 h-4 text-[#8a6d1c]" />
+                                        <h4 className="text-xs font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('verificationDetail.applicant')}</h4>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {request.applicant?.avatar_url ? (
+                                            <img src={request.applicant.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#d4af37]/30" />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+                                                <User className="w-5 h-5 text-white" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium text-gray-900 truncate text-sm">{request.applicant?.full_name || t('verificationDetail.unknown')}</p>
+                                            <p className="text-xs text-gray-500 truncate">{request.applicant?.email || 'N/A'}</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Reviewer */}
-                            {request.reviewer && (
-                                <div className="border border-green-200 bg-green-50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-green-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <UserCheck className="w-4 h-4" />
-                                        Reviewed By
-                                    </h3>
-                                    <div>
-                                        <p className="font-semibold text-slate-900">{request.reviewer.full_name}</p>
-                                        <p className="text-sm text-slate-500">{request.reviewer.email}</p>
+                                {/* Reviewer Card */}
+                                {request.reviewer && (
+                                    <div className="bg-[#d4af37]/10 rounded-xl p-4 border border-[#d4af37]/20">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <UserCheck className="w-4 h-4 text-[#8a6d1c]" />
+                                            <h4 className="text-xs font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('verificationDetail.reviewedBy')}</h4>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+                                                <UserCheck className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 truncate text-sm">{request.reviewer.full_name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{request.reviewer.email}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-
-                            {/* Timestamps */}
-                            <div className="flex items-center justify-between text-sm text-slate-500 pt-4 border-t border-slate-200">
-                                <span>Created: {formatDate(request.created_at)}</span>
-                                <span>Updated: {formatDate(request.updated_at)}</span>
+                                )}
                             </div>
 
-                            {/* Action Buttons - Only for Pending */}
+                            {/* Timestamps Grid */}
+                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#d4af37]/20">
+                                <div className="bg-[#f5f3ee] rounded-lg p-3 border border-[#d4af37]/10">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Clock className="w-3 h-3 text-[#8a6d1c]/60" />
+                                        <span className="text-xs text-gray-500">{t('table.created')}</span>
+                                    </div>
+                                    <p className="text-xs font-medium text-gray-700">{formatDate(request.created_at)}</p>
+                                </div>
+                                <div className="bg-[#f5f3ee] rounded-lg p-3 border border-[#d4af37]/10">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Clock className="w-3 h-3 text-[#8a6d1c]/60" />
+                                        <span className="text-xs text-gray-500">{t('detail.updatedAt')}</span>
+                                    </div>
+                                    <p className="text-xs font-medium text-gray-700">{formatDate(request.updated_at)}</p>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
                             {request.status === 'pending' && (
-                                <div className="pt-4 border-t border-slate-200 space-y-4">
+                                <div className="pt-4 border-t border-[#d4af37]/20 space-y-4">
                                     {showRejectForm ? (
                                         <div className="space-y-3">
-                                            <label className="block text-sm font-medium text-slate-700">
-                                                Rejection Reason <span className="text-red-500">*</span>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                {t('verificationDetail.rejectionReasonRequired')}
                                             </label>
                                             <textarea
                                                 value={rejectionReason}
                                                 onChange={(e) => setRejectionReason(e.target.value)}
-                                                placeholder="Enter the reason for rejection..."
+                                                placeholder={t('verificationDetail.enterRejectionReason')}
                                                 rows={3}
-                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                                                className="w-full px-4 py-2.5 border border-[#d4af37]/30 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent resize-none bg-white"
                                             />
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     onClick={() => { setShowRejectForm(false); setRejectionReason(''); }}
                                                     disabled={actionLoading}
-                                                    className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                                    className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-gray-700 rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50 font-medium"
                                                 >
-                                                    Cancel
+                                                    {t('common.cancel')}
                                                 </button>
                                                 <button
                                                     onClick={handleReject}
                                                     disabled={actionLoading || !rejectionReason.trim()}
-                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
+                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 font-medium"
                                                 >
                                                     {actionLoading ? (
-                                                        <><Loader2 className="w-4 h-4 animate-spin" /> Rejecting...</>
+                                                        <><Loader2 className="w-4 h-4 animate-spin" /> {t('verificationDetail.rejecting')}</>
                                                     ) : (
-                                                        <><ThumbsDown className="w-4 h-4" /> Confirm Reject</>
+                                                        <><ThumbsDown className="w-4 h-4" /> {t('verificationDetail.confirmReject')}</>
                                                     )}
                                                 </button>
                                             </div>
@@ -367,20 +379,20 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                                             <button
                                                 onClick={() => setShowRejectForm(true)}
                                                 disabled={actionLoading}
-                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-red-200 text-red-600 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all disabled:opacity-50 font-medium"
                                             >
-                                                <ThumbsDown className="w-4 h-4" />
-                                                Reject
+                                                <ThumbsDown className="w-5 h-5" />
+                                                {t('verificationDetail.reject')}
                                             </button>
                                             <button
                                                 onClick={handleApprove}
                                                 disabled={actionLoading}
-                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/25 disabled:opacity-50 font-medium"
                                             >
                                                 {actionLoading ? (
-                                                    <><Loader2 className="w-4 h-4 animate-spin" /> Approving...</>
+                                                    <><Loader2 className="w-5 h-5 animate-spin" /> {t('verificationDetail.approving')}</>
                                                 ) : (
-                                                    <><ThumbsUp className="w-4 h-4" /> Approve</>
+                                                    <><ThumbsUp className="w-5 h-5" /> {t('verificationDetail.approve')}</>
                                                 )}
                                             </button>
                                         </div>

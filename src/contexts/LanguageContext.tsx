@@ -110,6 +110,12 @@ const translations: Record<Language, Record<string, string>> = {
         'users.of': 'trong tổng số',
         'users.users': 'người dùng',
 
+        // Verification Requests
+        'verification.title': 'Yêu cầu xác thực',
+        'verification.subtitle': 'Quản lý yêu cầu xác thực site từ khách hành hương',
+        'verification.searchPlaceholder': 'Tìm theo mã hoặc tên site...',
+        'verification.noRequests': 'Không tìm thấy yêu cầu xác thực',
+
         // Table Headers
         'table.user': 'Người dùng',
         'table.email': 'Email',
@@ -118,6 +124,9 @@ const translations: Record<Language, Record<string, string>> = {
         'table.status': 'Trạng thái',
         'table.created': 'Ngày tạo',
         'table.actions': 'Thao tác',
+        'table.code': 'Mã',
+        'table.site': 'Địa điểm',
+        'table.applicant': 'Người nộp',
 
         // User Roles
         'role.admin': 'Quản trị viên',
@@ -245,6 +254,25 @@ const translations: Record<Language, Record<string, string>> = {
         'nearbyPlaces.food': 'Ẩm thực',
         'nearbyPlaces.lodging': 'Lưu trú',
         'nearbyPlaces.medical': 'Y tế',
+
+        // Verification Detail Modal
+        'verificationDetail.title': 'Chi tiết yêu cầu xác thực',
+        'verificationDetail.siteInfo': 'Thông tin địa điểm',
+        'verificationDetail.introduction': 'Giới thiệu',
+        'verificationDetail.certificate': 'Chứng chỉ',
+        'verificationDetail.viewCertificate': 'Xem chứng chỉ',
+        'verificationDetail.rejectionReason': 'Lý do từ chối',
+        'verificationDetail.applicant': 'Người nộp đơn',
+        'verificationDetail.reviewedBy': 'Được duyệt bởi',
+        'verificationDetail.verified': 'Đã xác thực',
+        'verificationDetail.approve': 'Duyệt',
+        'verificationDetail.reject': 'Từ chối',
+        'verificationDetail.approving': 'Đang duyệt...',
+        'verificationDetail.rejecting': 'Đang từ chối...',
+        'verificationDetail.confirmReject': 'Xác nhận từ chối',
+        'verificationDetail.rejectionReasonRequired': 'Lý do từ chối *',
+        'verificationDetail.enterRejectionReason': 'Nhập lý do từ chối...',
+        'verificationDetail.unknown': 'Không rõ',
     },
     en: {
         // Sidebar
@@ -347,6 +375,12 @@ const translations: Record<Language, Record<string, string>> = {
         'users.of': 'of',
         'users.users': 'users',
 
+        // Verification Requests
+        'verification.title': 'Verification Requests',
+        'verification.subtitle': 'Manage site verification requests from pilgrims',
+        'verification.searchPlaceholder': 'Search by code or site name...',
+        'verification.noRequests': 'No verification requests found',
+
         // Table Headers
         'table.user': 'User',
         'table.email': 'Email',
@@ -355,6 +389,9 @@ const translations: Record<Language, Record<string, string>> = {
         'table.status': 'Status',
         'table.created': 'Created',
         'table.actions': 'Actions',
+        'table.code': 'Code',
+        'table.site': 'Site',
+        'table.applicant': 'Applicant',
 
         // User Roles
         'role.admin': 'Admin',
@@ -482,6 +519,25 @@ const translations: Record<Language, Record<string, string>> = {
         'nearbyPlaces.food': 'Food',
         'nearbyPlaces.lodging': 'Lodging',
         'nearbyPlaces.medical': 'Medical',
+
+        // Verification Detail Modal
+        'verificationDetail.title': 'Verification Request Detail',
+        'verificationDetail.siteInfo': 'Site Information',
+        'verificationDetail.introduction': 'Introduction',
+        'verificationDetail.certificate': 'Certificate',
+        'verificationDetail.viewCertificate': 'View Certificate',
+        'verificationDetail.rejectionReason': 'Rejection Reason',
+        'verificationDetail.applicant': 'Applicant',
+        'verificationDetail.reviewedBy': 'Reviewed By',
+        'verificationDetail.verified': 'Verified',
+        'verificationDetail.approve': 'Approve',
+        'verificationDetail.reject': 'Reject',
+        'verificationDetail.approving': 'Approving...',
+        'verificationDetail.rejecting': 'Rejecting...',
+        'verificationDetail.confirmReject': 'Confirm Reject',
+        'verificationDetail.rejectionReasonRequired': 'Rejection Reason *',
+        'verificationDetail.enterRejectionReason': 'Enter the reason for rejection...',
+        'verificationDetail.unknown': 'Unknown',
     }
 };
 
