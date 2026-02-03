@@ -28,6 +28,7 @@ import {
     Eye
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { SiteDetail, SiteType, SiteRegion, SiteLocalGuide, SiteLocalGuidesResponse, SiteShiftSubmission, SiteShiftsResponse, ShiftSubmissionStatus, SiteMedia, SiteMediaResponse, MediaStatus, MediaType, SiteSchedule, SiteSchedulesResponse, ScheduleStatus, SiteEvent, SiteEventsResponse, EventStatus, SiteNearbyPlace, SiteNearbyPlacesResponse, NearbyPlaceStatus, NearbyPlaceCategory } from '../../../types/admin.types';
 
 interface SiteDetailModalProps {
@@ -54,15 +55,16 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<TabType>('info');
+    const { t } = useLanguage();
 
     const tabs: TabConfig[] = [
-        { id: 'info', label: 'Thông tin', icon: BookOpen },
-        { id: 'local-guides', label: 'Local Guides', icon: Users },
-        { id: 'shifts', label: 'Lịch trực', icon: Clock },
-        { id: 'media', label: 'Media', icon: Image },
-        { id: 'schedules', label: 'Lịch lễ', icon: Calendar },
-        { id: 'events', label: 'Sự kiện', icon: Sparkles },
-        { id: 'nearby-places', label: 'Lân cận', icon: MapPin },
+        { id: 'info', label: t('tab.info'), icon: BookOpen },
+        { id: 'local-guides', label: t('tab.localGuides'), icon: Users },
+        { id: 'shifts', label: t('tab.shifts'), icon: Clock },
+        { id: 'media', label: t('tab.media'), icon: Image },
+        { id: 'schedules', label: t('tab.schedules'), icon: Calendar },
+        { id: 'events', label: t('tab.events'), icon: Sparkles },
+        { id: 'nearby-places', label: t('tab.nearbyPlaces'), icon: MapPin },
     ];
 
     useEffect(() => {
@@ -97,13 +99,14 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
 
     const getTypeInfo = (type: SiteType) => {
         const types = {
-            church: { label: 'Church', icon: Church, color: 'bg-blue-100 text-blue-700' },
-            shrine: { label: 'Shrine', icon: Mountain, color: 'bg-purple-100 text-purple-700' },
-            monastery: { label: 'Monastery', icon: Building, color: 'bg-amber-100 text-amber-700' },
-            center: { label: 'Center', icon: Home, color: 'bg-green-100 text-green-700' },
-            other: { label: 'Other', icon: HelpCircle, color: 'bg-slate-100 text-slate-700' }
+            church: { labelKey: 'type.church', icon: Church, color: 'bg-blue-100 text-blue-700' },
+            shrine: { labelKey: 'type.shrine', icon: Mountain, color: 'bg-purple-100 text-purple-700' },
+            monastery: { labelKey: 'type.monastery', icon: Building, color: 'bg-amber-100 text-amber-700' },
+            center: { labelKey: 'type.center', icon: Home, color: 'bg-green-100 text-green-700' },
+            other: { labelKey: 'type.other', icon: HelpCircle, color: 'bg-slate-100 text-slate-700' }
         };
-        return types[type] || types.other;
+        const info = types[type] || types.other;
+        return { ...info, label: t(info.labelKey) };
     };
 
     const getRegionInfo = (region: SiteRegion) => {
@@ -158,7 +161,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-80">
                         <Loader2 className="w-10 h-10 animate-spin text-[#d4af37] mb-4" />
-                        <p className="text-slate-500">Loading site details...</p>
+                        <p className="text-slate-500">{t('modal.loading')}</p>
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center h-80 p-6">
@@ -168,7 +171,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                             onClick={fetchSiteDetail}
                             className="mt-4 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all"
                         >
-                            Try Again
+                            {t('modal.retry')}
                         </button>
                     </div>
                 ) : site ? (
@@ -193,7 +196,7 @@ export const SiteDetailModal: React.FC<SiteDetailModalProps> = ({
                                     : 'bg-red-500/90 text-white'
                                     }`}>
                                     {site.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                    {site.is_active ? 'Active' : 'Inactive'}
+                                    {site.is_active ? t('common.active') : t('common.inactive')}
                                 </span>
                                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 ${typeInfo?.color}`}>
                                     <TypeIcon className="w-3 h-3" />
@@ -287,6 +290,7 @@ interface SiteInfoTabProps {
 }
 
 const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate, openGoogleMaps }) => {
+    const { t } = useLanguage();
     return (
         <div className="p-6 space-y-5">
             {/* Location */}
@@ -295,7 +299,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                     <MapPin className="w-5 h-5 text-[#8a6d1c]" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-xs text-slate-500 mb-1">Address</p>
+                    <p className="text-xs text-slate-500 mb-1">{t('edit.address')}</p>
                     <p className="text-sm font-medium text-slate-900">
                         {site.address && `${site.address}, `}
                         {site.district && `${site.district}, `}
@@ -319,7 +323,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
             {/* Description */}
             {site.description && (
                 <div className="p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
-                    <p className="text-xs text-slate-500 mb-2">Description</p>
+                    <p className="text-xs text-slate-500 mb-2">{t('detail.description')}</p>
                     <p className="text-sm text-slate-700 leading-relaxed">{site.description}</p>
                 </div>
             )}
@@ -329,7 +333,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                 <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20">
                     <div className="flex items-center gap-2 mb-2">
                         <BookOpen className="w-4 h-4 text-[#8a6d1c]" />
-                        <p className="text-xs text-[#8a6d1c] font-medium">History</p>
+                        <p className="text-xs text-[#8a6d1c] font-medium">{t('detail.history')}</p>
                     </div>
                     <p className="text-sm text-slate-700 leading-relaxed">{site.history}</p>
                 </div>
@@ -340,7 +344,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                 {/* Contact Info */}
                 {site.contact_info && (site.contact_info.phone || site.contact_info.email) && (
                     <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-3">Contact</p>
+                        <p className="text-xs text-slate-500 mb-3">{t('detail.contact')}</p>
                         {site.contact_info.phone && (
                             <div className="flex items-center gap-2 mb-2">
                                 <Phone className="w-4 h-4 text-green-600" />
@@ -361,12 +365,12 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                     <div className="p-4 bg-slate-50 rounded-xl">
                         <div className="flex items-center gap-2 mb-3">
                             <Clock className="w-4 h-4 text-slate-500" />
-                            <p className="text-xs text-slate-500">Opening Hours</p>
+                            <p className="text-xs text-slate-500">{t('detail.openingHours')}</p>
                         </div>
                         <div className="space-y-1 text-sm">
                             {Object.entries(site.opening_hours).map(([day, hours]) => (
                                 <div key={day} className="flex justify-between">
-                                    <span className="text-slate-500 capitalize">{day}</span>
+                                    <span className="text-slate-500 capitalize">{t(`day.${day}`)}</span>
                                     <span className="text-slate-700 font-medium">{hours}</span>
                                 </div>
                             ))}
@@ -381,7 +385,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-slate-400" />
                         <div>
-                            <p className="text-xs text-slate-500">Created by</p>
+                            <p className="text-xs text-slate-500">{t('detail.createdBy')}</p>
                             <p className="text-sm font-medium text-slate-700">{site.created_by.full_name}</p>
                         </div>
                     </div>
@@ -389,7 +393,7 @@ const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate,
                 <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-400" />
                     <div>
-                        <p className="text-xs text-slate-500">Created at</p>
+                        <p className="text-xs text-slate-500">{t('detail.createdAt')}</p>
                         <p className="text-sm font-medium text-slate-700">{formatDate(site.created_at)}</p>
                     </div>
                 </div>
@@ -404,6 +408,7 @@ interface SiteLocalGuidesTabProps {
 }
 
 const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteLocalGuidesResponse | null>(null);
@@ -464,7 +469,7 @@ const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} Local Guide đang làm việc tại site này
+                    {pagination?.total || 0} {t('localGuide.workingAtSite')}
                 </p>
             </div>
 
@@ -475,10 +480,10 @@ const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
                         <Users className="w-6 h-6 text-blue-600" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
-                        Chưa có Local Guide
+                        {t('localGuide.noGuides')}
                     </h3>
                     <p className="text-sm text-slate-500">
-                        Site này chưa có Local Guide nào được phân công
+                        {t('localGuide.noGuidesAssigned')}
                     </p>
                 </div>
             ) : (
@@ -522,7 +527,7 @@ const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
 
                                 {/* Badge */}
                                 <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                                    Local Guide
+                                    {t('role.localGuide')}
                                 </span>
                             </div>
                         ))}
@@ -532,7 +537,7 @@ const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }) => {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4">
                             <p className="text-sm text-slate-500">
-                                Trang {currentPage} / {totalPages}
+                                {t('pagination.page')} {currentPage} / {totalPages}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
@@ -564,6 +569,7 @@ interface SiteShiftsTabProps {
 }
 
 const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteShiftsResponse | null>(null);
@@ -609,11 +615,12 @@ const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
 
     const getStatusBadge = (status: ShiftSubmissionStatus) => {
         const configs = {
-            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
-            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
-            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+            pending: { color: 'bg-yellow-100 text-yellow-700', labelKey: 'status.pending' },
+            approved: { color: 'bg-green-100 text-green-700', labelKey: 'status.approved' },
+            rejected: { color: 'bg-red-100 text-red-700', labelKey: 'status.rejected' }
         };
-        return configs[status] || configs.pending;
+        const config = configs[status] || configs.pending;
+        return { ...config, label: t(config.labelKey) };
     };
 
     if (loading) {
@@ -644,7 +651,7 @@ const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
             {/* Header with Filter */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} đăng ký lịch trực
+                    {pagination?.total || 0} {t('shifts.shiftRegistrations')}
                 </p>
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-slate-400" />
@@ -656,10 +663,10 @@ const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Đã duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="">{t('status.allStatus')}</option>
+                        <option value="pending">{t('status.pending')}</option>
+                        <option value="approved">{t('status.approved')}</option>
+                        <option value="rejected">{t('status.rejected')}</option>
                     </select>
                 </div>
             </div>
@@ -671,7 +678,7 @@ const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
                         <Clock className="w-6 h-6 text-blue-600" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
-                        Chưa có lịch trực
+                        {t('shifts.noShifts')}
                     </h3>
                     <p className="text-sm text-slate-500">
                         Không có đăng ký lịch trực nào
@@ -780,6 +787,7 @@ interface SiteMediaTabProps {
 }
 
 const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteMediaResponse | null>(null);
@@ -819,20 +827,22 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
 
     const getStatusBadge = (status: MediaStatus) => {
         const configs = {
-            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
-            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
-            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+            pending: { color: 'bg-yellow-100 text-yellow-700', labelKey: 'status.pending' },
+            approved: { color: 'bg-green-100 text-green-700', labelKey: 'status.approved' },
+            rejected: { color: 'bg-red-100 text-red-700', labelKey: 'status.rejected' }
         };
-        return configs[status] || configs.pending;
+        const config = configs[status] || configs.pending;
+        return { ...config, label: t(config.labelKey) };
     };
 
     const getTypeBadge = (type: MediaType) => {
         const configs = {
-            image: { color: 'bg-blue-100 text-blue-700', label: 'Hình ảnh', icon: Image },
-            video: { color: 'bg-purple-100 text-purple-700', label: 'Video', icon: Play },
-            panorama: { color: 'bg-amber-100 text-amber-700', label: 'Panorama', icon: Eye }
+            image: { color: 'bg-blue-100 text-blue-700', labelKey: 'media.image', icon: Image },
+            video: { color: 'bg-purple-100 text-purple-700', labelKey: 'media.video', icon: Play },
+            panorama: { color: 'bg-amber-100 text-amber-700', labelKey: 'media.panorama', icon: Eye }
         };
-        return configs[type] || configs.image;
+        const config = configs[type] || configs.image;
+        return { ...config, label: t(config.labelKey) };
     };
 
     const isYouTubeUrl = (url: string): boolean => {
@@ -887,10 +897,10 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Đã duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="">{t('status.allStatus')}</option>
+                        <option value="pending">{t('status.pending')}</option>
+                        <option value="approved">{t('status.approved')}</option>
+                        <option value="rejected">{t('status.rejected')}</option>
                     </select>
                     <select
                         value={typeFilter}
@@ -900,10 +910,10 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả loại</option>
-                        <option value="image">Hình ảnh</option>
-                        <option value="video">Video</option>
-                        <option value="panorama">Panorama</option>
+                        <option value="">{t('media.allTypes')}</option>
+                        <option value="image">{t('media.image')}</option>
+                        <option value="video">{t('media.video')}</option>
+                        <option value="panorama">{t('media.panorama')}</option>
                     </select>
                 </div>
             </div>
@@ -1060,6 +1070,7 @@ interface SiteSchedulesTabProps {
 }
 
 const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteSchedulesResponse | null>(null);
@@ -1105,11 +1116,12 @@ const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
 
     const getStatusBadge = (status: ScheduleStatus) => {
         const configs = {
-            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
-            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
-            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+            pending: { color: 'bg-yellow-100 text-yellow-700', labelKey: 'status.pending' },
+            approved: { color: 'bg-green-100 text-green-700', labelKey: 'status.approved' },
+            rejected: { color: 'bg-red-100 text-red-700', labelKey: 'status.rejected' }
         };
-        return configs[status] || configs.pending;
+        const config = configs[status] || configs.pending;
+        return { ...config, label: t(config.labelKey) };
     };
 
     if (loading) {
@@ -1140,7 +1152,7 @@ const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
             {/* Header with Filter */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} lịch lễ
+                    {pagination?.total || 0} {t('schedules.items')}
                 </p>
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-slate-400" />
@@ -1152,10 +1164,10 @@ const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Đã duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="">{t('status.allStatus')}</option>
+                        <option value="pending">{t('status.pending')}</option>
+                        <option value="approved">{t('status.approved')}</option>
+                        <option value="rejected">{t('status.rejected')}</option>
                     </select>
                 </div>
             </div>
@@ -1167,10 +1179,10 @@ const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
                         <Calendar className="w-6 h-6 text-blue-600" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
-                        Chưa có lịch lễ
+                        {t('schedules.noSchedules')}
                     </h3>
                     <p className="text-sm text-slate-500">
-                        Không có lịch lễ nào
+                        {t('schedules.noSchedulesDesc')}
                     </p>
                 </div>
             ) : (
@@ -1260,8 +1272,9 @@ const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) => {
                         </div>
                     )}
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 
@@ -1271,6 +1284,7 @@ interface SiteEventsTabProps {
 }
 
 const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteEventsResponse | null>(null);
@@ -1316,11 +1330,12 @@ const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
 
     const getStatusBadge = (status: EventStatus) => {
         const configs = {
-            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
-            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
-            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+            pending: { color: 'bg-yellow-100 text-yellow-700', labelKey: 'status.pending' },
+            approved: { color: 'bg-green-100 text-green-700', labelKey: 'status.approved' },
+            rejected: { color: 'bg-red-100 text-red-700', labelKey: 'status.rejected' }
         };
-        return configs[status] || configs.pending;
+        const config = configs[status] || configs.pending;
+        return { ...config, label: t(config.labelKey) };
     };
 
     if (loading) {
@@ -1351,7 +1366,7 @@ const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
             {/* Header with Filter */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} sự kiện
+                    {pagination?.total || 0} {t('events.items')}
                 </p>
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-slate-400" />
@@ -1363,10 +1378,10 @@ const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Đã duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="">{t('status.allStatus')}</option>
+                        <option value="pending">{t('status.pending')}</option>
+                        <option value="approved">{t('status.approved')}</option>
+                        <option value="rejected">{t('status.rejected')}</option>
                     </select>
                 </div>
             </div>
@@ -1378,10 +1393,10 @@ const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
                         <Sparkles className="w-6 h-6 text-purple-600" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
-                        Chưa có sự kiện
+                        {t('events.noEvents')}
                     </h3>
                     <p className="text-sm text-slate-500">
-                        Không có sự kiện nào
+                        {t('events.noEventsDesc')}
                     </p>
                 </div>
             ) : (
@@ -1508,6 +1523,7 @@ interface SiteNearbyPlacesTabProps {
 }
 
 const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<SiteNearbyPlacesResponse | null>(null);
@@ -1546,20 +1562,22 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
 
     const getStatusBadge = (status: NearbyPlaceStatus) => {
         const configs = {
-            pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Chờ duyệt' },
-            approved: { color: 'bg-green-100 text-green-700', label: 'Đã duyệt' },
-            rejected: { color: 'bg-red-100 text-red-700', label: 'Từ chối' }
+            pending: { color: 'bg-yellow-100 text-yellow-700', labelKey: 'status.pending' },
+            approved: { color: 'bg-green-100 text-green-700', labelKey: 'status.approved' },
+            rejected: { color: 'bg-red-100 text-red-700', labelKey: 'status.rejected' }
         };
-        return configs[status] || configs.pending;
+        const config = configs[status] || configs.pending;
+        return { ...config, label: t(config.labelKey) };
     };
 
     const getCategoryInfo = (category: NearbyPlaceCategory) => {
         const configs = {
-            food: { color: 'bg-orange-100 text-orange-700', label: 'Ẩm thực', icon: '🍴' },
-            lodging: { color: 'bg-blue-100 text-blue-700', label: 'Lưu trú', icon: '🏨' },
-            medical: { color: 'bg-red-100 text-red-700', label: 'Y tế', icon: '🏥' }
+            food: { color: 'bg-orange-100 text-orange-700', labelKey: 'nearbyPlaces.food', icon: '🍴' },
+            lodging: { color: 'bg-blue-100 text-blue-700', labelKey: 'nearbyPlaces.lodging', icon: '🏨' },
+            medical: { color: 'bg-red-100 text-red-700', labelKey: 'nearbyPlaces.medical', icon: '🏥' }
         };
-        return configs[category] || configs.food;
+        const config = configs[category] || configs.food;
+        return { ...config, label: t(config.labelKey) };
     };
 
     if (loading) {
@@ -1590,7 +1608,7 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
             {/* Header with Filters */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} địa điểm
+                    {pagination?.total || 0} {t('nearbyPlaces.items')}
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                     <Filter className="w-4 h-4 text-slate-400" />
@@ -1602,10 +1620,10 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Đã duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="">{t('status.allStatus')}</option>
+                        <option value="pending">{t('status.pending')}</option>
+                        <option value="approved">{t('status.approved')}</option>
+                        <option value="rejected">{t('status.rejected')}</option>
                     </select>
                     <select
                         value={categoryFilter}
@@ -1615,10 +1633,10 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
                         }}
                         className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Tất cả loại</option>
-                        <option value="food">Ẩm thực</option>
-                        <option value="lodging">Lưu trú</option>
-                        <option value="medical">Y tế</option>
+                        <option value="">{t('nearbyPlaces.allCategories')}</option>
+                        <option value="food">{t('nearbyPlaces.food')}</option>
+                        <option value="lodging">{t('nearbyPlaces.lodging')}</option>
+                        <option value="medical">{t('nearbyPlaces.medical')}</option>
                     </select>
                 </div>
             </div>
@@ -1630,10 +1648,10 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
                         <MapPin className="w-6 h-6 text-teal-600" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
-                        Chưa có địa điểm lân cận
+                        {t('nearbyPlaces.noPlaces')}
                     </h3>
                     <p className="text-sm text-slate-500">
-                        Không có địa điểm nào
+                        {t('nearbyPlaces.noPlacesDesc')}
                     </p>
                 </div>
             ) : (

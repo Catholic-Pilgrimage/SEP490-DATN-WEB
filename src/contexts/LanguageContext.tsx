@@ -179,6 +179,54 @@ const translations: Record<Language, Record<string, string>> = {
         'detail.noDescription': 'Không có mô tả',
         'detail.noHistory': 'Không có lịch sử',
         'detail.noData': 'Không có dữ liệu',
+        'detail.createdBy': 'Tạo bởi',
+
+        // Local Guide
+        'localGuide.workingAtSite': 'Hướng dẫn viên đang làm việc tại site này',
+        'localGuide.noGuides': 'Chưa có Hướng dẫn viên',
+        'localGuide.noGuidesAssigned': 'Site này chưa có Hướng dẫn viên nào được phân công',
+
+        // Pagination
+        'pagination.page': 'Trang',
+
+        // Status
+        'status.pending': 'Chờ duyệt',
+        'status.approved': 'Đã duyệt',
+        'status.rejected': 'Từ chối',
+        'status.allStatus': 'Tất cả trạng thái',
+
+        // Shifts Tab
+        'shifts.shiftRegistrations': 'đăng ký lịch trực',
+        'shifts.noShifts': 'Chưa có lịch trực',
+        'shifts.noShiftsDesc': 'Chưa có đăng ký lịch trực nào cho site này',
+
+        // Media Tab
+        'media.items': 'media',
+        'media.noMedia': 'Chưa có media',
+        'media.noMediaDesc': 'Chưa có hình ảnh hoặc video nào được tải lên',
+        'media.allTypes': 'Tất cả loại',
+        'media.image': 'Hình ảnh',
+        'media.video': 'Video',
+        'media.panorama': 'Panorama',
+
+        // Schedules Tab
+        'schedules.items': 'lịch lễ',
+        'schedules.noSchedules': 'Chưa có lịch lễ',
+        'schedules.noSchedulesDesc': 'Chưa có lịch lễ nào được tạo',
+
+        // Events Tab
+        'events.items': 'sự kiện',
+        'events.noEvents': 'Chưa có sự kiện',
+        'events.noEventsDesc': 'Chưa có sự kiện nào được tạo',
+
+        // Nearby Places Tab
+        'nearbyPlaces.items': 'địa điểm lân cận',
+        'nearbyPlaces.noPlaces': 'Chưa có địa điểm lân cận',
+        'nearbyPlaces.noPlacesDesc': 'Chưa có địa điểm lân cận nào được thêm',
+        'nearbyPlaces.allCategories': 'Tất cả loại',
+        'nearbyPlaces.food': 'Ẩm thực',
+        'nearbyPlaces.lodging': 'Lưu trú',
+        'nearbyPlaces.medical': 'Y tế',
     },
     en: {
         // Sidebar
@@ -350,6 +398,54 @@ const translations: Record<Language, Record<string, string>> = {
         'detail.noDescription': 'No description',
         'detail.noHistory': 'No history',
         'detail.noData': 'No data available',
+        'detail.createdBy': 'Created by',
+
+        // Local Guide
+        'localGuide.workingAtSite': 'Local Guide(s) working at this site',
+        'localGuide.noGuides': 'No Local Guides',
+        'localGuide.noGuidesAssigned': 'No Local Guide has been assigned to this site',
+
+        // Pagination
+        'pagination.page': 'Page',
+
+        // Status
+        'status.pending': 'Pending',
+        'status.approved': 'Approved',
+        'status.rejected': 'Rejected',
+        'status.allStatus': 'All Status',
+
+        // Shifts Tab
+        'shifts.shiftRegistrations': 'shift registration(s)',
+        'shifts.noShifts': 'No shifts',
+        'shifts.noShiftsDesc': 'No shift registrations for this site yet',
+
+        // Media Tab
+        'media.items': 'media item(s)',
+        'media.noMedia': 'No media',
+        'media.noMediaDesc': 'No images or videos have been uploaded',
+        'media.allTypes': 'All Types',
+        'media.image': 'Image',
+        'media.video': 'Video',
+        'media.panorama': 'Panorama',
+
+        // Schedules Tab
+        'schedules.items': 'schedule(s)',
+        'schedules.noSchedules': 'No schedules',
+        'schedules.noSchedulesDesc': 'No schedules have been created',
+
+        // Events Tab
+        'events.items': 'event(s)',
+        'events.noEvents': 'No events',
+        'events.noEventsDesc': 'No events have been created',
+
+        // Nearby Places Tab
+        'nearbyPlaces.items': 'nearby place(s)',
+        'nearbyPlaces.noPlaces': 'No nearby places',
+        'nearbyPlaces.noPlacesDesc': 'No nearby places have been added',
+        'nearbyPlaces.allCategories': 'All Categories',
+        'nearbyPlaces.food': 'Food',
+        'nearbyPlaces.lodging': 'Lodging',
+        'nearbyPlaces.medical': 'Medical',
     }
 };
 

@@ -212,7 +212,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                                 {/* Patron Saint */}
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Patron Saint</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.patronSaint')}</label>
                                     <input
                                         type="text"
                                         name="patron_saint"
@@ -225,7 +225,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                                 {/* Description */}
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.description')}</label>
                                     <textarea
                                         name="description"
                                         value={formData.description || ''}
@@ -237,7 +237,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                                 {/* History */}
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">History</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.history')}</label>
                                     <textarea
                                         name="history"
                                         value={formData.history || ''}
@@ -252,12 +252,12 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                         {/* Location Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
                             <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <MapPin className="w-4 h-4" /> Location
+                                <MapPin className="w-4 h-4" /> {t('edit.location')}
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.address')}</label>
                                     <input
                                         type="text"
                                         name="address"
@@ -267,7 +267,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.district')}</label>
                                     <input
                                         type="text"
                                         name="district"
@@ -277,7 +277,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Province</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.province')}</label>
                                     <input
                                         type="text"
                                         name="province"
@@ -287,7 +287,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.latitude')}</label>
                                     <input
                                         type="number"
                                         name="latitude"
@@ -298,7 +298,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.longitude')}</label>
                                     <input
                                         type="number"
                                         name="longitude"
@@ -314,7 +314,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                         {/* Cover Image Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
                             <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4" /> Cover Image
+                                <ImageIcon className="w-4 h-4" /> {t('edit.coverImage')}
                             </h3>
 
                             <div className="flex items-start gap-4">
@@ -323,7 +323,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                 )}
                                 <label className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#d4af37]/30 rounded-xl hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-colors cursor-pointer">
                                     <Upload className="w-6 h-6 text-[#8a6d1c] mb-1" />
-                                    <span className="text-sm text-[#8a6d1c]">Click to upload new image</span>
+                                    <span className="text-sm text-[#8a6d1c]">{t('edit.uploadImage')}</span>
                                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                 </label>
                             </div>
@@ -331,12 +331,12 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                         {/* Contact Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Contact Info</h3>
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">{t('edit.contactInfo')}</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                        <Phone className="w-3 h-3" /> Phone
+                                        <Phone className="w-3 h-3" /> {t('edit.phone')}
                                     </label>
                                     <input
                                         type="text"
@@ -347,7 +347,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                        <Mail className="w-3 h-3" /> Email
+                                        <Mail className="w-3 h-3" /> {t('edit.email')}
                                     </label>
                                     <input
                                         type="email"
@@ -362,13 +362,13 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                         {/* Opening Hours Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
                             <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <Clock className="w-4 h-4" /> Opening Hours
+                                <Clock className="w-4 h-4" /> {t('edit.openingHours')}
                             </h3>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {days.map(day => (
                                     <div key={day}>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1 capitalize">{day}</label>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1 capitalize">{t(`day.${day}`)}</label>
                                         <input
                                             type="text"
                                             value={(openingHours as any)[day] || ''}
@@ -391,7 +391,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     onChange={handleInputChange}
                                     className="w-5 h-5 rounded border-[#d4af37]/50 text-[#d4af37] focus:ring-[#d4af37]"
                                 />
-                                <span className="text-sm font-medium text-slate-700">Site is Active</span>
+                                <span className="text-sm font-medium text-slate-700">{t('edit.siteActive')}</span>
                             </label>
                         </div>
                     </div>
@@ -404,7 +404,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                             disabled={loading}
                             className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                         <button
                             type="submit"
@@ -412,9 +412,9 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
                         >
                             {loading ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                                <><Loader2 className="w-4 h-4 animate-spin" /> {t('edit.saving')}</>
                             ) : (
-                                <><Save className="w-4 h-4" /> Save Changes</>
+                                <><Save className="w-4 h-4" /> {t('common.save')}</>
                             )}
                         </button>
                     </div>
