@@ -182,15 +182,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const isPending = currentEvent.status === 'pending';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Overlay */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden mx-4">
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden mx-4 my-8 flex-shrink-0">
                 {/* Banner Header */}
                 <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500">
                     {currentEvent.banner_url ? (
@@ -441,8 +441,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                         onClick={handleToggleActive}
                         disabled={actionLoading}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors disabled:opacity-50 ${currentEvent.is_active
-                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                            ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                     >
                         {actionLoading ? (

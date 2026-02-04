@@ -200,15 +200,15 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     const isPending = submission?.status === 'pending';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Overlay */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden mx-4">
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden mx-4 my-8 flex-shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200">
                     <h2 className="text-xl font-semibold text-slate-900">
@@ -339,10 +339,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                             <div
                                                 key={index}
                                                 className={`p-3 rounded-lg border ${change.is_new
-                                                        ? 'bg-green-50 border-green-200'
-                                                        : change.is_removed
-                                                            ? 'bg-red-50 border-red-200'
-                                                            : 'bg-yellow-50 border-yellow-200'
+                                                    ? 'bg-green-50 border-green-200'
+                                                    : change.is_removed
+                                                        ? 'bg-red-50 border-red-200'
+                                                        : 'bg-yellow-50 border-yellow-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-2 mb-2">
@@ -359,10 +359,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                                         {getDayName(change.day_of_week)}
                                                     </span>
                                                     <span className={`text-xs px-2 py-0.5 rounded-full ${change.is_new
-                                                            ? 'bg-green-200 text-green-700'
-                                                            : change.is_removed
-                                                                ? 'bg-red-200 text-red-700'
-                                                                : 'bg-yellow-200 text-yellow-700'
+                                                        ? 'bg-green-200 text-green-700'
+                                                        : change.is_removed
+                                                            ? 'bg-red-200 text-red-700'
+                                                            : 'bg-yellow-200 text-yellow-700'
                                                         }`}>
                                                         {change.is_new ? 'Thêm mới' : change.is_removed ? 'Xóa' : 'Thay đổi'}
                                                     </span>
