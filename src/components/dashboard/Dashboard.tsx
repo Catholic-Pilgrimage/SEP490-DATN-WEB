@@ -15,6 +15,7 @@ import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
 import { LanguageProvider } from '../../contexts/LanguageContext';
+import { NotificationProvider } from '../../contexts/NotificationContext';
 
 interface DashboardProps {
   user: User;
@@ -101,7 +102,9 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
 export const Dashboard: React.FC<DashboardProps> = (props) => {
   return (
     <LanguageProvider>
-      <DashboardContent {...props} />
+      <NotificationProvider>
+        <DashboardContent {...props} />
+      </NotificationProvider>
     </LanguageProvider>
   );
 };

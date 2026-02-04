@@ -49,6 +49,13 @@ export const API_CONFIG = {
                 NEARBY_PLACES_ACTIVE: (id: string) => `/api/manager/content/nearby-places/${id}/is-active`,
             },
         },
+        NOTIFICATIONS: {
+            BASE: '/api/notifications', // GET list, DELETE all
+            MARK_READ: (id: string) => `/api/notifications/${id}/read`, // PATCH mark as read
+            MARK_ALL_READ: '/api/notifications/read-all', // PATCH mark all as read
+            DELETE: (id: string) => `/api/notifications/${id}`, // DELETE notification
+            DELETE_ALL: '/api/notifications', // DELETE all notifications
+        },
     },
     TIMEOUT: 10000, // 10 seconds
 };

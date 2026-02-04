@@ -1,8 +1,9 @@
 import React from 'react';
-import { Search, Bell, ChevronRight, AlertTriangle } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { User } from '../../../App';
 import { ActiveView } from '../Dashboard';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { NotificationPanel } from '../shared/NotificationPanel';
 
 interface TopBarProps {
   user: User;
@@ -94,14 +95,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
           
           {/* Notifications */}
-          <div className="relative">
-            <button className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors relative border border-[#d4af37]/20">
-              <Bell className="w-5 h-5 text-[#8a6d1c]" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-2 h-2 text-white" />
-              </div>
-            </button>
-          </div>
+          <NotificationPanel onViewChange={onViewChange} />
 
           {/* User Menu */}
           <div className="relative group">
