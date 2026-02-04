@@ -94,6 +94,20 @@ export const MySite: React.FC = () => {
         return labels[region] || region;
     };
 
+    const getDayLabel = (day: string) => {
+        const dayKey = day.toLowerCase();
+        const dayMap: Record<string, string> = {
+            monday: t('day.monday'),
+            tuesday: t('day.tuesday'),
+            wednesday: t('day.wednesday'),
+            thursday: t('day.thursday'),
+            friday: t('day.friday'),
+            saturday: t('day.saturday'),
+            sunday: t('day.sunday')
+        };
+        return dayMap[dayKey] || day;
+    };
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('vi-VN', {
             year: 'numeric',
@@ -284,7 +298,7 @@ export const MySite: React.FC = () => {
                                 <div className="space-y-1 text-sm">
                                     {Object.entries(site.opening_hours).map(([day, hours]) => (
                                         <div key={day} className="flex justify-between">
-                                            <span className="text-gray-500 capitalize">{day}</span>
+                                            <span className="text-gray-500">{getDayLabel(day)}</span>
                                             <span className="text-gray-900 font-medium">{hours}</span>
                                         </div>
                                     ))}

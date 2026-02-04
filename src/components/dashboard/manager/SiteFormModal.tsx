@@ -18,6 +18,7 @@ import {
 import { ManagerService } from '../../../services/manager.service';
 import { ManagerSite, CreateManagerSiteData, UpdateManagerSiteData } from '../../../types/manager.types';
 import { SiteType, SiteRegion, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface SiteFormModalProps {
     isOpen: boolean;
@@ -27,28 +28,28 @@ interface SiteFormModalProps {
     existingSite?: ManagerSite | null;
 }
 
-const SITE_TYPES: { value: SiteType; label: string; icon: React.ElementType }[] = [
-    { value: 'church', label: 'Nhà thờ', icon: Church },
-    { value: 'shrine', label: 'Đền thánh', icon: Mountain },
-    { value: 'monastery', label: 'Tu viện', icon: Building },
-    { value: 'center', label: 'Trung tâm', icon: Home },
-    { value: 'other', label: 'Khác', icon: HelpCircle }
+const SITE_TYPES: { value: SiteType; labelKey: string; icon: React.ElementType }[] = [
+    { value: 'church', labelKey: 'siteType.church', icon: Church },
+    { value: 'shrine', labelKey: 'siteType.shrine', icon: Mountain },
+    { value: 'monastery', labelKey: 'siteType.monastery', icon: Building },
+    { value: 'center', labelKey: 'siteType.center', icon: Home },
+    { value: 'other', labelKey: 'siteType.other', icon: HelpCircle }
 ];
 
-const REGIONS: { value: SiteRegion; label: string }[] = [
-    { value: 'Bac', label: 'Miền Bắc' },
-    { value: 'Trung', label: 'Miền Trung' },
-    { value: 'Nam', label: 'Miền Nam' }
+const REGIONS: { value: SiteRegion; labelKey: string }[] = [
+    { value: 'Bac', labelKey: 'region.bac' },
+    { value: 'Trung', labelKey: 'region.trung' },
+    { value: 'Nam', labelKey: 'region.nam' }
 ];
 
 const DAYS_OF_WEEK = [
-    { key: 'monday', label: 'Thứ 2' },
-    { key: 'tuesday', label: 'Thứ 3' },
-    { key: 'wednesday', label: 'Thứ 4' },
-    { key: 'thursday', label: 'Thứ 5' },
-    { key: 'friday', label: 'Thứ 6' },
-    { key: 'saturday', label: 'Thứ 7' },
-    { key: 'sunday', label: 'Chủ Nhật' }
+    { key: 'monday', labelKey: 'day.monday' },
+    { key: 'tuesday', labelKey: 'day.tuesday' },
+    { key: 'wednesday', labelKey: 'day.wednesday' },
+    { key: 'thursday', labelKey: 'day.thursday' },
+    { key: 'friday', labelKey: 'day.friday' },
+    { key: 'saturday', labelKey: 'day.saturday' },
+    { key: 'sunday', labelKey: 'day.sunday' }
 ];
 
 export const SiteFormModal: React.FC<SiteFormModalProps> = ({
@@ -58,6 +59,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     mode,
     existingSite
 }) => {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -233,20 +235,20 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 my-8 max-h-[90vh] overflow-hidden flex-shrink-0">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="text-white">
                         <h2 className="text-lg font-semibold">
-                            {mode === 'create' ? 'Tạo địa điểm mới' : 'Chỉnh sửa địa điểm'}
+                            {mode === 'create' ? t('siteForm.createTitle') : t('siteForm.editTitle')}
                         </h2>
                         <p className="text-sm opacity-80">
-                            {mode === 'create' ? 'Điền thông tin để tạo địa điểm' : 'Cập nhật thông tin địa điểm'}
+                            {mode === 'create' ? t('siteForm.createSubtitle') : t('siteForm.editSubtitle')}
                         </p>
                     </div>
                     <button
@@ -269,39 +271,39 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     {/* Basic Info */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Thông tin cơ bản</h3>
+                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('siteForm.basicInfo')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Name */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Tên địa điểm <span className="text-red-500">*</span>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t('siteForm.name')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Nhà thờ Đức Bà Sài Gòn"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             {/* Type */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Loại địa điểm</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.type')}</label>
                                 <div className="flex flex-wrap gap-2">
-                                    {SITE_TYPES.map(({ value, label, icon: Icon }) => (
+                                    {SITE_TYPES.map(({ value, labelKey, icon: Icon }) => (
                                         <button
                                             key={value}
                                             type="button"
                                             onClick={() => setType(value)}
                                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === value
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />
-                                            {label}
+                                            {t(labelKey)}
                                         </button>
                                     ))}
                                 </div>
@@ -309,19 +311,19 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                             {/* Region */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Miền</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.region')}</label>
                                 <div className="flex gap-2">
-                                    {REGIONS.map(({ value, label }) => (
+                                    {REGIONS.map(({ value, labelKey }) => (
                                         <button
                                             key={value}
                                             type="button"
                                             onClick={() => setRegion(value)}
                                             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${region === value
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                         >
-                                            {label}
+                                            {t(labelKey)}
                                         </button>
                                     ))}
                                 </div>
@@ -329,37 +331,37 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                             {/* Patron Saint */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Bổn mạng</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.patronSaint')}</label>
                                 <input
                                     type="text"
                                     value={patronSaint}
                                     onChange={(e) => setPatronSaint(e.target.value)}
                                     placeholder="Đức Mẹ Vô Nhiễm Nguyên Tội"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             {/* Description */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mô tả</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.description')}</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="Mô tả ngắn về địa điểm..."
                                     rows={3}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent resize-none"
                                 />
                             </div>
 
                             {/* History */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Lịch sử</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.history')}</label>
                                 <textarea
                                     value={history}
                                     onChange={(e) => setHistory(e.target.value)}
                                     placeholder="Lịch sử hình thành và phát triển..."
                                     rows={3}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent resize-none"
                                 />
                             </div>
                         </div>
@@ -367,71 +369,71 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     {/* Location */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> Vị trí
+                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider flex items-center gap-2">
+                            <MapPin className="w-4 h-4" /> {t('siteForm.location')}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Địa chỉ <span className="text-red-500">*</span>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t('siteForm.address')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="01 Công xã Paris, Bến Nghé"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Tỉnh/Thành phố <span className="text-red-500">*</span>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t('siteForm.province')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={province}
                                     onChange={(e) => setProvince(e.target.value)}
                                     placeholder="Hồ Chí Minh"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Quận/Huyện</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.district')}</label>
                                 <input
                                     type="text"
                                     value={district}
                                     onChange={(e) => setDistrict(e.target.value)}
                                     placeholder="Quận 1"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Latitude <span className="text-red-500">*</span>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t('siteForm.latitude')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={latitude}
                                     onChange={(e) => setLatitude(e.target.value)}
                                     placeholder="10.779733"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Longitude <span className="text-red-500">*</span>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t('siteForm.longitude')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={longitude}
                                     onChange={(e) => setLongitude(e.target.value)}
                                     placeholder="106.699092"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -439,8 +441,8 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     {/* Cover Image */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                            <Upload className="w-4 h-4" /> Ảnh bìa
+                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider flex items-center gap-2">
+                            <Upload className="w-4 h-4" /> {t('siteForm.coverImage')}
                         </h3>
 
                         <div className="flex items-center gap-4">
@@ -456,9 +458,9 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     </button>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-500 transition-colors">
-                                    <Upload className="w-6 h-6 text-slate-400" />
-                                    <span className="text-xs text-slate-500 mt-1">Chọn ảnh</span>
+                                <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-[#d4af37]/50 rounded-xl cursor-pointer hover:border-[#d4af37] transition-colors">
+                                    <Upload className="w-6 h-6 text-[#d4af37]" />
+                                    <span className="text-xs text-gray-500 mt-1">{t('siteForm.selectImage')}</span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -472,20 +474,20 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     {/* Opening Hours */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> Giờ mở cửa
+                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider flex items-center gap-2">
+                            <Clock className="w-4 h-4" /> {t('siteForm.openingHours')}
                         </h3>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {DAYS_OF_WEEK.map(({ key, label }) => (
+                            {DAYS_OF_WEEK.map(({ key, labelKey }) => (
                                 <div key={key}>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">{t(labelKey)}</label>
                                     <input
                                         type="text"
                                         value={openingHours[key] || ''}
                                         onChange={(e) => handleOpeningHourChange(key, e.target.value)}
                                         placeholder="05:00-18:00"
-                                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                     />
                                 </div>
                             ))}
@@ -494,32 +496,32 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     {/* Contact Info */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Thông tin liên hệ</h3>
+                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('siteForm.contactInfo')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                    <Phone className="w-4 h-4" /> Điện thoại
+                                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                                    <Phone className="w-4 h-4" /> {t('siteForm.phone')}
                                 </label>
                                 <input
                                     type="text"
                                     value={contactPhone}
                                     onChange={(e) => setContactPhone(e.target.value)}
                                     placeholder="028-3822-0477"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                    <Mail className="w-4 h-4" /> Email
+                                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                                    <Mail className="w-4 h-4" /> {t('siteForm.email')}
                                 </label>
                                 <input
                                     type="email"
                                     value={contactEmail}
                                     onChange={(e) => setContactEmail(e.target.value)}
                                     placeholder="contact@example.com"
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -527,23 +529,23 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#d4af37]/20 bg-[#f5f3ee]">
                     <button
                         onClick={onClose}
                         disabled={loading}
-                        className="px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50"
+                        className="px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
                     >
-                        Hủy
+                        {t('common.cancel')}
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
                     >
                         {loading ? (
-                            <><Loader2 className="w-4 h-4 animate-spin" /> Đang xử lý...</>
+                            <><Loader2 className="w-4 h-4 animate-spin" /> {t('siteForm.processing')}</>
                         ) : (
-                            <><Save className="w-4 h-4" /> {mode === 'create' ? 'Tạo địa điểm' : 'Lưu thay đổi'}</>
+                            <><Save className="w-4 h-4" /> {mode === 'create' ? t('siteForm.createButton') : t('common.save')}</>
                         )}
                     </button>
                 </div>
