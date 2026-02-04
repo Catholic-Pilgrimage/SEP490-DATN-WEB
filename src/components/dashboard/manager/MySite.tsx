@@ -20,8 +20,10 @@ import { ManagerService } from '../../../services/manager.service';
 import { ManagerSite } from '../../../types/manager.types';
 import { SiteType, SiteRegion } from '../../../types/admin.types';
 import { SiteFormModal } from './SiteFormModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const MySite: React.FC = () => {
+    const { t } = useLanguage();
     const [site, setSite] = useState<ManagerSite | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -78,17 +80,17 @@ export const MySite: React.FC = () => {
 
     const getTypeInfo = (type: SiteType) => {
         const types = {
-            church: { label: 'Nhà thờ', icon: Church, color: 'text-blue-600 bg-blue-100' },
-            shrine: { label: 'Đền thánh', icon: Mountain, color: 'text-purple-600 bg-purple-100' },
-            monastery: { label: 'Tu viện', icon: Building, color: 'text-amber-600 bg-amber-100' },
-            center: { label: 'Trung tâm', icon: Home, color: 'text-green-600 bg-green-100' },
-            other: { label: 'Khác', icon: HelpCircle, color: 'text-slate-600 bg-slate-100' }
+            church: { label: t('siteType.church'), icon: Church, color: 'text-[#8a6d1c] bg-[#d4af37]/20' },
+            shrine: { label: t('siteType.shrine'), icon: Mountain, color: 'text-[#8a6d1c] bg-[#d4af37]/20' },
+            monastery: { label: t('siteType.monastery'), icon: Building, color: 'text-[#8a6d1c] bg-[#d4af37]/20' },
+            center: { label: t('siteType.center'), icon: Home, color: 'text-[#8a6d1c] bg-[#d4af37]/20' },
+            other: { label: t('siteType.other'), icon: HelpCircle, color: 'text-gray-600 bg-gray-100' }
         };
         return types[type] || types.other;
     };
 
     const getRegionLabel = (region: SiteRegion) => {
-        const labels = { Bac: 'Miền Bắc', Trung: 'Miền Trung', Nam: 'Miền Nam' };
+        const labels = { Bac: t('region.bac'), Trung: t('region.trung'), Nam: t('region.nam') };
         return labels[region] || region;
     };
 
@@ -103,7 +105,7 @@ export const MySite: React.FC = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
             </div>
         );
     }
@@ -113,25 +115,25 @@ export const MySite: React.FC = () => {
         return (
             <div className="p-6">
                 <div className="max-w-2xl mx-auto">
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl p-12 text-center">
-                        <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <div className="bg-gradient-to-br from-[#f5f3ee] to-[#d4af37]/20 rounded-3xl p-12 text-center border border-[#d4af37]/20">
+                        <div className="w-20 h-20 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#d4af37]/20">
                             <Church className="w-10 h-10 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-3">
-                            Bạn chưa có địa điểm nào
+                        <h2 className="text-2xl font-bold text-[#8a6d1c] mb-3">
+                            {t('mySite.noSiteTitle')}
                         </h2>
-                        <p className="text-slate-600 mb-8">
-                            Tạo địa điểm đầu tiên của bạn để bắt đầu quản lý và thu hút người hành hương.
+                        <p className="text-gray-600 mb-8">
+                            {t('mySite.noSiteDesc')}
                         </p>
                         <button
                             onClick={handleOpenCreateModal}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all font-medium shadow-lg shadow-[#d4af37]/25"
                         >
                             <Plus className="w-5 h-5" />
-                            Tạo địa điểm mới
+                            {t('mySite.createNew')}
                         </button>
-                        <p className="text-sm text-slate-500 mt-4">
-                            Lưu ý: Mỗi Manager chỉ được quản lý 1 địa điểm
+                        <p className="text-sm text-gray-500 mt-4">
+                            {t('mySite.note')}
                         </p>
                     </div>
                 </div>
@@ -156,7 +158,7 @@ export const MySite: React.FC = () => {
                     <XCircle className="w-5 h-5 flex-shrink-0" />
                     <span>{error}</span>
                     <button onClick={fetchMySite} className="ml-auto px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
-                        Thử lại
+                        {t('mySite.retry')}
                     </button>
                 </div>
             </div>
@@ -174,31 +176,31 @@ export const MySite: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Địa điểm của tôi</h1>
-                    <p className="text-slate-500 mt-1">Quản lý thông tin địa điểm hành hương</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('mySite.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('mySite.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={fetchMySite}
-                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors"
                     >
                         <RefreshCw className="w-4 h-4" />
-                        Làm mới
+                        {t('common.refresh')}
                     </button>
                     <button
                         onClick={handleOpenEditModal}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20"
                     >
                         <Edit className="w-4 h-4" />
-                        Chỉnh sửa
+                        {t('common.edit')}
                     </button>
                 </div>
             </div>
 
             {/* Site Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
                 {/* Cover Image */}
-                <div className="relative h-64 bg-gradient-to-br from-blue-400 to-indigo-600">
+                <div className="relative h-64 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37]">
                     {site.cover_image && (
                         <img
                             src={site.cover_image}
@@ -217,9 +219,9 @@ export const MySite: React.FC = () => {
                             : 'bg-red-100 text-red-700'
                             }`}>
                             {site.is_active ? (
-                                <><CheckCircle className="w-4 h-4" /> Đang hoạt động</>
+                                <><CheckCircle className="w-4 h-4" /> {t('mySite.active')}</>
                             ) : (
-                                <><XCircle className="w-4 h-4" /> Tạm ngưng</>
+                                <><XCircle className="w-4 h-4" /> {t('mySite.inactive')}</>
                             )}
                         </span>
                     </div>
@@ -239,16 +241,16 @@ export const MySite: React.FC = () => {
                         </div>
                         <h2 className="text-2xl font-bold text-slate-900">{site.name}</h2>
                         {site.patron_saint && (
-                            <p className="text-slate-600 mt-1">Bổn mạng: {site.patron_saint}</p>
+                            <p className="text-slate-600 mt-1">{t('mySite.patronSaint')}: {site.patron_saint}</p>
                         )}
                     </div>
 
                     {/* Address */}
-                    <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-                        <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
+                        <MapPin className="w-5 h-5 text-[#d4af37] mt-0.5" />
                         <div>
-                            <p className="font-medium text-slate-900">{site.address}</p>
-                            <p className="text-sm text-slate-500">
+                            <p className="font-medium text-gray-900">{site.address}</p>
+                            <p className="text-sm text-gray-500">
                                 {site.district && `${site.district}, `}{site.province}
                             </p>
                         </div>
@@ -257,16 +259,16 @@ export const MySite: React.FC = () => {
                     {/* Description */}
                     {site.description && (
                         <div>
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-2">Mô tả</h3>
-                            <p className="text-slate-600">{site.description}</p>
+                            <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider mb-2">{t('mySite.description')}</h3>
+                            <p className="text-gray-600">{site.description}</p>
                         </div>
                     )}
 
                     {/* History */}
                     {site.history && (
                         <div>
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-2">Lịch sử</h3>
-                            <p className="text-slate-600">{site.history}</p>
+                            <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider mb-2">{t('mySite.history')}</h3>
+                            <p className="text-gray-600">{site.history}</p>
                         </div>
                     )}
 
@@ -274,16 +276,16 @@ export const MySite: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Opening Hours */}
                         {site.opening_hours && Object.keys(site.opening_hours).length > 0 && (
-                            <div className="p-4 border border-slate-200 rounded-xl">
-                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <div className="p-4 border border-[#d4af37]/20 rounded-xl bg-[#f5f3ee]">
+                                <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider mb-3 flex items-center gap-2">
                                     <Clock className="w-4 h-4" />
-                                    Giờ mở cửa
+                                    {t('mySite.openingHours')}
                                 </h3>
                                 <div className="space-y-1 text-sm">
                                     {Object.entries(site.opening_hours).map(([day, hours]) => (
                                         <div key={day} className="flex justify-between">
-                                            <span className="text-slate-500 capitalize">{day}</span>
-                                            <span className="text-slate-900 font-medium">{hours}</span>
+                                            <span className="text-gray-500 capitalize">{day}</span>
+                                            <span className="text-gray-900 font-medium">{hours}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -292,21 +294,21 @@ export const MySite: React.FC = () => {
 
                         {/* Contact Info */}
                         {site.contact_info && (
-                            <div className="p-4 border border-slate-200 rounded-xl">
-                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3">
-                                    Thông tin liên hệ
+                            <div className="p-4 border border-[#d4af37]/20 rounded-xl bg-[#f5f3ee]">
+                                <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider mb-3">
+                                    {t('mySite.contactInfo')}
                                 </h3>
                                 <div className="space-y-2 text-sm">
                                     {site.contact_info.phone && (
                                         <div className="flex items-center gap-2">
-                                            <Phone className="w-4 h-4 text-slate-400" />
-                                            <span className="text-slate-900">{site.contact_info.phone}</span>
+                                            <Phone className="w-4 h-4 text-[#d4af37]" />
+                                            <span className="text-gray-900">{site.contact_info.phone}</span>
                                         </div>
                                     )}
                                     {site.contact_info.email && (
                                         <div className="flex items-center gap-2">
-                                            <Mail className="w-4 h-4 text-slate-400" />
-                                            <span className="text-slate-900">{site.contact_info.email}</span>
+                                            <Mail className="w-4 h-4 text-[#d4af37]" />
+                                            <span className="text-gray-900">{site.contact_info.email}</span>
                                         </div>
                                     )}
                                 </div>
@@ -315,9 +317,9 @@ export const MySite: React.FC = () => {
                     </div>
 
                     {/* Timestamps */}
-                    <div className="flex items-center justify-between text-sm text-slate-500 pt-4 border-t border-slate-200">
-                        <span>Ngày tạo: {formatDate(site.created_at)}</span>
-                        <span>Cập nhật: {formatDate(site.updated_at)}</span>
+                    <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-[#d4af37]/20">
+                        <span>{t('mySite.createdAt')}: {formatDate(site.created_at)}</span>
+                        <span>{t('mySite.updatedAt')}: {formatDate(site.updated_at)}</span>
                     </div>
                 </div>
             </div>

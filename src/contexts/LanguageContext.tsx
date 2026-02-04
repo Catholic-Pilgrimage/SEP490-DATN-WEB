@@ -273,6 +273,31 @@ const translations: Record<Language, Record<string, string>> = {
         'verificationDetail.rejectionReasonRequired': 'Lý do từ chối *',
         'verificationDetail.enterRejectionReason': 'Nhập lý do từ chối...',
         'verificationDetail.unknown': 'Không rõ',
+
+        // MySite (Manager)
+        'mySite.title': 'Địa điểm của tôi',
+        'mySite.subtitle': 'Quản lý thông tin địa điểm hành hương',
+        'mySite.noSiteTitle': 'Bạn chưa có địa điểm nào',
+        'mySite.noSiteDesc': 'Tạo địa điểm đầu tiên của bạn để bắt đầu quản lý và thu hút người hành hương.',
+        'mySite.createNew': 'Tạo địa điểm mới',
+        'mySite.note': 'Lưu ý: Mỗi Manager chỉ được quản lý 1 địa điểm',
+        'mySite.retry': 'Thử lại',
+        'mySite.active': 'Đang hoạt động',
+        'mySite.inactive': 'Tạm ngưng',
+        'mySite.patronSaint': 'Bổn mạng',
+        'mySite.description': 'Mô tả',
+        'mySite.history': 'Lịch sử',
+        'mySite.openingHours': 'Giờ mở cửa',
+        'mySite.contactInfo': 'Thông tin liên hệ',
+        'mySite.createdAt': 'Ngày tạo',
+        'mySite.updatedAt': 'Cập nhật',
+
+        // Site Types
+        'siteType.church': 'Nhà thờ',
+        'siteType.shrine': 'Đền thánh',
+        'siteType.monastery': 'Tu viện',
+        'siteType.center': 'Trung tâm',
+        'siteType.other': 'Khác',
     },
     en: {
         // Sidebar
@@ -538,6 +563,31 @@ const translations: Record<Language, Record<string, string>> = {
         'verificationDetail.rejectionReasonRequired': 'Rejection Reason *',
         'verificationDetail.enterRejectionReason': 'Enter the reason for rejection...',
         'verificationDetail.unknown': 'Unknown',
+
+        // MySite (Manager)
+        'mySite.title': 'My Site',
+        'mySite.subtitle': 'Manage your pilgrimage site information',
+        'mySite.noSiteTitle': 'You don\'t have any site yet',
+        'mySite.noSiteDesc': 'Create your first site to start managing and attracting pilgrims.',
+        'mySite.createNew': 'Create New Site',
+        'mySite.note': 'Note: Each Manager can only manage 1 site',
+        'mySite.retry': 'Retry',
+        'mySite.active': 'Active',
+        'mySite.inactive': 'Inactive',
+        'mySite.patronSaint': 'Patron Saint',
+        'mySite.description': 'Description',
+        'mySite.history': 'History',
+        'mySite.openingHours': 'Opening Hours',
+        'mySite.contactInfo': 'Contact Information',
+        'mySite.createdAt': 'Created',
+        'mySite.updatedAt': 'Updated',
+
+        // Site Types
+        'siteType.church': 'Church',
+        'siteType.shrine': 'Shrine',
+        'siteType.monastery': 'Monastery',
+        'siteType.center': 'Center',
+        'siteType.other': 'Other',
     }
 };
 
