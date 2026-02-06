@@ -227,7 +227,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                     {/* Loading */}
                     {loading && (
                         <div className="flex items-center justify-center h-48">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                            <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                         </div>
                     )}
 
@@ -254,9 +254,9 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             </div>
 
                             {/* Guide Info */}
-                            <div className="bg-slate-50 rounded-xl p-4">
+                            <div className="bg-[#f5f3ee] rounded-xl p-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
                                         {submission.guide.avatar_url ? (
                                             <img
                                                 src={submission.guide.avatar_url}
@@ -289,8 +289,8 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
 
                             {/* Week Info */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-blue-50 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 text-blue-600 mb-1">
+                                <div className="bg-[#f5f3ee] rounded-xl p-4">
+                                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
                                         <Calendar className="w-4 h-4" />
                                         <span className="text-sm font-medium">Tuần bắt đầu</span>
                                     </div>
@@ -298,8 +298,8 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                         {formatDate(submission.week_start_date)}
                                     </p>
                                 </div>
-                                <div className="bg-purple-50 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 text-purple-600 mb-1">
+                                <div className="bg-[#f5f3ee] rounded-xl p-4">
+                                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
                                         <Clock className="w-4 h-4" />
                                         <span className="text-sm font-medium">Tổng số ca</span>
                                     </div>
@@ -318,9 +318,6 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                             key={shift.id}
                                             className="flex items-center gap-3 p-3 bg-slate-100 rounded-lg"
                                         >
-                                            <span className="font-semibold text-blue-600 w-8">
-                                                {getDayName(shift.day_of_week)}
-                                            </span>
                                             <Clock className="w-4 h-4 text-slate-400" />
                                             <span className="text-slate-700">
                                                 {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
@@ -388,7 +385,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
 
                             {/* Change Reason */}
                             {submission.change_reason && (
-                                <div className="bg-slate-50 rounded-xl p-4">
+                                <div className="bg-[#f5f3ee] rounded-xl p-4">
                                     <h4 className="font-medium text-slate-900 mb-2">Lý do thay đổi</h4>
                                     <p className="text-slate-600">{submission.change_reason}</p>
                                 </div>

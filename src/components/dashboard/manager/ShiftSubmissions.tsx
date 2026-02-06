@@ -347,7 +347,7 @@ export const ShiftSubmissions: React.FC = () => {
                     <select
                         value={guideFilter}
                         onChange={(e) => setGuideFilter(e.target.value)}
-                        className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="px-4 py-2.5 border border-[#d4af37]/20 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                     >
                         <option value="">Tất cả Local Guide</option>
                         {guides.map(guide => (
@@ -358,7 +358,7 @@ export const ShiftSubmissions: React.FC = () => {
                     <button
                         onClick={fetchSubmissions}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         Làm mới
@@ -377,7 +377,7 @@ export const ShiftSubmissions: React.FC = () => {
             {/* Main Content */}
             <div className="flex-1 flex gap-6 min-h-0">
                 {/* Calendar */}
-                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
                     {/* Calendar Header */}
                     <div className="flex items-center justify-between p-4 border-b border-slate-200">
                         <div className="flex items-center gap-4">
@@ -386,7 +386,7 @@ export const ShiftSubmissions: React.FC = () => {
                             </h2>
                             <button
                                 onClick={goToToday}
-                                className="px-3 py-1 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                className="px-3 py-1 text-sm text-[#8a6d1c] border border-[#d4af37]/30 rounded-lg hover:bg-[#f5f3ee] transition-colors"
                             >
                                 Hôm nay
                             </button>
@@ -394,13 +394,13 @@ export const ShiftSubmissions: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={navigatePrev}
-                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-[#f5f3ee] rounded-lg transition-colors"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={navigateNext}
-                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-[#f5f3ee] rounded-lg transition-colors"
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>
@@ -410,7 +410,7 @@ export const ShiftSubmissions: React.FC = () => {
                     {/* View Content */}
                     {loading ? (
                         <div className="flex-1 flex items-center justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                            <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                         </div>
                     ) : viewMode === 'year' ? (
                         // YEAR VIEW
@@ -422,10 +422,10 @@ export const ShiftSubmissions: React.FC = () => {
                                     className={`
                                         flex flex-col items-center justify-center p-6 
                                         rounded-xl border border-slate-100 
-                                        hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm 
+                                        hover:border-[#d4af37]/50 hover:bg-[#f5f3ee] hover:shadow-sm 
                                         transition-all
                                         ${new Date().getMonth() === i && new Date().getFullYear() === currentDate.getFullYear()
-                                            ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-200'
+                                            ? 'bg-[#f5f3ee] border-[#d4af37]/30 ring-1 ring-[#d4af37]/30'
                                             : 'bg-white'
                                         }
                                     `}
@@ -484,14 +484,14 @@ export const ShiftSubmissions: React.FC = () => {
                                                 text-left transition-colors relative
                                                 ${viewMode === 'week' ? 'min-h-[200px]' : 'min-h-[80px]'}
                                                 ${isCurrentMonth ? 'bg-white' : 'bg-slate-50'}
-                                                ${isSelected ? 'ring-2 ring-blue-500 ring-inset z-10' : ''}
-                                                hover:bg-blue-50
+                                                ${isSelected ? 'ring-2 ring-[#d4af37] ring-inset z-10' : ''}
+                                                hover:bg-[#f5f3ee]
                                             `}
                                         >
                                             {/* Date Number */}
                                             <div className={`
                                                 inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium
-                                                ${isToday ? 'bg-blue-600 text-white' : ''}
+                                                ${isToday ? 'bg-[#8a6d1c] text-white' : ''}
                                                 ${!isToday && isCurrentMonth ? 'text-slate-900' : ''}
                                                 ${!isToday && !isCurrentMonth ? 'text-slate-400' : ''}
                                             `}>
@@ -551,7 +551,7 @@ export const ShiftSubmissions: React.FC = () => {
                 </div>
 
                 {/* Right Panel - Day Detail */}
-                <div className="w-80 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div className="w-80 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
                     {selectedDate ? (
                         <>
                             {/* Panel Header */}
@@ -587,7 +587,7 @@ export const ShiftSubmissions: React.FC = () => {
                                             >
                                                 {/* Guide Info */}
                                                 <div className="flex items-center gap-3 mb-2">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
                                                         {item.submission.guide.avatar_url ? (
                                                             <img
                                                                 src={item.submission.guide.avatar_url}
@@ -626,7 +626,7 @@ export const ShiftSubmissions: React.FC = () => {
                                                     </span>
                                                     <button
                                                         onClick={() => setSelectedSubmissionId(item.submission.id)}
-                                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                                                        className="flex items-center gap-1 text-xs text-[#8a6d1c] hover:text-[#d4af37]"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
                                                         Chi tiết

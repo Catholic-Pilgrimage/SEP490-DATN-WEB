@@ -20,8 +20,10 @@ import {
 import { ManagerService } from '../../../services/manager.service';
 import { LocalGuide, LocalGuideStatus } from '../../../types/manager.types';
 import { LocalGuideFormModal } from './LocalGuideFormModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const LocalGuides: React.FC = () => {
+    const { t } = useLanguage();
     const [guides, setGuides] = useState<LocalGuide[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -73,14 +75,14 @@ export const LocalGuides: React.FC = () => {
                 setTotalPages(response.data.pagination.totalPages);
                 setTotalItems(response.data.pagination.totalItems);
             } else {
-                setError(response.message || 'Không thể tải danh sách Local Guide');
+                setError(response.message || t('localGuides.errorLoad'));
             }
         } catch (err: any) {
             // Check if manager has no site
             if (err?.error?.statusCode === 400) {
-                setError('Bạn cần tạo địa điểm trước khi quản lý Local Guide');
+                setError(t('localGuides.errorNoSite'));
             } else {
-                setError(err?.error?.message || 'Không thể tải danh sách Local Guide');
+                setError(err?.error?.message || t('localGuides.errorLoad'));
             }
         } finally {
             setLoading(false);
@@ -102,8 +104,8 @@ export const LocalGuides: React.FC = () => {
         // - active: đang hoạt động (màu xanh)
         // - banned: bị cấm/khóa (màu đỏ)
         const statuses = {
-            active: { label: 'Hoạt động', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            banned: { label: 'Bị cấm', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            active: { label: t('common.active'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            banned: { label: t('status.banned'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.active;
     };
@@ -128,12 +130,13 @@ export const LocalGuides: React.FC = () => {
     const handleToggleStatus = async (guide: LocalGuide) => {
         // Bước 1: Xác định status mới (ngược với status hiện tại)
         const newStatus = guide.status === 'active' ? 'banned' : 'active';
-        const actionText = newStatus === 'banned' ? 'cấm' : 'kích hoạt lại';
 
         // Bước 2: Hiện confirm dialog
-        const confirmed = window.confirm(
-            `Bạn có chắc muốn ${actionText} Local Guide "${guide.full_name}"?`
-        );
+        const confirmMessage = newStatus === 'banned'
+            ? t('localGuides.confirmBan').replace('{name}', guide.full_name)
+            : t('localGuides.confirmUnban').replace('{name}', guide.full_name);
+
+        const confirmed = window.confirm(confirmMessage);
         if (!confirmed) return;
 
         try {
@@ -156,10 +159,10 @@ export const LocalGuides: React.FC = () => {
                 //     g.id === guide.id ? { ...g, status: newStatus } : g
                 // ));
             } else {
-                setError(response.message || 'Không thể cập nhật trạng thái');
+                setError(response.message || t('localGuides.updateError'));
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Không thể cập nhật trạng thái');
+            setError(err?.error?.message || t('localGuides.updateError'));
         } finally {
             // Bước 6: Tắt loading
             setTogglingId(null);
@@ -171,30 +174,30 @@ export const LocalGuides: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Local Guides</h1>
-                    <p className="text-slate-500 mt-1">Quản lý đội ngũ hướng dẫn viên địa phương</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('localGuides.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('localGuides.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={fetchLocalGuides}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        Làm mới
+                        {t('common.refresh')}
                     </button>
                     <button
                         onClick={() => setIsFormModalOpen(true)}  // Mở modal khi click
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20"
                     >
                         <Plus className="w-4 h-4" />
-                        Thêm Local Guide
+                        {t('localGuides.addGuide')}
                     </button>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-4">
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Search */}
                     <div className="flex-1 min-w-[250px] relative">
@@ -203,8 +206,8 @@ export const LocalGuides: React.FC = () => {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder={t('localGuides.searchPlaceholder')}
+                            className="w-full pl-10 pr-4 py-2.5 border border-[#d4af37]/20 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                         />
                     </div>
 
@@ -214,11 +217,11 @@ export const LocalGuides: React.FC = () => {
                         <select
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as LocalGuideStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 border border-[#d4af37]/20 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                         >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="active">Hoạt động</option>
-                            <option value="banned">Bị cấm</option>
+                            <option value="">{t('sites.allStatus')}</option>
+                            <option value="active">{t('common.active')}</option>
+                            <option value="banned">{t('status.banned')}</option>
                         </select>
                     </div>
                 </div>
@@ -235,43 +238,44 @@ export const LocalGuides: React.FC = () => {
             {/* Loading */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                 </div>
             ) : (
                 <>
                     {/* Content */}
                     {guides.length === 0 ? (
                         /* Empty State */
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-8 h-8 text-blue-600" />
+                        /* Empty State */
+                        <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-12 text-center">
+                            <div className="w-16 h-16 bg-[#d4af37]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Users className="w-8 h-8 text-[#8a6d1c]" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                Chưa có Local Guide nào
+                                {t('localGuides.noGuidesTitle')}
                             </h3>
                             <p className="text-slate-500 mb-6">
-                                Bắt đầu thêm Local Guide để hỗ trợ người hành hương tại địa điểm của bạn
+                                {t('localGuides.noGuidesDesc')}
                             </p>
                             <button
                                 onClick={() => setIsFormModalOpen(true)}  // Mở modal khi click
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all font-medium shadow-lg shadow-[#d4af37]/20"
                             >
                                 <Plus className="w-5 h-5" />
-                                Thêm Local Guide đầu tiên
+                                {t('localGuides.addFirst')}
                             </button>
                         </div>
                     ) : (
                         /* Table */
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200">
-                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Local Guide</th>
-                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Liên hệ</th>
-                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng thái</th>
-                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày tạo</th>
-                                            <th className="text-center px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao tác</th>
+                                        <tr className="bg-[#f5f3ee] border-b border-[#d4af37]/20">
+                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('localGuides.table.guide')}</th>
+                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('localGuides.table.contact')}</th>
+                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('localGuides.table.status')}</th>
+                                            <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('localGuides.table.created')}</th>
+                                            <th className="text-center px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('localGuides.table.actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
@@ -280,11 +284,11 @@ export const LocalGuides: React.FC = () => {
                                             const StatusIcon = statusInfo.icon;
 
                                             return (
-                                                <tr key={guide.id} className="hover:bg-slate-50 transition-colors">
+                                                <tr key={guide.id} className="hover:bg-[#f5f3ee] transition-colors">
                                                     {/* Name */}
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
                                                                 <User className="w-5 h-5 text-white" />
                                                             </div>
                                                             <div>
@@ -338,22 +342,22 @@ export const LocalGuides: React.FC = () => {
                                                                         : 'border border-green-200 text-green-600 hover:bg-green-50'
                                                                     }
                                                                 `}
-                                                                title={guide.status === 'active' ? 'Cấm Local Guide' : 'Kích hoạt lại'}
+                                                                title={guide.status === 'active' ? t('localGuides.banTooltip') : t('localGuides.unbanTooltip')}
                                                             >
                                                                 {togglingId === guide.id ? (
                                                                     <Loader2 className="w-4 h-4 animate-spin" />
                                                                 ) : guide.status === 'active' ? (
                                                                     <>
                                                                         <Ban className="w-4 h-4" />
-                                                                        Cấm
+                                                                        {t('localGuides.ban')}
                                                                     </>
                                                                 ) : (
                                                                     <>
                                                                         <UserCheck className="w-4 h-4" />
-                                                                        Kích hoạt
+                                                                        {t('localGuides.unban')}
                                                                     </>
                                                                 )}
-                                                            </button>                                                                                                                        
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -369,13 +373,13 @@ export const LocalGuides: React.FC = () => {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-slate-500">
-                                Hiển thị {(currentPage - 1) * limit + 1} đến {Math.min(currentPage * limit, totalItems)} trong tổng số {totalItems} Local Guide
+                                {t('sites.showing')} {(currentPage - 1) * limit + 1} {t('sites.to')} {Math.min(currentPage * limit, totalItems)} {t('sites.of')} {totalItems} {t('localGuides.table.guide')}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-[#f5f3ee] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
@@ -396,8 +400,8 @@ export const LocalGuides: React.FC = () => {
                                                 key={pageNum}
                                                 onClick={() => handlePageChange(pageNum)}
                                                 className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'hover:bg-slate-100 text-slate-600'
+                                                    ? 'bg-[#8a6d1c] text-white'
+                                                    : 'hover:bg-[#f5f3ee] text-slate-600'
                                                     }`}
                                             >
                                                 {pageNum}
@@ -408,7 +412,7 @@ export const LocalGuides: React.FC = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-slate-200 hover:bg-[#f5f3ee] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
