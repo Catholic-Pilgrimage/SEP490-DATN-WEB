@@ -353,14 +353,7 @@ export const LocalGuides: React.FC = () => {
                                                                         Kích hoạt
                                                                     </>
                                                                 )}
-                                                            </button>
-
-                                                            {/* Nút Chi tiết */}
-                                                            <button
-                                                                className="px-3 py-1.5 text-sm border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
-                                                            >
-                                                                Chi tiết
-                                                            </button>
+                                                            </button>                                                                                                                        
                                                         </div>
                                                     </td>
                                                 </tr>
