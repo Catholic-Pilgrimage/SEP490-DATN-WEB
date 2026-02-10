@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Image, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { MediaContent } from './MediaContent';
 import { ScheduleContent } from './ScheduleContent';
 import { EventContent } from './EventContent';
 import { NearbyPlaceContent } from './NearbyPlaceContent';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type ContentTab = 'media' | 'schedules' | 'events' | 'nearby';
 
@@ -23,13 +24,14 @@ interface TabConfig {
  * - Media, Schedules, Events, Nearby Places
  */
 export const ContentManagement: React.FC = () => {
+    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<ContentTab>('media');
 
     const tabs: TabConfig[] = [
-        { id: 'media', label: 'Media', icon: Image, component: <MediaContent /> },
-        { id: 'schedules', label: 'Lịch lễ', icon: Calendar, component: <ScheduleContent /> },
-        { id: 'events', label: 'Sự kiện', icon: Sparkles, component: <EventContent /> },
-        { id: 'nearby', label: 'Địa điểm lân cận', icon: MapPin, component: <NearbyPlaceContent /> },
+        { id: 'media', label: t('content.tab.media'), icon: Image, component: <MediaContent /> },
+        { id: 'schedules', label: t('content.tab.schedules'), icon: Calendar, component: <ScheduleContent /> },
+        { id: 'events', label: t('content.tab.events'), icon: Sparkles, component: <EventContent /> },
+        { id: 'nearby', label: t('content.tab.nearby'), icon: MapPin, component: <NearbyPlaceContent /> },
     ];
 
     const activeTabConfig = tabs.find(tab => tab.id === activeTab);

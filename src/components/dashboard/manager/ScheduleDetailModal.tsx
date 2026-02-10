@@ -14,6 +14,7 @@ import {
     RotateCcw,
     EyeOff
 } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Schedule, ContentStatus } from '../../../types/manager.types';
 
@@ -33,6 +34,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     onClose,
     onStatusChange
 }) => {
+    const { t, language } = useLanguage();
     // ============ STATE ============
     const [actionLoading, setActionLoading] = useState(false);
     const [showRejectForm, setShowRejectForm] = useState(false);
@@ -54,7 +56,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     const handleApprove = async () => {
         if (!currentSchedule) return;
 
-        const confirmed = window.confirm('Bạn có chắc muốn duyệt lịch lễ này?');
+        const confirmed = window.confirm(t('content.confirmApproveMsg'));
         if (!confirmed) return;
 
         try {
@@ -69,10 +71,11 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 setCurrentSchedule(response.data);
                 onStatusChange?.();
             } else {
-                setActionError(response.message || 'Không thể duyệt lịch lễ');
+                setActionError(response.message || t('common.error'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || 'Không thể duyệt lịch lễ');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('common.error');
+            setActionError(message);
         } finally {
             setActionLoading(false);
         }
@@ -82,7 +85,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
         if (!currentSchedule) return;
 
         if (!rejectionReason.trim()) {
-            setActionError('Vui lòng nhập lý do từ chối');
+            setActionError(t('content.reasonRequired'));
             return;
         }
 
@@ -101,10 +104,11 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 setRejectionReason('');
                 onStatusChange?.();
             } else {
-                setActionError(response.message || 'Không thể từ chối lịch lễ');
+                setActionError(response.message || t('common.error'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || 'Không thể từ chối lịch lễ');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('common.error');
+            setActionError(message);
         } finally {
             setActionLoading(false);
         }
@@ -114,7 +118,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
         if (!currentSchedule) return;
 
         const action = currentSchedule.is_active ? 'Ẩn' : 'Khôi phục';
-        const confirmed = window.confirm(`Bạn có chắc muốn ${action.toLowerCase()} lịch lễ này?`);
+        const confirmed = window.confirm(`${t('content.confirmApproveMsg')}?`);
         if (!confirmed) return;
 
         try {
@@ -141,15 +145,17 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     // ============ HELPERS ============
     const getStatusInfo = (status: ContentStatus) => {
         const statuses = {
-            pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Đã duyệt', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
 
     const getDayName = (day: number): string => {
-        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        const days = language === 'vi'
+            ? ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
+            : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         return days[day] || '';
     };
 
@@ -192,7 +198,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                         </div>
                         <div>
                             <h2 className="text-xl font-semibold text-slate-900">
-                                Chi tiết Lịch lễ
+                                {t('schedule.detailTitle')}
                             </h2>
                             <span className="text-sm text-slate-400">{currentSchedule.code}</span>
                         </div>
@@ -217,7 +223,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                             {!currentSchedule.is_active && (
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-500 text-white">
                                     <Trash2 className="w-4 h-4" />
-                                    Đã xóa
+                                    {t('content.deleted')}
                                 </span>
                             )}
                         </div>
@@ -239,7 +245,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
 
                         {/* Days of Week */}
                         <div className="bg-slate-50 rounded-xl p-4">
-                            <h4 className="font-medium text-slate-900 mb-3">Các ngày trong tuần</h4>
+                            <h4 className="font-medium text-slate-900 mb-3">{t('schedule.daysOfWeek')}</h4>
                             <div className="flex flex-wrap gap-2">
                                 {currentSchedule.days_of_week.map(day => (
                                     <span
@@ -254,8 +260,8 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
 
                         {/* Note */}
                         <div className="bg-slate-50 rounded-xl p-4">
-                            <h4 className="font-medium text-slate-900 mb-2">Ghi chú</h4>
-                            <p className="text-slate-600">{currentSchedule.note || '(Không có ghi chú)'}</p>
+                            <h4 className="font-medium text-slate-900 mb-2">{t('schedule.note')}</h4>
+                            <p className="text-slate-600">{currentSchedule.note || t('schedule.noNote')}</p>
                         </div>
 
                         {/* Creator Info */}
@@ -280,7 +286,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                             <div className="bg-blue-50 rounded-xl p-4">
                                 <div className="flex items-center gap-2 text-blue-600 mb-1">
                                     <Calendar className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Ngày tạo</span>
+                                    <span className="text-sm font-medium">{t('content.createdAt')}</span>
                                 </div>
                                 <p className="text-slate-900 font-medium">
                                     {formatDateTime(currentSchedule.created_at)}
@@ -289,7 +295,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                             <div className="bg-purple-50 rounded-xl p-4">
                                 <div className="flex items-center gap-2 text-purple-600 mb-1">
                                     <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Cập nhật</span>
+                                    <span className="text-sm font-medium">{t('content.updatedAt')}</span>
                                 </div>
                                 <p className="text-slate-900 font-medium">
                                     {formatDateTime(currentSchedule.updated_at)}
@@ -300,7 +306,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                         {/* Rejection Reason */}
                         {currentSchedule.status === 'rejected' && currentSchedule.rejection_reason && (
                             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                <h4 className="font-medium text-red-700 mb-2">Lý do từ chối</h4>
+                                <h4 className="font-medium text-red-700 mb-2">{t('content.rejectionReason')}</h4>
                                 <p className="text-red-600">{currentSchedule.rejection_reason}</p>
                             </div>
                         )}
@@ -308,11 +314,11 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                         {/* Reject Form */}
                         {showRejectForm && isPending && (
                             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                <h4 className="font-medium text-red-700 mb-3">Nhập lý do từ chối</h4>
+                                <h4 className="font-medium text-red-700 mb-3">{t('content.enterRejectionReason')}</h4>
                                 <textarea
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
-                                    placeholder="Vui lòng nhập lý do từ chối..."
+                                    placeholder={t('content.rejectionPlaceholder')}
                                     className="w-full px-4 py-3 border border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                                     rows={3}
                                     disabled={actionLoading}
@@ -349,7 +355,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                         disabled={actionLoading}
                                         className="px-4 py-2 text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                                     >
-                                        Hủy
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         onClick={handleReject}
@@ -361,7 +367,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                         ) : (
                                             <Ban className="w-4 h-4" />
                                         )}
-                                        Xác nhận từ chối
+                                        {t('content.confirmReject')}
                                     </button>
                                 </>
                             ) : (
@@ -372,7 +378,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                         className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
                                     >
                                         <XCircle className="w-4 h-4" />
-                                        Từ chối
+                                        {t('common.reject')}
                                     </button>
                                     <button
                                         onClick={handleApprove}
@@ -384,7 +390,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                         ) : (
                                             <Check className="w-4 h-4" />
                                         )}
-                                        Duyệt
+                                        {t('common.approve')}
                                     </button>
                                 </>
                             )}
@@ -407,7 +413,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                         ) : (
                             <RotateCcw className="w-4 h-4" />
                         )}
-                        {currentSchedule.is_active ? 'Ẩn lịch lễ' : 'Khôi phục'}
+                        {currentSchedule.is_active ? t('schedule.hide') : t('schedule.restore')}
                     </button>
                 </div>
             </div>

@@ -383,7 +383,6 @@ const translations: Record<Language, Record<string, string>> = {
         'media.showing': 'Hiển thị',
         'media.to': 'đến',
         'media.of': 'trong tổng số',
-        'media.items': 'media',
 
 
         // Shift Details
@@ -405,6 +404,70 @@ const translations: Record<Language, Record<string, string>> = {
         'shifts.confirmReject': 'Xác nhận từ chối',
         'shifts.confirmApproveMsg': 'Bạn có chắc muốn duyệt submission này?',
         'shifts.reasonRequired': 'Vui lòng nhập lý do từ chối',
+
+        // Content Management Tabs
+        'content.tab.media': 'Media',
+        'content.tab.schedules': 'Lịch lễ',
+        'content.tab.events': 'Sự kiện',
+        'content.tab.nearby': 'Địa điểm lân cận',
+
+        // Schedule Content
+        'schedule.title': 'Lịch lễ',
+        'schedule.subtitle': 'Quản lý lịch lễ của site',
+        'schedule.empty': 'Chưa có lịch lễ nào',
+        'schedule.emptyDesc': 'Các Local Guide chưa tạo lịch lễ cho site',
+        'schedule.loadError': 'Không thể tải danh sách lịch lễ',
+        'schedule.allDays': 'Tất cả ngày',
+        'schedule.detailTitle': 'Chi tiết Lịch lễ',
+        'schedule.massTime': 'Giờ lễ',
+        'schedule.daysOfWeek': 'Các ngày trong tuần',
+        'schedule.note': 'Ghi chú',
+        'schedule.noNote': '(Không có ghi chú)',
+        'schedule.hide': 'Ẩn lịch lễ',
+        'schedule.restore': 'Khôi phục',
+
+        // Event Content
+        'event.title': 'Sự kiện',
+        'event.subtitle': 'Quản lý sự kiện của site',
+        'event.empty': 'Chưa có sự kiện nào',
+        'event.emptyDesc': 'Các Local Guide chưa tạo sự kiện cho site',
+        'event.loadError': 'Không thể tải danh sách sự kiện',
+
+        // Nearby Place Content
+        'nearby.title': 'Địa điểm lân cận',
+        'nearby.subtitle': 'Quản lý địa điểm lân cận của site',
+        'nearby.empty': 'Chưa có địa điểm lân cận nào',
+        'nearby.emptyDesc': 'Các Local Guide chưa đề xuất địa điểm lân cận',
+        'nearby.loadError': 'Không thể tải danh sách địa điểm',
+        'nearby.allCategories': 'Tất cả danh mục',
+
+        // Shared Content Keys
+        'content.allStatus': 'Tất cả trạng thái',
+        'content.allActive': 'Tất cả (Active/Deleted)',
+        'content.deleted': 'Đã xóa',
+        'content.activeTrue': 'Đang hoạt động',
+        'content.activeFalse': 'Đã xóa',
+        'content.detail': 'Chi tiết',
+        'content.createdAt': 'Ngày tạo',
+        'content.updatedAt': 'Cập nhật',
+        'content.rejectionReason': 'Lý do từ chối',
+        'content.enterRejectionReason': 'Nhập lý do từ chối',
+        'content.rejectionPlaceholder': 'Vui lòng nhập lý do từ chối...',
+        'content.confirmReject': 'Xác nhận từ chối',
+        'content.reasonRequired': 'Vui lòng nhập lý do từ chối',
+        'content.confirmApproveMsg': 'Bạn có chắc muốn duyệt nội dung này?',
+
+        // Table Headers (Schedule)
+        'table.scheduleCode': 'Mã',
+        'table.day': 'Ngày',
+        'table.time': 'Giờ',
+        'table.note': 'Ghi chú',
+        'table.creator': 'Người tạo',
+
+        // Category labels
+        'category.food': 'Ẩm thực',
+        'category.lodging': 'Lưu trú',
+        'category.medical': 'Y tế',
 
     },
     en: {
@@ -799,7 +862,71 @@ const translations: Record<Language, Record<string, string>> = {
         'media.showing': 'Showing',
         'media.to': 'to',
         'media.of': 'of',
-        'media.items': 'media items',
+
+        // Content Management Tabs
+        'content.tab.media': 'Media',
+        'content.tab.schedules': 'Schedules',
+        'content.tab.events': 'Events',
+        'content.tab.nearby': 'Nearby Places',
+
+        // Schedule Content
+        'schedule.title': 'Schedules',
+        'schedule.subtitle': 'Manage site schedules',
+        'schedule.empty': 'No schedules yet',
+        'schedule.emptyDesc': 'Local Guides have not created any schedules',
+        'schedule.loadError': 'Failed to load schedule list',
+        'schedule.allDays': 'All Days',
+        'schedule.detailTitle': 'Schedule Details',
+        'schedule.massTime': 'Mass Time',
+        'schedule.daysOfWeek': 'Days of the Week',
+        'schedule.note': 'Note',
+        'schedule.noNote': '(No note)',
+        'schedule.hide': 'Hide Schedule',
+        'schedule.restore': 'Restore',
+
+        // Event Content
+        'event.title': 'Events',
+        'event.subtitle': 'Manage site events',
+        'event.empty': 'No events yet',
+        'event.emptyDesc': 'Local Guides have not created any events',
+        'event.loadError': 'Failed to load event list',
+
+        // Nearby Place Content
+        'nearby.title': 'Nearby Places',
+        'nearby.subtitle': 'Manage nearby places of site',
+        'nearby.empty': 'No nearby places yet',
+        'nearby.emptyDesc': 'Local Guides have not suggested any nearby places',
+        'nearby.loadError': 'Failed to load place list',
+        'nearby.allCategories': 'All Categories',
+
+        // Shared Content Keys
+        'content.allStatus': 'All Status',
+        'content.allActive': 'All (Active/Deleted)',
+        'content.deleted': 'Deleted',
+        'content.activeTrue': 'Active',
+        'content.activeFalse': 'Deleted',
+        'content.detail': 'Details',
+        'content.createdAt': 'Created At',
+        'content.updatedAt': 'Updated',
+        'content.rejectionReason': 'Rejection Reason',
+        'content.enterRejectionReason': 'Enter Rejection Reason',
+        'content.rejectionPlaceholder': 'Please enter rejection reason...',
+        'content.confirmReject': 'Confirm Reject',
+        'content.reasonRequired': 'Rejection reason is required',
+        'content.confirmApproveMsg': 'Are you sure you want to approve this content?',
+
+        // Table Headers (Schedule)
+        'table.scheduleCode': 'Code',
+        'table.day': 'Day',
+        'table.time': 'Time',
+        'table.note': 'Note',
+        'table.creator': 'Creator',
+
+        // Category labels
+        'category.food': 'Food',
+        'category.lodging': 'Lodging',
+        'category.medical': 'Medical',
+
     }
 };
 

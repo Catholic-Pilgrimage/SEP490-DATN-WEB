@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     Filter,
     ChevronLeft,
@@ -19,6 +19,7 @@ import {
 import { ManagerService } from '../../../services/manager.service';
 import { Event, ContentStatus } from '../../../types/manager.types';
 import { EventDetailModal } from './EventDetailModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 /**
  * EventContent Component
@@ -27,6 +28,7 @@ import { EventDetailModal } from './EventDetailModal';
  * Filter theo: status, is_active
  */
 export const EventContent: React.FC = () => {
+    const { t, language } = useLanguage();
     // ============ STATE ============
     const [eventList, setEventList] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,10 +65,11 @@ export const EventContent: React.FC = () => {
                 setTotalPages(response.data.pagination.totalPages);
                 setTotalItems(response.data.pagination.totalItems);
             } else {
-                setError(response.message || 'Không thể tải danh sách sự kiện');
+                setError(response.message || t('event.loadError'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách sự kiện');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('event.loadError');
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -85,15 +88,15 @@ export const EventContent: React.FC = () => {
 
     const getStatusInfo = (status: ContentStatus) => {
         const statuses = {
-            pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Đã duyệt', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
@@ -117,8 +120,8 @@ export const EventContent: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Sự kiện</h1>
-                    <p className="text-slate-500 mt-1">Quản lý sự kiện của site</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('event.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('event.subtitle')}</p>
                 </div>
                 <button
                     onClick={fetchEventList}
@@ -126,7 +129,7 @@ export const EventContent: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Làm mới
+                    {t('common.refresh')}
                 </button>
             </div>
 
@@ -141,10 +144,10 @@ export const EventContent: React.FC = () => {
                             onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
                             className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="approved">Đã duyệt</option>
-                            <option value="rejected">Từ chối</option>
+                            <option value="">{t('content.allStatus')}</option>
+                            <option value="pending">{t('status.pending')}</option>
+                            <option value="approved">{t('status.approved')}</option>
+                            <option value="rejected">{t('status.rejected')}</option>
                         </select>
                     </div>
 
@@ -159,9 +162,9 @@ export const EventContent: React.FC = () => {
                             }}
                             className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="">Tất cả (Active/Deleted)</option>
-                            <option value="true">Đang hoạt động</option>
-                            <option value="false">Đã xóa</option>
+                            <option value="">{t('content.allActive')}</option>
+                            <option value="true">{t('content.activeTrue')}</option>
+                            <option value="false">{t('content.activeFalse')}</option>
                         </select>
                     </div>
                 </div>
@@ -190,10 +193,10 @@ export const EventContent: React.FC = () => {
                                 <Sparkles className="w-8 h-8 text-purple-600" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                Chưa có sự kiện nào
+                                {t('event.empty')}
                             </h3>
                             <p className="text-slate-500">
-                                Các Local Guide chưa tạo sự kiện cho site
+                                {t('event.emptyDesc')}
                             </p>
                         </div>
                     ) : (
@@ -231,7 +234,7 @@ export const EventContent: React.FC = () => {
                                                 {!event.is_active && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-medium">
                                                         <Trash2 className="w-3 h-3" />
-                                                        Đã xóa
+                                                        {t('content.deleted')}
                                                     </span>
                                                 )}
                                             </div>
@@ -284,7 +287,7 @@ export const EventContent: React.FC = () => {
                                                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
                                             >
                                                 <Eye className="w-4 h-4" />
-                                                Chi tiết
+                                                {t('content.detail')}
                                             </button>
                                         </div>
                                     </div>
@@ -297,7 +300,7 @@ export const EventContent: React.FC = () => {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-slate-500">
-                                Hiển thị {(currentPage - 1) * limit + 1} đến {Math.min(currentPage * limit, totalItems)} trong tổng số {totalItems} sự kiện
+                                {t('media.showing')} {(currentPage - 1) * limit + 1} {t('media.to')} {Math.min(currentPage * limit, totalItems)} {t('media.of')} {totalItems} {t('event.title').toLowerCase()}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button

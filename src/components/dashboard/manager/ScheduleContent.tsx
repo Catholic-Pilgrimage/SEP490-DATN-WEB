@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     Filter,
     ChevronLeft,
@@ -17,6 +17,7 @@ import {
 import { ManagerService } from '../../../services/manager.service';
 import { Schedule, ContentStatus } from '../../../types/manager.types';
 import { ScheduleDetailModal } from './ScheduleDetailModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 /**
  * ScheduleContent Component
@@ -27,6 +28,7 @@ import { ScheduleDetailModal } from './ScheduleDetailModal';
  * - Table layout với thông tin ngày, giờ, ghi chú
  */
 export const ScheduleContent: React.FC = () => {
+    const { t, language } = useLanguage();
     // ============ STATE ============
     const [scheduleList, setScheduleList] = useState<Schedule[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,10 +67,11 @@ export const ScheduleContent: React.FC = () => {
                 setTotalPages(response.data.pagination.totalPages);
                 setTotalItems(response.data.pagination.totalItems);
             } else {
-                setError(response.message || 'Không thể tải danh sách lịch lễ');
+                setError(response.message || t('schedule.loadError'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách lịch lễ');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('schedule.loadError');
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -87,15 +90,17 @@ export const ScheduleContent: React.FC = () => {
 
     const getStatusInfo = (status: ContentStatus) => {
         const statuses = {
-            pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Đã duyệt', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
 
     const getDayName = (day: number): string => {
-        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        const days = language === 'vi'
+            ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+            : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         return days[day] || '';
     };
 
@@ -105,7 +110,7 @@ export const ScheduleContent: React.FC = () => {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -118,8 +123,8 @@ export const ScheduleContent: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Lịch lễ</h1>
-                    <p className="text-slate-500 mt-1">Quản lý lịch lễ của site</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('schedule.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('schedule.subtitle')}</p>
                 </div>
                 <button
                     onClick={fetchScheduleList}
@@ -127,7 +132,7 @@ export const ScheduleContent: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Làm mới
+                    {t('common.refresh')}
                 </button>
             </div>
 
@@ -142,10 +147,10 @@ export const ScheduleContent: React.FC = () => {
                             onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
                             className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="approved">Đã duyệt</option>
-                            <option value="rejected">Từ chối</option>
+                            <option value="">{t('content.allStatus')}</option>
+                            <option value="pending">{t('status.pending')}</option>
+                            <option value="approved">{t('status.approved')}</option>
+                            <option value="rejected">{t('status.rejected')}</option>
                         </select>
                     </div>
 
@@ -160,14 +165,14 @@ export const ScheduleContent: React.FC = () => {
                             }}
                             className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="">Tất cả ngày</option>
-                            <option value="0">Chủ nhật</option>
-                            <option value="1">Thứ 2</option>
-                            <option value="2">Thứ 3</option>
-                            <option value="3">Thứ 4</option>
-                            <option value="4">Thứ 5</option>
-                            <option value="5">Thứ 6</option>
-                            <option value="6">Thứ 7</option>
+                            <option value="">{t('schedule.allDays')}</option>
+                            <option value="0">{language === 'vi' ? 'Chủ nhật' : 'Sunday'}</option>
+                            <option value="1">{language === 'vi' ? 'Thứ 2' : 'Monday'}</option>
+                            <option value="2">{language === 'vi' ? 'Thứ 3' : 'Tuesday'}</option>
+                            <option value="3">{language === 'vi' ? 'Thứ 4' : 'Wednesday'}</option>
+                            <option value="4">{language === 'vi' ? 'Thứ 5' : 'Thursday'}</option>
+                            <option value="5">{language === 'vi' ? 'Thứ 6' : 'Friday'}</option>
+                            <option value="6">{language === 'vi' ? 'Thứ 7' : 'Saturday'}</option>
                         </select>
                     </div>
 
@@ -182,9 +187,9 @@ export const ScheduleContent: React.FC = () => {
                             }}
                             className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="">Tất cả (Active/Deleted)</option>
-                            <option value="true">Đang hoạt động</option>
-                            <option value="false">Đã xóa</option>
+                            <option value="">{t('content.allActive')}</option>
+                            <option value="true">{t('content.activeTrue')}</option>
+                            <option value="false">{t('content.activeFalse')}</option>
                         </select>
                     </div>
                 </div>
@@ -213,10 +218,10 @@ export const ScheduleContent: React.FC = () => {
                                 <Calendar className="w-8 h-8 text-blue-600" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                Chưa có lịch lễ nào
+                                {t('schedule.empty')}
                             </h3>
                             <p className="text-slate-500">
-                                Các Local Guide chưa tạo lịch lễ cho site
+                                {t('schedule.emptyDesc')}
                             </p>
                         </div>
                     ) : (
@@ -226,14 +231,14 @@ export const ScheduleContent: React.FC = () => {
                                 <table className="w-full">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200">
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Mã</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Ngày</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Giờ</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Ghi chú</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Trạng thái</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Người tạo</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">Ngày tạo</th>
-                                            <th className="text-center py-4 px-6 font-semibold text-slate-700">Thao tác</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.scheduleCode')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.day')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.time')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.note')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.status')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('table.creator')}</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-slate-700">{t('content.createdAt')}</th>
+                                            <th className="text-center py-4 px-6 font-semibold text-slate-700">{t('table.actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -281,7 +286,7 @@ export const ScheduleContent: React.FC = () => {
                                                             {!schedule.is_active && (
                                                                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-medium">
                                                                     <Trash2 className="w-3 h-3" />
-                                                                    Đã xóa
+                                                                    {t('content.deleted')}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -307,7 +312,7 @@ export const ScheduleContent: React.FC = () => {
                                                             className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors mx-auto"
                                                         >
                                                             <Eye className="w-3.5 h-3.5" />
-                                                            Chi tiết
+                                                            {t('content.detail')}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -323,7 +328,7 @@ export const ScheduleContent: React.FC = () => {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-slate-500">
-                                Hiển thị {(currentPage - 1) * limit + 1} đến {Math.min(currentPage * limit, totalItems)} trong tổng số {totalItems} lịch lễ
+                                Hiển thị {(currentPage - 1) * limit + 1} {t('media.to')} {Math.min(currentPage * limit, totalItems)} {t('media.of')} {totalItems} {t('schedule.title').toLowerCase()}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button

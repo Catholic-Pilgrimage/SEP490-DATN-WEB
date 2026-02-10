@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     X,
     Loader2,
@@ -65,13 +65,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     }, [isOpen]);
 
     // ============ FETCH DATA ============
-    useEffect(() => {
-        if (isOpen && submissionId) {
-            fetchDetail();
-        }
-    }, [isOpen, submissionId]);
-
-    const fetchDetail = async () => {
+    const fetchDetail = useCallback(async () => {
         if (!submissionId) return;
 
         try {
@@ -85,12 +79,19 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             } else {
                 setError(response.message || t('modal.errorLoading'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || t('modal.errorLoading'));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('modal.errorLoading');
+            setError(message);
         } finally {
             setLoading(false);
         }
-    };
+    }, [submissionId, t]);
+
+    useEffect(() => {
+        if (isOpen && submissionId) {
+            fetchDetail();
+        }
+    }, [isOpen, submissionId, fetchDetail]);
 
     // ============ ACTIONS ============
     const handleApprove = async () => {
@@ -115,8 +116,9 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             } else {
                 setActionError(response.message || t('localGuides.updateError'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('localGuides.updateError'));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('localGuides.updateError');
+            setActionError(message);
         } finally {
             setActionLoading(false);
         }
@@ -150,8 +152,9 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             } else {
                 setActionError(response.message || t('localGuides.updateError'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('localGuides.updateError'));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : t('localGuides.updateError');
+            setActionError(message);
         } finally {
             setActionLoading(false);
         }
@@ -168,15 +171,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     };
 
     const getDayName = (day: number): string => {
-        const date = new Date(2024, 0, day + 1); // Mock date to get day name, carefully chosen week
-        // Or better, just map based on language since input is number 0-6 (Sun-Sat)
-        if (language === 'vi') {
-            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-            return days[day] || `Ngày ${day}`;
-        } else {
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            return days[day] || `Day ${day}`;
-        }
+        const days = language === 'vi'
+            ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+            : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return days[day] || (language === 'vi' ? `Ngày ${day}` : `Day ${day}`);
     };
 
     const formatDate = (dateString: string) => {
