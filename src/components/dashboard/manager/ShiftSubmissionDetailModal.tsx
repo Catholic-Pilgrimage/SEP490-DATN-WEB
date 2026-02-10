@@ -16,6 +16,7 @@ import {
     Check,
     Ban
 } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { ShiftSubmissionDetail, ShiftSubmissionStatus, ShiftChange } from '../../../types/manager.types';
 
@@ -41,6 +42,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     onClose,
     onStatusChange
 }) => {
+    const { t, language } = useLanguage();
     const [submission, setSubmission] = useState<ShiftSubmissionDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -81,10 +83,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             if (response.success && response.data) {
                 setSubmission(response.data);
             } else {
-                setError(response.message || 'Không thể tải chi tiết');
+                setError(response.message || t('modal.errorLoading'));
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải chi tiết submission');
+            setError(err?.error?.message || t('modal.errorLoading'));
         } finally {
             setLoading(false);
         }
@@ -94,7 +96,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     const handleApprove = async () => {
         if (!submissionId) return;
 
-        const confirmed = window.confirm('Bạn có chắc muốn duyệt submission này?');
+        const confirmed = window.confirm(t('shifts.confirmApproveMsg'));
         if (!confirmed) return;
 
         try {
@@ -111,10 +113,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 // Notify parent to refresh list
                 onStatusChange?.();
             } else {
-                setActionError(response.message || 'Không thể duyệt submission');
+                setActionError(response.message || t('localGuides.updateError'));
             }
         } catch (err: any) {
-            setActionError(err?.error?.message || 'Không thể duyệt submission');
+            setActionError(err?.error?.message || t('localGuides.updateError'));
         } finally {
             setActionLoading(false);
         }
@@ -125,7 +127,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
 
         // Validate rejection reason
         if (!rejectionReason.trim()) {
-            setActionError('Vui lòng nhập lý do từ chối');
+            setActionError(t('shifts.reasonRequired'));
             return;
         }
 
@@ -146,10 +148,10 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 // Notify parent to refresh list
                 onStatusChange?.();
             } else {
-                setActionError(response.message || 'Không thể từ chối submission');
+                setActionError(response.message || t('localGuides.updateError'));
             }
         } catch (err: any) {
-            setActionError(err?.error?.message || 'Không thể từ chối submission');
+            setActionError(err?.error?.message || t('localGuides.updateError'));
         } finally {
             setActionLoading(false);
         }
@@ -158,20 +160,27 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     // ============ HELPERS ============
     const getStatusInfo = (status: ShiftSubmissionStatus) => {
         const statuses = {
-            pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Đã duyệt', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
 
     const getDayName = (day: number): string => {
-        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-        return days[day] || `Ngày ${day}`;
+        const date = new Date(2024, 0, day + 1); // Mock date to get day name, carefully chosen week
+        // Or better, just map based on language since input is number 0-6 (Sun-Sat)
+        if (language === 'vi') {
+            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            return days[day] || `Ngày ${day}`;
+        } else {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return days[day] || `Day ${day}`;
+        }
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -179,7 +188,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     };
 
     const formatDateTime = (dateString: string) => {
-        return new Date(dateString).toLocaleString('vi-VN', {
+        return new Date(dateString).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -212,7 +221,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200">
                     <h2 className="text-xl font-semibold text-slate-900">
-                        Chi tiết Shift Submission
+                        {t('shifts.detailTitle')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -249,7 +258,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                     {statusInfo?.label}
                                 </span>
                                 <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
-                                    {submission.submission_type === 'new' ? 'Đăng ký mới' : 'Thay đổi lịch'}
+                                    {submission.submission_type === 'new' ? t('shifts.typeNew') : t('shifts.typeChange')}
                                 </span>
                             </div>
 
@@ -292,7 +301,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                 <div className="bg-[#f5f3ee] rounded-xl p-4">
                                     <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
                                         <Calendar className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Tuần bắt đầu</span>
+                                        <span className="text-sm font-medium">{t('shifts.weekStart')}</span>
                                     </div>
                                     <p className="text-lg font-semibold text-slate-900">
                                         {formatDate(submission.week_start_date)}
@@ -301,17 +310,17 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                 <div className="bg-[#f5f3ee] rounded-xl p-4">
                                     <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
                                         <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Tổng số ca</span>
+                                        <span className="text-sm font-medium">{t('shifts.totalShifts')}</span>
                                     </div>
                                     <p className="text-lg font-semibold text-slate-900">
-                                        {submission.total_shifts} ca
+                                        {submission.total_shifts} {t('shifts.shiftCount')}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Shifts */}
                             <div>
-                                <h4 className="font-medium text-slate-900 mb-3">Các ca làm việc</h4>
+                                <h4 className="font-medium text-slate-900 mb-3">{t('shifts.shiftsList')}</h4>
                                 <div className="grid grid-cols-2 gap-2">
                                     {submission.shifts.map((shift) => (
                                         <div
@@ -330,7 +339,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             {/* Changes (Diff) - chỉ hiện khi có thay đổi */}
                             {submission.changes && submission.changes.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium text-slate-900 mb-3">Các thay đổi</h4>
+                                    <h4 className="font-medium text-slate-900 mb-3">{t('shifts.changes')}</h4>
                                     <div className="space-y-2">
                                         {submission.changes.map((change: ShiftChange, index: number) => (
                                             <div
@@ -361,7 +370,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                                             ? 'bg-red-200 text-red-700'
                                                             : 'bg-yellow-200 text-yellow-700'
                                                         }`}>
-                                                        {change.is_new ? 'Thêm mới' : change.is_removed ? 'Xóa' : 'Thay đổi'}
+                                                        {change.is_new ? t('shifts.changeNew') : change.is_removed ? t('shifts.changeRemoved') : t('shifts.changeModified')}
                                                     </span>
                                                 </div>
                                                 <div className="text-sm text-slate-600">
@@ -386,7 +395,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             {/* Change Reason */}
                             {submission.change_reason && (
                                 <div className="bg-[#f5f3ee] rounded-xl p-4">
-                                    <h4 className="font-medium text-slate-900 mb-2">Lý do thay đổi</h4>
+                                    <h4 className="font-medium text-slate-900 mb-2">{t('shifts.changeReason')}</h4>
                                     <p className="text-slate-600">{submission.change_reason}</p>
                                 </div>
                             )}
@@ -394,7 +403,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             {/* Rejection Reason */}
                             {submission.status === 'rejected' && submission.rejection_reason && (
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                    <h4 className="font-medium text-red-700 mb-2">Lý do từ chối</h4>
+                                    <h4 className="font-medium text-red-700 mb-2">{t('shifts.rejectionReason')}</h4>
                                     <p className="text-red-600">{submission.rejection_reason}</p>
                                 </div>
                             )}
@@ -402,11 +411,11 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             {/* Reject Form - hiện khi click Từ chối */}
                             {showRejectForm && isPending && (
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                    <h4 className="font-medium text-red-700 mb-3">Nhập lý do từ chối</h4>
+                                    <h4 className="font-medium text-red-700 mb-3">{t('shifts.enterRejectionReason')}</h4>
                                     <textarea
                                         value={rejectionReason}
                                         onChange={(e) => setRejectionReason(e.target.value)}
-                                        placeholder="Vui lòng nhập lý do từ chối..."
+                                        placeholder={t('shifts.rejectionPlaceholder')}
                                         className="w-full px-4 py-3 border border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                                         rows={3}
                                         disabled={actionLoading}
@@ -425,9 +434,9 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                             {/* Timestamps */}
                             <div className="pt-4 border-t border-slate-200 text-sm text-slate-500">
                                 <div className="flex justify-between">
-                                    <span>Tạo lúc: {formatDateTime(submission.createdAt)}</span>
+                                    <span>{t('shifts.createdAt')}: {formatDateTime(submission.createdAt)}</span>
                                     {submission.approved_at && (
-                                        <span>Duyệt lúc: {formatDateTime(submission.approved_at)}</span>
+                                        <span>{t('shifts.approvedAt')}: {formatDateTime(submission.approved_at)}</span>
                                     )}
                                 </div>
                             </div>
@@ -441,7 +450,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                         onClick={onClose}
                         className="px-4 py-2 text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                        Đóng
+                        {t('common.close')}
                     </button>
 
                     {/* Action Buttons - chỉ hiển thị khi status = 'pending' */}
@@ -454,7 +463,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                         disabled={actionLoading}
                                         className="px-4 py-2 text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                                     >
-                                        Hủy
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         onClick={handleReject}
@@ -466,7 +475,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                         ) : (
                                             <Ban className="w-4 h-4" />
                                         )}
-                                        Xác nhận từ chối
+                                        {t('shifts.confirmReject')}
                                     </button>
                                 </>
                             ) : (
@@ -477,7 +486,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                         className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
                                     >
                                         <XCircle className="w-4 h-4" />
-                                        Từ chối
+                                        {t('common.reject')}
                                     </button>
                                     <button
                                         onClick={handleApprove}
@@ -489,7 +498,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                         ) : (
                                             <Check className="w-4 h-4" />
                                         )}
-                                        Duyệt
+                                        {t('common.approve')}
                                     </button>
                                 </>
                             )}

@@ -16,6 +16,7 @@ import {
     Trash2,
     ExternalLink
 } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { MediaDetailModal } from './MediaDetailModal';
@@ -29,6 +30,7 @@ import { MediaDetailModal } from './MediaDetailModal';
  * - Card layout với preview hình ảnh
  */
 export const MediaContent: React.FC = () => {
+    const { t, language } = useLanguage();
     // ============ STATE ============
     const [mediaList, setMediaList] = useState<Media[]>([]);
     const [loading, setLoading] = useState(true);
@@ -89,9 +91,9 @@ export const MediaContent: React.FC = () => {
 
     const getStatusInfo = (status: ContentStatus) => {
         const statuses = {
-            pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: 'Đã duyệt', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
+            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
+            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
         };
         return statuses[status] || statuses.pending;
     };
@@ -106,7 +108,7 @@ export const MediaContent: React.FC = () => {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -128,36 +130,36 @@ export const MediaContent: React.FC = () => {
 
     // ============ RENDER ============
     return (
-        <div className="p-6 space-y-6">
+        <div className="h-full flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Media Content</h1>
-                    <p className="text-slate-500 mt-1">Quản lý hình ảnh và video của site</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('media.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('media.subtitle')}</p>
                 </div>
                 <button
                     onClick={fetchMediaList}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Làm mới
+                    {t('common.refresh')}
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <div className="bg-white p-4 rounded-2xl border border-[#d4af37]/20 shadow-sm mb-6">
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Type Filter */}
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-slate-400" />
+                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
                         <select
                             value={typeFilter}
                             onChange={(e) => { setTypeFilter(e.target.value as MediaType | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">Tất cả loại</option>
-                            <option value="image">Hình ảnh</option>
+                            <option value="">{t('media.filterType')}</option>
+                            <option value="image">Image</option>
                             <option value="video">Video</option>
                             <option value="panorama">Panorama</option>
                         </select>
@@ -168,12 +170,12 @@ export const MediaContent: React.FC = () => {
                         <select
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="approved">Đã duyệt</option>
-                            <option value="rejected">Từ chối</option>
+                            <option value="">{t('media.filterStatus')}</option>
+                            <option value="pending">{t('status.pending')}</option>
+                            <option value="approved">{t('status.approved')}</option>
+                            <option value="rejected">{t('status.rejected')}</option>
                         </select>
                     </div>
 
@@ -186,11 +188,11 @@ export const MediaContent: React.FC = () => {
                                 setActiveFilter(val === '' ? undefined : val === 'true');
                                 setCurrentPage(1);
                             }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">Tất cả (Active/Deleted)</option>
-                            <option value="true">Đang hoạt động</option>
-                            <option value="false">Đã xóa</option>
+                            <option value="">{t('media.filterActive')}</option>
+                            <option value="true">{t('media.activeTrue')}</option>
+                            <option value="false">{t('media.activeFalse')}</option>
                         </select>
                     </div>
                 </div>
@@ -206,23 +208,23 @@ export const MediaContent: React.FC = () => {
 
             {/* Loading */}
             {loading ? (
-                <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <div className="flex-1 flex items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                 </div>
             ) : (
                 <>
                     {/* Content */}
                     {mediaList.length === 0 ? (
                         /* Empty State */
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <Image className="w-8 h-8 text-blue-600" />
+                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20 text-center p-12">
+                            <div className="w-16 h-16 bg-[#f5f3ee] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Image className="w-8 h-8 text-[#d4af37]/40" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                Chưa có media nào
+                                {t('media.emptyTitle')}
                             </h3>
                             <p className="text-slate-500">
-                                Các Local Guide chưa upload media cho site
+                                {t('media.emptyDesc')}
                             </p>
                         </div>
                     ) : (
@@ -243,7 +245,7 @@ export const MediaContent: React.FC = () => {
                                 return (
                                     <div
                                         key={media.id}
-                                        className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow ${!media.is_active ? 'opacity-60 border-red-200' : 'border-slate-200'
+                                        className={`bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300 group ${!media.is_active ? 'opacity-60 border-red-200' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
                                             }`}
                                     >
                                         {/* Media Preview */}
@@ -299,11 +301,11 @@ export const MediaContent: React.FC = () => {
 
                                             {/* Status */}
                                             <div className="flex items-center justify-between mb-3">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
                                                     <StatusIcon className="w-3 h-3" />
                                                     {statusInfo.label}
                                                 </span>
-                                                <span className="text-xs text-slate-400">{media.code}</span>
+                                                <span className="text-xs text-slate-400 font-mono">{media.code}</span>
                                             </div>
 
                                             {/* Creator */}
@@ -326,17 +328,17 @@ export const MediaContent: React.FC = () => {
                                                     href={media.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium border border-[#d4af37]/20 text-slate-600 rounded-lg hover:bg-[#f5f3ee] hover:text-[#8a6d1c] hover:border-[#d4af37]/40 transition-colors"
                                                 >
                                                     <ExternalLink className="w-3.5 h-3.5" />
-                                                    Xem
+                                                    {t('media.view')}
                                                 </a>
                                                 <button
                                                     onClick={() => setSelectedMedia(media)}
-                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium bg-[#f5f3ee] text-[#8a6d1c] rounded-lg hover:bg-[#ece8dc] transition-colors"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
-                                                    Chi tiết
+                                                    {t('common.details')}
                                                 </button>
                                             </div>
                                         </div>
@@ -348,15 +350,15 @@ export const MediaContent: React.FC = () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mt-6">
                             <p className="text-sm text-slate-500">
-                                Hiển thị {(currentPage - 1) * limit + 1} đến {Math.min(currentPage * limit, totalItems)} trong tổng số {totalItems} media
+                                {t('media.showing')} <span className="font-medium text-slate-900">{(currentPage - 1) * limit + 1}</span> {t('media.to')} <span className="font-medium text-slate-900">{Math.min(currentPage * limit, totalItems)}</span> {t('media.of')} <span className="font-medium text-slate-900">{totalItems}</span> {t('media.items')}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
@@ -377,8 +379,8 @@ export const MediaContent: React.FC = () => {
                                                 key={pageNum}
                                                 onClick={() => handlePageChange(pageNum)}
                                                 className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'hover:bg-slate-100 text-slate-600'
+                                                    ? 'bg-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
+                                                    : 'hover:bg-[#f5f3ee] text-slate-600 hover:text-[#8a6d1c]'
                                                     }`}
                                             >
                                                 {pageNum}
@@ -389,7 +391,7 @@ export const MediaContent: React.FC = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>

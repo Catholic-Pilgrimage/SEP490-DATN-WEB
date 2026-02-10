@@ -23,6 +23,7 @@ import {
     LocalGuide
 } from '../../../types/manager.types';
 import { ShiftSubmissionDetailModal } from './ShiftSubmissionDetailModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 // ============ TYPES ============
 type ViewMode = 'month' | 'week' | 'year';
@@ -107,6 +108,7 @@ const getWeekDays = (startDate: Date): Date[] => {
  * - Approved shifts shown with green
  */
 export const ShiftSubmissions: React.FC = () => {
+    const { t, language } = useLanguage();
     // ============ STATE ============
     const [submissions, setSubmissions] = useState<ShiftSubmission[]>([]);
     const [loading, setLoading] = useState(true);
@@ -258,9 +260,8 @@ export const ShiftSubmissions: React.FC = () => {
     const formatTime = (timeString: string) => timeString.slice(0, 5);
 
     const getMonthName = (month: number): string => {
-        const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-            'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-        return months[month];
+        const date = new Date(currentDate.getFullYear(), month, 1);
+        return date.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long' });
     };
 
     const getStatusColor = (status: ShiftSubmissionStatus) => {
@@ -274,21 +275,23 @@ export const ShiftSubmissions: React.FC = () => {
 
     const getStatusLabel = (status: ShiftSubmissionStatus) => {
         switch (status) {
-            case 'approved': return 'Đã duyệt';
-            case 'pending': return 'Chờ duyệt';
-            case 'rejected': return 'Từ chối';
+            case 'approved': return t('status.approved');
+            case 'pending': return t('status.pending');
+            case 'rejected': return t('status.rejected');
             default: return status;
         }
     };
 
     const renderHeaderTitle = () => {
+        const locale = language === 'vi' ? 'vi-VN' : 'en-US';
         if (viewMode === 'year') {
-            return `Năm ${currentDate.getFullYear()}`;
+            return `${t('common.year')} ${currentDate.getFullYear()}`;
         }
         if (viewMode === 'month') {
-            return `${getMonthName(currentDate.getMonth())} ${currentDate.getFullYear()}`;
+            return currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
         }
-        return `Tuần ${Math.ceil(currentDate.getDate() / 7)} - ${getMonthName(currentDate.getMonth())} ${currentDate.getFullYear()}`;
+        // Week view
+        return `${t('common.week')} ${Math.ceil(currentDate.getDate() / 7)} - ${currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}`;
     };
 
     const handleMonthClick = (monthIndex: number) => {
@@ -298,15 +301,17 @@ export const ShiftSubmissions: React.FC = () => {
     };
 
     // ============ RENDER ============
-    const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const dayNames = language === 'vi'
+        ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+        : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
         <div className="h-full flex flex-col p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Lịch trực Local Guide</h1>
-                    <p className="text-slate-500 mt-1">Xem lịch làm việc của Local Guides theo thời gian</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('shifts.title')}</h1>
+                    <p className="text-slate-500 mt-1">{t('shifts.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* View Mode Toggle */}
@@ -319,7 +324,7 @@ export const ShiftSubmissions: React.FC = () => {
                                 }`}
                         >
                             <Calendar className="w-4 h-4" />
-                            Năm
+                            {t('common.year')}
                         </button>
                         <button
                             onClick={() => setViewMode('month')}
@@ -329,7 +334,7 @@ export const ShiftSubmissions: React.FC = () => {
                                 }`}
                         >
                             <CalendarDays className="w-4 h-4" />
-                            Tháng
+                            {t('common.month')}
                         </button>
                         <button
                             onClick={() => setViewMode('week')}
@@ -339,7 +344,7 @@ export const ShiftSubmissions: React.FC = () => {
                                 }`}
                         >
                             <CalendarRange className="w-4 h-4" />
-                            Tuần
+                            {t('common.week')}
                         </button>
                     </div>
 
@@ -349,7 +354,7 @@ export const ShiftSubmissions: React.FC = () => {
                         onChange={(e) => setGuideFilter(e.target.value)}
                         className="px-4 py-2.5 border border-[#d4af37]/20 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
                     >
-                        <option value="">Tất cả Local Guide</option>
+                        <option value="">{t('shifts.allGuides')}</option>
                         {guides.map(guide => (
                             <option key={guide.id} value={guide.id}>{guide.full_name}</option>
                         ))}
@@ -358,10 +363,10 @@ export const ShiftSubmissions: React.FC = () => {
                     <button
                         onClick={fetchSubmissions}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        Làm mới
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -388,7 +393,7 @@ export const ShiftSubmissions: React.FC = () => {
                                 onClick={goToToday}
                                 className="px-3 py-1 text-sm text-[#8a6d1c] border border-[#d4af37]/30 rounded-lg hover:bg-[#f5f3ee] transition-colors"
                             >
-                                Hôm nay
+                                {t('common.today')}
                             </button>
                         </div>
                         <div className="flex items-center gap-2">
@@ -446,11 +451,11 @@ export const ShiftSubmissions: React.FC = () => {
                             <div className="flex items-center gap-4 px-4 py-2 border-b border-slate-100 text-sm">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                    <span className="text-slate-600">Đã duyệt</span>
+                                    <span className="text-slate-600">{t('status.approved')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                    <span className="text-slate-600">Chờ duyệt</span>
+                                    <span className="text-slate-600">{t('status.pending')}</span>
                                 </div>
                             </div>
 
@@ -558,14 +563,14 @@ export const ShiftSubmissions: React.FC = () => {
                             <div className="flex items-center justify-between p-4 border-b border-slate-200">
                                 <div>
                                     <h3 className="font-semibold text-slate-900">
-                                        {selectedDate.toLocaleDateString('vi-VN', {
+                                        {selectedDate.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
                                             weekday: 'long',
                                             day: 'numeric',
                                             month: 'long'
                                         })}
                                     </h3>
                                     <p className="text-sm text-slate-500">
-                                        {selectedDayShifts ? `${selectedDayShifts.shifts.length} ca làm việc` : 'Không có ca nào'}
+                                        {selectedDayShifts ? `${selectedDayShifts.shifts.length} ${t('shifts.shiftCount')}` : t('shifts.noShifts')}
                                     </p>
                                 </div>
                                 <button
@@ -629,7 +634,7 @@ export const ShiftSubmissions: React.FC = () => {
                                                         className="flex items-center gap-1 text-xs text-[#8a6d1c] hover:text-[#d4af37]"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
-                                                        Chi tiết
+                                                        {t('common.details')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -638,8 +643,8 @@ export const ShiftSubmissions: React.FC = () => {
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full text-center py-12">
                                         <Calendar className="w-12 h-12 text-slate-300 mb-3" />
-                                        <p className="text-slate-500">Không có ca làm việc</p>
-                                        <p className="text-sm text-slate-400">trong ngày này</p>
+                                        <p className="text-slate-500">{t('shifts.noShifts')}</p>
+                                        <p className="text-sm text-slate-400">{t('shifts.noShiftsDay')}</p>
                                     </div>
                                 )}
                             </div>
@@ -647,9 +652,9 @@ export const ShiftSubmissions: React.FC = () => {
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
                             <Calendar className="w-16 h-16 text-slate-300 mb-4" />
-                            <h3 className="font-medium text-slate-700 mb-1">Chọn một ngày</h3>
+                            <h3 className="font-medium text-slate-700 mb-1">{t('shifts.selectDay')}</h3>
                             <p className="text-sm text-slate-500">
-                                Click vào ngày trên lịch để xem chi tiết ca làm việc
+                                {t('shifts.selectDayDesc')}
                             </p>
                         </div>
                     )}
