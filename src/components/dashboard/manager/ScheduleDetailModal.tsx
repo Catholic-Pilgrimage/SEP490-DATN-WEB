@@ -117,7 +117,6 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     const handleToggleActive = async () => {
         if (!currentSchedule) return;
 
-        const action = currentSchedule.is_active ? 'Ẩn' : 'Khôi phục';
         const confirmed = window.confirm(`${t('content.confirmApproveMsg')}?`);
         if (!confirmed) return;
 
@@ -133,10 +132,10 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 setCurrentSchedule(response.data);
                 onStatusChange?.();
             } else {
-                setActionError(response.message || `Không thể ${action.toLowerCase()} lịch lễ`);
+                setActionError(response.message || t('common.error'));
             }
         } catch (err: any) {
-            setActionError(err?.error?.message || `Không thể ${action.toLowerCase()} lịch lễ`);
+            setActionError(err?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
         }
@@ -164,7 +163,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     };
 
     const formatDateTime = (dateString: string) => {
-        return new Date(dateString).toLocaleString('vi-VN', {
+        return new Date(dateString).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -191,21 +190,21 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
             {/* Modal */}
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden mx-4 my-8 flex-shrink-0">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-200">
+                <div className="flex items-center justify-between p-6 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#f5f3ee] via-white to-[#f5f3ee]">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/20">
+                            <Calendar className="w-5 h-5 text-white" />
                         </div>
                         <div>
                             <h2 className="text-xl font-semibold text-slate-900">
                                 {t('schedule.detailTitle')}
                             </h2>
-                            <span className="text-sm text-slate-400">{currentSchedule.code}</span>
+                            <span className="inline-flex items-center px-2 py-0.5 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-md text-sm text-[#8a6d1c] font-mono font-medium">{currentSchedule.code}</span>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        className="p-2 hover:bg-[#f5f3ee] rounded-lg transition-colors"
                     >
                         <X className="w-5 h-5 text-slate-500" />
                     </button>
@@ -214,90 +213,92 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 {/* Content */}
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
                     <div className="space-y-6">
-                        {/* Status Badge */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusInfo.color}`}>
-                                <StatusIcon className="w-4 h-4" />
-                                {statusInfo.label}
-                            </span>
-                            {!currentSchedule.is_active && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-500 text-white">
-                                    <Trash2 className="w-4 h-4" />
-                                    {t('content.deleted')}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Time Info */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center">
-                                    <Clock className="w-8 h-8 text-blue-600" />
+                        {/* Hero: Time + Days Combined */}
+                        <div className="bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc] rounded-2xl p-6 border border-[#d4af37]/20">
+                            <div className="flex items-center gap-5 mb-5">
+                                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 flex items-center justify-center flex-shrink-0">
+                                    <Clock className="w-8 h-8 text-[#d4af37]" />
                                 </div>
-                                <div>
-                                    <p className="text-sm text-slate-500 mb-1">Giờ lễ</p>
-                                    <p className="text-3xl font-bold text-slate-900">
+                                <div className="flex-1">
+                                    <p className="text-sm text-[#8a6d1c] font-medium mb-0.5">{t('schedule.massTime')}</p>
+                                    <p className="text-3xl font-bold text-slate-900 tracking-tight">
                                         {formatTime(currentSchedule.time)}
                                     </p>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Days of Week */}
-                        <div className="bg-slate-50 rounded-xl p-4">
-                            <h4 className="font-medium text-slate-900 mb-3">{t('schedule.daysOfWeek')}</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {currentSchedule.days_of_week.map(day => (
-                                    <span
-                                        key={day}
-                                        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-medium"
-                                    >
-                                        {getDayName(day)}
+                                {/* Status Badge */}
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusInfo.color}`}>
+                                        <StatusIcon className="w-4 h-4" />
+                                        {statusInfo.label}
                                     </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Note */}
-                        <div className="bg-slate-50 rounded-xl p-4">
-                            <h4 className="font-medium text-slate-900 mb-2">{t('schedule.note')}</h4>
-                            <p className="text-slate-600">{currentSchedule.note || t('schedule.noNote')}</p>
-                        </div>
-
-                        {/* Creator Info */}
-                        {currentSchedule.creator && (
-                            <div className="bg-slate-50 rounded-xl p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                                        <User className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-slate-900">
-                                            {currentSchedule.creator.full_name}
-                                        </h4>
-                                        <p className="text-sm text-slate-500">{currentSchedule.creator.email}</p>
-                                    </div>
+                                    {!currentSchedule.is_active && (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-500 text-white">
+                                            <Trash2 className="w-4 h-4" />
+                                            {t('content.deleted')}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                        )}
+                            {/* Days grid inside hero */}
+                            <div className="pt-4 border-t border-[#d4af37]/15">
+                                <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-3">{t('schedule.daysOfWeek')}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {currentSchedule.days_of_week.map(day => (
+                                        <span
+                                            key={day}
+                                            className="px-4 py-1.5 bg-white text-[#8a6d1c] rounded-lg font-medium text-sm border border-[#d4af37]/20 shadow-sm hover:shadow-md transition-shadow"
+                                        >
+                                            {getDayName(day)}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-                        {/* Dates */}
+                        {/* Info Grid: Note + Creator side by side */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Note */}
+                            <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('schedule.note')}</p>
+                                <p className="text-slate-700 text-sm leading-relaxed">{currentSchedule.note || t('schedule.noNote')}</p>
+                            </div>
+
+                            {/* Creator */}
+                            {currentSchedule.creator && (
+                                <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('table.creator')}</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-md shadow-[#d4af37]/15 flex-shrink-0">
+                                            <User className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-slate-900 text-sm truncate">
+                                                {currentSchedule.creator.full_name}
+                                            </p>
+                                            <p className="text-xs text-slate-500 truncate">{currentSchedule.creator.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Timestamps */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-blue-50 rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-blue-600 mb-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span className="text-sm font-medium">{t('content.createdAt')}</span>
+                            <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">{t('content.createdAt')}</span>
                                 </div>
-                                <p className="text-slate-900 font-medium">
+                                <p className="text-slate-900 font-medium text-sm">
                                     {formatDateTime(currentSchedule.created_at)}
                                 </p>
                             </div>
-                            <div className="bg-purple-50 rounded-xl p-4">
-                                <div className="flex items-center gap-2 text-purple-600 mb-1">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">{t('content.updatedAt')}</span>
+                            <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                <div className="flex items-center gap-2 text-[#8a6d1c] mb-1">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">{t('content.updatedAt')}</span>
                                 </div>
-                                <p className="text-slate-900 font-medium">
+                                <p className="text-slate-900 font-medium text-sm">
                                     {formatDateTime(currentSchedule.updated_at)}
                                 </p>
                             </div>
@@ -337,12 +338,12 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between gap-3 p-6 border-t border-slate-200">
+                <div className="flex items-center justify-between gap-3 p-6 border-t border-[#d4af37]/20">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                        className="px-4 py-2 text-slate-700 border border-[#d4af37]/20 rounded-xl hover:bg-[#f5f3ee] transition-colors"
                     >
-                        Đóng
+                        {t('common.close')}
                     </button>
 
                     {/* Action Buttons */}
@@ -401,9 +402,9 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                     <button
                         onClick={handleToggleActive}
                         disabled={actionLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors disabled:opacity-50 ${currentSchedule.is_active
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 ${currentSchedule.is_active
                             ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-lg shadow-[#d4af37]/20'
                             }`}
                     >
                         {actionLoading ? (

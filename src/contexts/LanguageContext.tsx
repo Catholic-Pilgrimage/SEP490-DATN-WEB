@@ -380,6 +380,7 @@ const translations: Record<Language, Record<string, string>> = {
         'media.emptyTitle': 'Chưa có media nào',
         'media.emptyDesc': 'Các Local Guide chưa upload media cho site',
         'media.view': 'Xem',
+        'media.openInNewTab': 'Mở trong tab mới',
         'media.showing': 'Hiển thị',
         'media.to': 'đến',
         'media.of': 'trong tổng số',
@@ -432,6 +433,13 @@ const translations: Record<Language, Record<string, string>> = {
         'event.empty': 'Chưa có sự kiện nào',
         'event.emptyDesc': 'Các Local Guide chưa tạo sự kiện cho site',
         'event.loadError': 'Không thể tải danh sách sự kiện',
+        'event.description': 'Mô tả',
+        'event.noDescription': '(Không có mô tả)',
+        'event.date': 'Ngày',
+        'event.time': 'Giờ',
+        'event.location': 'Địa điểm',
+        'event.banner': 'Banner',
+        'event.openBanner': 'Mở banner trong tab mới',
 
         // Nearby Place Content
         'nearby.title': 'Địa điểm lân cận',
@@ -440,6 +448,12 @@ const translations: Record<Language, Record<string, string>> = {
         'nearby.emptyDesc': 'Các Local Guide chưa đề xuất địa điểm lân cận',
         'nearby.loadError': 'Không thể tải danh sách địa điểm',
         'nearby.allCategories': 'Tất cả danh mục',
+        'nearby.address': 'Địa chỉ',
+        'nearby.latitude': 'Vĩ độ (Lat)',
+        'nearby.longitude': 'Kinh độ (Lng)',
+        'nearby.phone': 'Số điện thoại',
+        'nearby.proposer': 'Người đề xuất',
+        'nearby.reviewedAt': 'Ngày duyệt',
 
         // Shared Content Keys
         'content.allStatus': 'Tất cả trạng thái',
@@ -456,6 +470,12 @@ const translations: Record<Language, Record<string, string>> = {
         'content.confirmReject': 'Xác nhận từ chối',
         'content.reasonRequired': 'Vui lòng nhập lý do từ chối',
         'content.confirmApproveMsg': 'Bạn có chắc muốn duyệt nội dung này?',
+        'content.hide': 'Ẩn',
+        'content.restore': 'Khôi phục',
+
+        'common.error': 'Đã xảy ra lỗi',
+        'content.approve': 'Duyệt',
+        'content.reject': 'Từ chối',
 
         // Table Headers (Schedule)
         'table.scheduleCode': 'Mã',
@@ -859,6 +879,7 @@ const translations: Record<Language, Record<string, string>> = {
         'media.emptyTitle': 'No media yet',
         'media.emptyDesc': 'Local Guides have not uploaded any media yet',
         'media.view': 'View',
+        'media.openInNewTab': 'Open in new tab',
         'media.showing': 'Showing',
         'media.to': 'to',
         'media.of': 'of',
@@ -890,6 +911,13 @@ const translations: Record<Language, Record<string, string>> = {
         'event.empty': 'No events yet',
         'event.emptyDesc': 'Local Guides have not created any events',
         'event.loadError': 'Failed to load event list',
+        'event.description': 'Description',
+        'event.noDescription': '(No description)',
+        'event.date': 'Date',
+        'event.time': 'Time',
+        'event.location': 'Location',
+        'event.banner': 'Banner',
+        'event.openBanner': 'Open banner in new tab',
 
         // Nearby Place Content
         'nearby.title': 'Nearby Places',
@@ -898,6 +926,12 @@ const translations: Record<Language, Record<string, string>> = {
         'nearby.emptyDesc': 'Local Guides have not suggested any nearby places',
         'nearby.loadError': 'Failed to load place list',
         'nearby.allCategories': 'All Categories',
+        'nearby.address': 'Address',
+        'nearby.latitude': 'Latitude (Lat)',
+        'nearby.longitude': 'Longitude (Lng)',
+        'nearby.phone': 'Phone',
+        'nearby.proposer': 'Proposer',
+        'nearby.reviewedAt': 'Reviewed At',
 
         // Shared Content Keys
         'content.allStatus': 'All Status',
@@ -914,6 +948,12 @@ const translations: Record<Language, Record<string, string>> = {
         'content.confirmReject': 'Confirm Reject',
         'content.reasonRequired': 'Rejection reason is required',
         'content.confirmApproveMsg': 'Are you sure you want to approve this content?',
+        'content.hide': 'Hide',
+        'content.restore': 'Restore',
+
+        'common.error': 'An error occurred',
+        'content.approve': 'Approve',
+        'content.reject': 'Reject',
 
         // Table Headers (Schedule)
         'table.scheduleCode': 'Code',

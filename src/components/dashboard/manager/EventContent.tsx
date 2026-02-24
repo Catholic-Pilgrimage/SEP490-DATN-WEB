@@ -116,9 +116,9 @@ export const EventContent: React.FC = () => {
 
     // ============ RENDER ============
     return (
-        <div className="p-6 space-y-6">
+        <div className="h-full flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">{t('event.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('event.subtitle')}</p>
@@ -126,7 +126,7 @@ export const EventContent: React.FC = () => {
                 <button
                     onClick={fetchEventList}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
@@ -134,15 +134,15 @@ export const EventContent: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-4 mb-6">
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Status Filter */}
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-slate-400" />
+                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
                         <select
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent hover:border-[#d4af37]/50 transition-colors"
                         >
                             <option value="">{t('content.allStatus')}</option>
                             <option value="pending">{t('status.pending')}</option>
@@ -160,7 +160,7 @@ export const EventContent: React.FC = () => {
                                 setActiveFilter(val === '' ? undefined : val === 'true');
                                 setCurrentPage(1);
                             }}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent hover:border-[#d4af37]/50 transition-colors"
                         >
                             <option value="">{t('content.allActive')}</option>
                             <option value="true">{t('content.activeTrue')}</option>
@@ -180,17 +180,17 @@ export const EventContent: React.FC = () => {
 
             {/* Loading */}
             {loading ? (
-                <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <div className="flex-1 flex items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
                 </div>
             ) : (
                 <>
                     {/* Content */}
                     {eventList.length === 0 ? (
                         /* Empty State */
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                            <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <Sparkles className="w-8 h-8 text-purple-600" />
+                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20 text-center p-12">
+                            <div className="w-16 h-16 bg-[#f5f3ee] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Sparkles className="w-8 h-8 text-[#d4af37]/40" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-2">
                                 {t('event.empty')}
@@ -209,21 +209,24 @@ export const EventContent: React.FC = () => {
                                 return (
                                     <div
                                         key={event.id}
-                                        className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all ${!event.is_active ? 'opacity-60' : ''}`}
+                                        className={`group bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden hover:shadow-xl hover:border-[#d4af37]/40 hover:-translate-y-1 transition-all duration-300 ${!event.is_active ? 'opacity-60' : ''}`}
                                     >
                                         {/* Banner Image */}
-                                        <div className="relative h-40 bg-gradient-to-br from-purple-500 to-pink-500">
+                                        <div className="relative h-44 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] overflow-hidden">
                                             {event.banner_url ? (
                                                 <img
                                                     src={event.banner_url}
                                                     alt={event.name}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center">
-                                                    <Sparkles className="w-12 h-12 text-white/50" />
+                                                    <Sparkles className="w-12 h-12 text-white/30" />
                                                 </div>
                                             )}
+
+                                            {/* Dark gradient overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                                             {/* Status Badge */}
                                             <div className="absolute top-3 left-3 flex items-center gap-2">
@@ -240,51 +243,61 @@ export const EventContent: React.FC = () => {
                                             </div>
 
                                             {/* Code */}
-                                            <span className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-lg font-mono">
+                                            <span className="absolute top-3 right-3 px-2.5 py-1 bg-black/40 backdrop-blur-md text-white text-xs rounded-lg font-mono border border-white/10">
                                                 {event.code}
                                             </span>
+
+                                            {/* Name overlay on banner */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                                                <h3 className="font-bold text-white text-lg line-clamp-1 drop-shadow-md">
+                                                    {event.name}
+                                                </h3>
+                                            </div>
                                         </div>
 
                                         {/* Content */}
                                         <div className="p-4">
-                                            {/* Name */}
-                                            <h3 className="font-semibold text-slate-900 text-lg mb-2 line-clamp-1">
-                                                {event.name}
-                                            </h3>
-
                                             {/* Description */}
-                                            <p className="text-slate-500 text-sm line-clamp-2 mb-4 min-h-[40px]">
+                                            <p className="text-slate-500 text-sm line-clamp-2 mb-4 min-h-[40px] leading-relaxed">
                                                 {event.description}
                                             </p>
 
-                                            {/* Date & Time */}
+                                            {/* Info chips */}
                                             <div className="space-y-2 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                    <Calendar className="w-4 h-4 text-slate-400" />
-                                                    <span>{formatDateRange(event.start_date, event.end_date)}</span>
+                                                <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                                                    <div className="w-7 h-7 rounded-lg bg-[#f5f3ee] flex items-center justify-center flex-shrink-0">
+                                                        <Calendar className="w-3.5 h-3.5 text-[#d4af37]" />
+                                                    </div>
+                                                    <span className="font-medium">{formatDateRange(event.start_date, event.end_date)}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                    <Clock className="w-4 h-4 text-slate-400" />
-                                                    <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
+                                                <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                                                    <div className="w-7 h-7 rounded-lg bg-[#f5f3ee] flex items-center justify-center flex-shrink-0">
+                                                        <Clock className="w-3.5 h-3.5 text-[#d4af37]" />
+                                                    </div>
+                                                    <span className="font-medium">{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                    <MapPin className="w-4 h-4 text-slate-400" />
-                                                    <span className="truncate">{event.location}</span>
+                                                <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                                                    <div className="w-7 h-7 rounded-lg bg-[#f5f3ee] flex items-center justify-center flex-shrink-0">
+                                                        <MapPin className="w-3.5 h-3.5 text-[#d4af37]" />
+                                                    </div>
+                                                    <span className="truncate font-medium">{event.location}</span>
                                                 </div>
                                             </div>
 
                                             {/* Creator */}
                                             {event.creator && (
-                                                <div className="flex items-center gap-2 text-xs text-slate-500 mb-4 pt-3 border-t border-slate-100">
-                                                    <User className="w-3.5 h-3.5" />
-                                                    <span className="truncate">{event.creator.full_name}</span>
+                                                <div className="flex items-center gap-2 text-xs mb-4 pt-3 border-t border-[#d4af37]/10">
+                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center flex-shrink-0">
+                                                        <User className="w-3 h-3 text-white" />
+                                                    </div>
+                                                    <span className="truncate font-medium text-slate-700">{event.creator.full_name}</span>
                                                 </div>
                                             )}
 
                                             {/* Action Button */}
                                             <button
                                                 onClick={() => setSelectedEvent(event)}
-                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#f5f3ee] text-[#8a6d1c] border border-[#d4af37]/20 rounded-xl hover:bg-[#ece8dc] hover:border-[#d4af37]/40 hover:shadow-sm transition-all duration-200"
                                             >
                                                 <Eye className="w-4 h-4" />
                                                 {t('content.detail')}
@@ -298,15 +311,15 @@ export const EventContent: React.FC = () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mt-6">
                             <p className="text-sm text-slate-500">
-                                {t('media.showing')} {(currentPage - 1) * limit + 1} {t('media.to')} {Math.min(currentPage * limit, totalItems)} {t('media.of')} {totalItems} {t('event.title').toLowerCase()}
+                                {t('media.showing')} <span className="font-medium text-slate-900">{(currentPage - 1) * limit + 1}</span> {t('media.to')} <span className="font-medium text-slate-900">{Math.min(currentPage * limit, totalItems)}</span> {t('media.of')} <span className="font-medium text-slate-900">{totalItems}</span> {t('media.items')}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
@@ -327,8 +340,8 @@ export const EventContent: React.FC = () => {
                                                 key={pageNum}
                                                 onClick={() => handlePageChange(pageNum)}
                                                 className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'hover:bg-slate-100 text-slate-600'
+                                                    ? 'bg-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
+                                                    : 'hover:bg-[#f5f3ee] text-slate-600 hover:text-[#8a6d1c]'
                                                     }`}
                                             >
                                                 {pageNum}
@@ -339,7 +352,7 @@ export const EventContent: React.FC = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
