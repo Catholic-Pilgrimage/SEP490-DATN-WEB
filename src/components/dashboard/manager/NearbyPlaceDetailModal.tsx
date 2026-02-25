@@ -14,7 +14,6 @@ import {
     RotateCcw,
     EyeOff,
     MapPin,
-    Phone,
     Utensils,
     Hotel,
     Heart,

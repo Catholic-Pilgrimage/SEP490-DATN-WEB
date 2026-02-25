@@ -30,7 +30,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
  * Filter theo: status, category, is_active
  */
 export const NearbyPlaceContent: React.FC = () => {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     // ============ STATE ============
     const [placeList, setPlaceList] = useState<NearbyPlace[]>([]);
     const [loading, setLoading] = useState(true);

@@ -489,6 +489,12 @@ const translations: Record<Language, Record<string, string>> = {
         'category.lodging': 'Lưu trú',
         'category.medical': 'Y tế',
 
+        // Toast Notifications
+        'toast.loginSuccess': 'Đăng nhập thành công!',
+        'toast.welcomeBack': 'Chào mừng trở lại, hệ thống đã sẵn sàng.',
+        'toast.logoutSuccess': 'Đăng xuất thành công!',
+        'toast.logoutMessage': 'Hẹn gặp lại bạn sớm.',
+
     },
     en: {
         // Sidebar
@@ -966,6 +972,12 @@ const translations: Record<Language, Record<string, string>> = {
         'category.food': 'Food',
         'category.lodging': 'Lodging',
         'category.medical': 'Medical',
+
+        // Toast Notifications
+        'toast.loginSuccess': 'Login successful!',
+        'toast.welcomeBack': 'Welcome back, the system is ready.',
+        'toast.logoutSuccess': 'Logged out successfully!',
+        'toast.logoutMessage': 'See you again soon.',
 
     }
 };
