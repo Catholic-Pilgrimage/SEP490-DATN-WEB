@@ -1716,7 +1716,7 @@ const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId }) => 
                                     {/* Proposer */}
                                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-3">
                                         <User className="w-3.5 h-3.5" />
-                                        <span>Đề xuất bởi: {place.proposer.full_name}</span>
+                                        <span>Đề xuất bởi: {place.proposer?.full_name || 'N/A'}</span>
                                     </div>
 
                                     {/* Rejection reason */}

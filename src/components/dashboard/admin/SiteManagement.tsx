@@ -15,6 +15,7 @@ import {
   Eye,
   Edit,
   Trash2,
+  X,
   RotateCcw,
   AlertTriangle,
   CheckCircle,
@@ -25,9 +26,11 @@ import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail
 import { SiteDetailModal } from './SiteDetailModal';
 import { SiteEditModal } from './SiteEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export const SiteManagement: React.FC = () => {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [sites, setSites] = useState<AdminSite[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +94,11 @@ export const SiteManagement: React.FC = () => {
     fetchSites();
   }, [fetchSites]);
 
+  const handleManualRefresh = async () => {
+    await fetchSites();
+    showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+  };
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && (!pagination || newPage <= pagination.totalPages)) {
       setCurrentPage(newPage);
@@ -126,7 +134,7 @@ export const SiteManagement: React.FC = () => {
           <p className="text-gray-500 mt-1">{t('sites.subtitle')}</p>
         </div>
         <button
-          onClick={fetchSites}
+          onClick={handleManualRefresh}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
         >
@@ -266,7 +274,7 @@ export const SiteManagement: React.FC = () => {
                         <button
                           onClick={() => { setSelectedSiteId(site.id); setIsDetailModalOpen(true); }}
                           className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
-                          title="View"
+                          title={t('common.view')}
                         >
                           <Eye className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
                         </button>
@@ -286,7 +294,7 @@ export const SiteManagement: React.FC = () => {
                             }
                           }}
                           className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
-                          title="Edit"
+                          title={t('common.edit')}
                           disabled={editLoading}
                         >
                           {editLoading ? (
@@ -295,29 +303,37 @@ export const SiteManagement: React.FC = () => {
                             <Edit className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
                           )}
                         </button>
-                        <button
-                          onClick={() => { setSiteToDelete(site); setIsDeleteConfirmOpen(true); }}
-                          className="p-3 bg-white border border-red-300 rounded-full shadow-lg hover:scale-110 hover:bg-red-500 transition-all group/btn"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-5 h-5 text-red-500 group-hover/btn:text-white" />
-                        </button>
+                        {site.is_active && (
+                          <button
+                            onClick={() => { setSiteToDelete(site); setIsDeleteConfirmOpen(true); }}
+                            className="p-3 bg-white border border-red-300 rounded-full shadow-lg hover:scale-110 hover:bg-red-500 transition-all group/btn"
+                            title={t('common.delete')}
+                          >
+                            <Trash2 className="w-5 h-5 text-red-500 group-hover/btn:text-white" />
+                          </button>
+                        )}
                         {!site.is_active && (
                           <button
                             onClick={async () => {
                               setRestoreLoading(site.id);
                               try {
                                 const response = await AdminService.restoreSite(site.id);
-                                if (response.success) fetchSites();
-                                else setError(response.message || 'Failed to restore site');
+                                if (response.success) {
+                                  showToast('success', t('toast.restoreSiteSuccess'), t('toast.restoreSiteSuccessMsg'));
+                                  fetchSites();
+                                } else {
+                                  showToast('error', t('toast.restoreSiteFailed'), response.message || t('toast.restoreSiteFailedMsg'));
+                                  setError(response.message || 'Failed to restore site');
+                                }
                               } catch (err: any) {
+                                showToast('error', t('toast.restoreSiteFailed'), err?.error?.message || t('toast.restoreSiteFailedMsg'));
                                 setError(err?.error?.message || 'Failed to restore site');
                               } finally {
                                 setRestoreLoading(null);
                               }
                             }}
                             className="p-3 bg-white border border-emerald-300 rounded-full shadow-lg hover:scale-110 hover:bg-emerald-500 transition-all group/btn"
-                            title="Restore"
+                            title={t('common.restore')}
                             disabled={restoreLoading === site.id}
                           >
                             {restoreLoading === site.id ? (
@@ -367,7 +383,7 @@ export const SiteManagement: React.FC = () => {
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl border border-[#d4af37]/20">
               <div className="text-sm text-gray-500">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} sites
+                {t('sites.showing')} {((pagination.page - 1) * pagination.limit) + 1} {t('sites.to')} {Math.min(pagination.page * pagination.limit, pagination.total)} {t('sites.of')} {pagination.total} {t('sites.sites')}
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -427,56 +443,79 @@ export const SiteManagement: React.FC = () => {
 
       {/* Delete Confirm Dialog */}
       {isDeleteConfirmOpen && siteToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
           />
-          <div className="relative bg-white border border-[#d4af37]/30 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 rounded-full bg-red-50 border border-red-200">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+              <div className="text-white">
+                <h2 className="text-lg font-semibold">{t('delete.title')}</h2>
+                <p className="text-sm opacity-80">{siteToDelete.code} - {siteToDelete.name}</p>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Delete Site</h3>
-                <p className="text-sm text-[#8a6d1c]">{siteToDelete.code} - {siteToDelete.name}</p>
-              </div>
-            </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this site? This action will mark the site as inactive (soft delete).
-            </p>
-            <div className="flex items-center gap-3">
               <button
                 onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
-                disabled={deleteLoading}
-                className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
               >
-                Cancel
+                <X className="w-5 h-5" />
               </button>
-              <button
-                onClick={async () => {
-                  try {
-                    setDeleteLoading(true);
-                    const response = await AdminService.deleteSite(siteToDelete.id);
-                    if (response.success) fetchSites();
-                    else setError(response.message || 'Failed to delete site');
-                  } catch (err: any) {
-                    setError(err?.error?.message || 'Failed to delete site');
-                  } finally {
-                    setDeleteLoading(false);
-                    setIsDeleteConfirmOpen(false);
-                    setSiteToDelete(null);
-                  }
-                }}
-                disabled={deleteLoading}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {deleteLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>
-                ) : (
-                  <><Trash2 className="w-4 h-4" /> Delete Site</>
-                )}
-              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 rounded-full bg-red-50 border border-red-200">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                </div>
+                <p className="text-gray-600">
+                  {t('delete.confirm')}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                <button
+                  onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
+                  disabled={deleteLoading}
+                  className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setDeleteLoading(true);
+                      const response = await AdminService.deleteSite(siteToDelete.id);
+                      if (response.success) {
+                        showToast('success', t('toast.deleteSiteSuccess'), t('toast.deleteSiteSuccessMsg'));
+                        fetchSites();
+                      } else {
+                        showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
+                        setError(response.message || 'Failed to delete site');
+                      }
+                    } catch (err: any) {
+                      showToast('error', t('toast.deleteSiteFailed'), err?.error?.message || t('toast.deleteSiteFailedMsg'));
+                      setError(err?.error?.message || 'Failed to delete site');
+                    } finally {
+                      setDeleteLoading(false);
+                      setIsDeleteConfirmOpen(false);
+                      setSiteToDelete(null);
+                    }
+                  }}
+                  disabled={deleteLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {deleteLoading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> {t('delete.deleting')}</>
+                  ) : (
+                    <><Trash2 className="w-4 h-4" /> {t('delete.deleteSite')}</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

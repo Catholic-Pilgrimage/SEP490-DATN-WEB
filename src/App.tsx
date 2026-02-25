@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { LoginForm } from './components/auth/LoginForm';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { AuthService } from './services/auth.service';
 import { STORAGE_KEYS } from './config/api';
 import { UserProfile } from './types/auth.types';
-import { ToastNotification, ToastData } from './components/shared/ToastNotification';
+import { ToastProvider, useToast } from './contexts/ToastContext';
 
 export type UserRole = 'admin' | 'manager';
 
@@ -46,19 +46,10 @@ const getToastTexts = () => {
   };
 };
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toasts, setToasts] = useState<ToastData[]>([]);
-
-  const showToast = useCallback((type: ToastData['type'], title: string, message?: string) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setToasts(prev => [...prev, { id, type, title, message }]);
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  const { showToast } = useToast();
 
   // Check for existing session on app load
   useEffect(() => {
@@ -121,19 +112,17 @@ function App() {
   }
 
   if (!user) {
-    return (
-      <>
-        <LoginForm onLogin={handleLogin} />
-        <ToastNotification toasts={toasts} onRemove={removeToast} />
-      </>
-    );
+    return <LoginForm onLogin={handleLogin} />;
   }
 
+  return <Dashboard user={user} onLogout={handleLogout} />;
+}
+
+function App() {
   return (
-    <>
-      <Dashboard user={user} onLogout={handleLogout} />
-      <ToastNotification toasts={toasts} onRemove={removeToast} />
-    </>
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 

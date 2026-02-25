@@ -14,6 +14,7 @@ import {
 import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface SiteEditModalProps {
     site: SiteDetail | null;
@@ -29,6 +30,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     onSuccess
 }) => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     // Form state
     const [formData, setFormData] = useState<UpdateSiteData>({});
     const [openingHours, setOpeningHours] = useState<SiteOpeningHours>({});
@@ -113,12 +115,15 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
             const response = await AdminService.updateSite(site.id, dataToSend);
 
             if (response.success) {
+                showToast('success', t('toast.editSiteSuccess'), t('toast.editSiteSuccessMsg'));
                 onSuccess();
                 onClose();
             } else {
+                showToast('error', t('toast.editSiteFailed'), response.message || t('toast.editSiteFailedMsg'));
                 setError(response.message || 'Failed to update site');
             }
         } catch (err: any) {
+            showToast('error', t('toast.editSiteFailed'), err?.error?.message || t('toast.editSiteFailedMsg'));
             setError(err?.error?.message || 'Failed to update site');
         } finally {
             setLoading(false);
