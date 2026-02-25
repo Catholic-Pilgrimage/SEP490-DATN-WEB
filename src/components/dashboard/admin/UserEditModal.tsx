@@ -5,12 +5,12 @@ import {
     Loader2,
     User as UserIcon,
     Crown,
-    UserCheck,
-    AlertCircle
+    UserCheck
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, UpdateUserData } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface UserEditModalProps {
     user: AdminUser | null;      // User hiện tại để edit
@@ -26,6 +26,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     onSuccess
 }) => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     // Form state - lưu giá trị các field trong form
     const [formData, setFormData] = useState<UpdateUserData>({
         full_name: '',
@@ -37,8 +38,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
     // Loading state - khi đang gọi API
     const [loading, setLoading] = useState(false);
-    // Error state - hiển thị lỗi nếu có
-    const [error, setError] = useState<string | null>(null);
     // Site name state
     const [siteName, setSiteName] = useState<string | null>(null);
     const [siteLoading, setSiteLoading] = useState(false);
@@ -53,7 +52,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 role: user.role,
                 site_id: user.site_id
             });
-            setError(null);
             // Fetch site name if user has site_id
             if (user.site_id) {
                 fetchSiteName(user.site_id);
@@ -94,19 +92,17 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
         try {
             setLoading(true);
-            setError(null);
 
             // Gọi API update user
             const response = await AdminService.updateUser(user.id, formData);
 
             if (response.success) {
+                showToast('success', t('toast.updateUserSuccess'));
                 onSuccess();  // Gọi callback để refresh danh sách
                 onClose();    // Đóng modal
-            } else {
-                setError(response.message || 'Failed to update user');
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Failed to update user');
+            showToast('error', t('common.error'), err?.error?.message);
         } finally {
             setLoading(false);
         }
@@ -115,10 +111,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     // Lấy thông tin role để hiển thị icon và màu
     const getRoleInfo = (role: string) => {
         const roles = {
-            admin: { label: 'Admin', icon: Crown, color: 'text-purple-600' },
-            manager: { label: 'Manager', icon: UserCheck, color: 'text-blue-600' },
-            pilgrim: { label: 'Pilgrim', icon: UserIcon, color: 'text-amber-600' },
-            local_guide: { label: 'Local Guide', icon: UserCheck, color: 'text-green-600' }
+            admin: { label: t('role.admin'), icon: Crown, color: 'text-purple-600' },
+            manager: { label: t('role.manager'), icon: UserCheck, color: 'text-blue-600' },
+            pilgrim: { label: t('role.pilgrim'), icon: UserIcon, color: 'text-amber-600' },
+            local_guide: { label: t('role.localGuide'), icon: UserCheck, color: 'text-green-600' }
         };
         return roles[role as keyof typeof roles] || roles.pilgrim;
     };
@@ -129,7 +125,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     const roleInfo = getRoleInfo(user.role);
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
             {/* Backdrop - click để đóng modal */}
             <div
                 className="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -137,7 +133,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             />
 
             {/* Modal container */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 my-8 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="flex items-center gap-3">
@@ -161,13 +157,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* Error message */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                            <span>{error}</span>
-                        </div>
-                    )}
 
                     {/* Full Name */}
                     <div>

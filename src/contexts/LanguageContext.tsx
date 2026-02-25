@@ -510,6 +510,19 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.refreshSuccess': 'Làm mới thành công!',
         'toast.refreshSuccessMsg': 'Dữ liệu đã được cập nhật mới nhất.',
 
+        // User Management Toast & Modal
+        'user.banTitle': 'Khóa người dùng',
+        'user.unbanTitle': 'Mở khóa người dùng',
+        'user.banConfirm': 'Bạn có chắc chắn muốn khóa người dùng này? Họ sẽ không thể truy cập vào hệ thống.',
+        'user.unbanConfirm': 'Bạn có chắc chắn muốn mở khóa người dùng này? Họ sẽ lấy lại quyền truy cập vào hệ thống.',
+        'user.banButton': 'Khóa người dùng',
+        'user.unbanButton': 'Mở khóa người dùng',
+        'toast.updateUserSuccess': 'Cập nhật thông tin thành công!',
+        'toast.updateUserFailed': 'Cập nhật thất bại!',
+        'toast.banUserSuccess': 'Đã khóa người dùng thành công.',
+        'toast.unbanUserSuccess': 'Đã mở khóa người dùng thành công.',
+        'toast.banUserFailed': 'Khóa người dùng thất bại.',
+        'toast.unbanUserFailed': 'Mở khóa người dùng thất bại.',
     },
     en: {
         // Sidebar
@@ -1009,6 +1022,19 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.refreshSuccess': 'Refreshed successfully!',
         'toast.refreshSuccessMsg': 'Data has been updated to the latest version.',
 
+        // User Management Toast & Modal
+        'user.banTitle': 'Ban User',
+        'user.unbanTitle': 'Unban User',
+        'user.banConfirm': 'Are you sure you want to ban this user? They will not be able to access the system.',
+        'user.unbanConfirm': 'Are you sure you want to unban this user? They will regain access to the system.',
+        'user.banButton': 'Ban User',
+        'user.unbanButton': 'Unban User',
+        'toast.updateUserSuccess': 'User updated successfully!',
+        'toast.updateUserFailed': 'Failed to update user!',
+        'toast.banUserSuccess': 'User banned successfully.',
+        'toast.unbanUserSuccess': 'User unbanned successfully.',
+        'toast.banUserFailed': 'Failed to ban user.',
+        'toast.unbanUserFailed': 'Failed to unban user.',
     }
 };
 

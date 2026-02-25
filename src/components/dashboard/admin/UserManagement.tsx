@@ -13,16 +13,19 @@ import {
   ChevronRight,
   Loader2,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, Pagination, UserListParams } from '../../../types/admin.types';
 import { UserDetailModal } from './UserDetailModal';
 import { UserEditModal } from './UserEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export const UserManagement: React.FC = () => {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,6 +95,11 @@ export const UserManagement: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleManualRefresh = async () => {
+    await fetchUsers();
+    showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+  };
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && (!pagination || newPage <= pagination.totalPages)) {
       setCurrentPage(newPage);
@@ -123,6 +131,7 @@ export const UserManagement: React.FC = () => {
   // Handler khi edit thành công - refresh lại danh sách
   const handleEditSuccess = () => {
     fetchUsers();
+    showToast('success', t('toast.updateUserSuccess'));
   };
 
   // Handler mở confirm dialog cho ban/unban
@@ -143,11 +152,14 @@ export const UserManagement: React.FC = () => {
       const response = await AdminService.updateUserStatus(userToToggle.id, { status: newStatus });
 
       if (response.success) {
+        showToast('success', newStatus === 'active' ? t('toast.unbanUserSuccess') : t('toast.banUserSuccess'));
         fetchUsers(); // Refresh list
       } else {
+        showToast('error', newStatus === 'active' ? t('toast.unbanUserFailed') : t('toast.banUserFailed'), response.message);
         setError(response.message || 'Failed to update status');
       }
     } catch (err: any) {
+      showToast('error', t('common.error'), err?.error?.message);
       setError(err?.error?.message || 'Failed to update status');
     } finally {
       setStatusLoading(false);
@@ -191,7 +203,7 @@ export const UserManagement: React.FC = () => {
           <p className="text-gray-500 mt-1">{t('users.subtitle')}</p>
         </div>
         <button
-          onClick={fetchUsers}
+          onClick={handleManualRefresh}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
         >
@@ -315,14 +327,14 @@ export const UserManagement: React.FC = () => {
                           <button
                             onClick={() => handleViewUser(user.id)}
                             className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
-                            title="View Details"
+                            title={t('common.view')}
                           >
                             <Eye className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
                           </button>
                           <button
                             onClick={() => handleEditUser(user)}
                             className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
-                            title="Edit User"
+                            title={t('common.edit')}
                           >
                             <Edit className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
                           </button>
@@ -334,7 +346,7 @@ export const UserManagement: React.FC = () => {
                                 ? 'hover:bg-red-50'
                                 : 'hover:bg-green-50'
                                 }`}
-                              title={user.status === 'active' ? 'Ban User' : 'Unban User'}
+                              title={user.status === 'active' ? t('user.banButton') : t('user.unbanButton')}
                             >
                               {user.status === 'active' ? (
                                 <Ban className="w-4 h-4 text-slate-400 group-hover:text-red-600" />
@@ -357,7 +369,7 @@ export const UserManagement: React.FC = () => {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-[#d4af37]/20 bg-[#f5f3ee]">
             <div className="text-sm text-gray-500">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+              {t('users.showing')} {((pagination.page - 1) * pagination.limit) + 1} {t('users.to')} {Math.min(pagination.page * pagination.limit, pagination.total)} {t('users.of')} {pagination.total} {t('users.users')}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -422,73 +434,79 @@ export const UserManagement: React.FC = () => {
 
       {/* Confirm Ban/Unban Dialog */}
       {isConfirmOpen && userToToggle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => { setIsConfirmOpen(false); setUserToToggle(null); }}
           />
 
           {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className={`p-3 rounded-full ${userToToggle.status === 'active' ? 'bg-red-100' : 'bg-green-100'}`}>
-                <AlertTriangle className={`w-6 h-6 ${userToToggle.status === 'active' ? 'text-red-600' : 'text-green-600'}`} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+              <div className="text-white">
+                <h2 className="text-lg font-semibold">
+                  {userToToggle.status === 'active' ? t('user.banTitle') : t('user.unbanTitle')}
+                </h2>
+                <p className="text-sm opacity-80">{userToToggle.full_name}</p>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {userToToggle.status === 'active' ? 'Ban User' : 'Unban User'}
-                </h3>
-                <p className="text-sm text-slate-500">
-                  {userToToggle.full_name}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-slate-600 mb-6">
-              {userToToggle.status === 'active'
-                ? 'Are you sure you want to ban this user? They will not be able to access the system.'
-                : 'Are you sure you want to unban this user? They will regain access to the system.'
-              }
-            </p>
-
-            <div className="flex items-center gap-3">
               <button
                 onClick={() => { setIsConfirmOpen(false); setUserToToggle(null); }}
-                disabled={statusLoading}
-                className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
               >
-                Cancel
+                <X className="w-5 h-5" />
               </button>
-              <button
-                onClick={handleConfirmToggleStatus}
-                disabled={statusLoading}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-colors disabled:opacity-50 ${userToToggle.status === 'active'
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-green-600 hover:bg-green-700'
-                  }`}
-              >
-                {statusLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {userToToggle.status === 'active' ? (
-                      <>
-                        <Ban className="w-4 h-4" />
-                        Ban User
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-4 h-4" />
-                        Unban User
-                      </>
-                    )}
-                  </>
-                )}
-              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className={`p-3 rounded-full flex-shrink-0 ${userToToggle.status === 'active' ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+                  <AlertTriangle className={`w-6 h-6 ${userToToggle.status === 'active' ? 'text-red-500' : 'text-green-500'}`} />
+                </div>
+                <p className="text-gray-600">
+                  {userToToggle.status === 'active' ? t('user.banConfirm') : t('user.unbanConfirm')}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                <button
+                  onClick={() => { setIsConfirmOpen(false); setUserToToggle(null); }}
+                  disabled={statusLoading}
+                  className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleConfirmToggleStatus}
+                  disabled={statusLoading}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-all disabled:opacity-50 shadow-sm ${userToToggle.status === 'active'
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-green-500 hover:bg-green-600'
+                    }`}
+                >
+                  {statusLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t('edit.saving')}
+                    </>
+                  ) : (
+                    <>
+                      {userToToggle.status === 'active' ? (
+                        <>
+                          <Ban className="w-4 h-4" />
+                          {t('user.banButton')}
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          {t('user.unbanButton')}
+                        </>
+                      )}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

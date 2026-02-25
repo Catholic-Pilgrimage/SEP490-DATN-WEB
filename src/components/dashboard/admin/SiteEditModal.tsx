@@ -8,7 +8,6 @@ import {
     Phone,
     Mail,
     Clock,
-    AlertCircle,
     Image as ImageIcon
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
@@ -37,8 +36,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     const [contactInfo, setContactInfo] = useState<SiteContactInfo>({});
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
     // Khởi tạo form khi site thay đổi
     useEffect(() => {
@@ -60,7 +58,6 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
             setOpeningHours(site.opening_hours || {});
             setContactInfo(site.contact_info || {});
             setImagePreview(site.cover_image || null);
-            setError(null);
         }
     }, [site]);
 
@@ -103,8 +100,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
         if (!site) return;
 
         try {
-            setLoading(true);
-            setError(null);
+            setSubmitting(true);
 
             const dataToSend: UpdateSiteData = {
                 ...formData,
@@ -120,13 +116,11 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                 onClose();
             } else {
                 showToast('error', t('toast.editSiteFailed'), response.message || t('toast.editSiteFailedMsg'));
-                setError(response.message || 'Failed to update site');
             }
         } catch (err: any) {
             showToast('error', t('toast.editSiteFailed'), err?.error?.message || t('toast.editSiteFailedMsg'));
-            setError(err?.error?.message || 'Failed to update site');
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
@@ -154,13 +148,6 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 max-h-[calc(90vh-8rem)] overflow-y-auto">
-                    {/* Error */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                            <span>{error}</span>
-                        </div>
-                    )}
 
                     <div className="space-y-6">
                         {/* Basic Info Section */}
@@ -406,17 +393,17 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                         <button
                             type="button"
                             onClick={onClose}
-                            disabled={loading}
+                            disabled={submitting}
                             className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
                         >
                             {t('common.cancel')}
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={submitting}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
                         >
-                            {loading ? (
+                            {submitting ? (
                                 <><Loader2 className="w-4 h-4 animate-spin" /> {t('edit.saving')}</>
                             ) : (
                                 <><Save className="w-4 h-4" /> {t('common.save')}</>
