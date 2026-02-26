@@ -439,6 +439,10 @@ const translations: Record<Language, Record<string, string>> = {
         'shifts.confirmReject': 'Xác nhận từ chối',
         'shifts.confirmApproveMsg': 'Bạn có chắc muốn duyệt submission này?',
         'shifts.reasonRequired': 'Vui lòng nhập lý do từ chối',
+        'shifts.errorLoad': 'Không thể tải danh sách lịch trực',
+        'toast.shiftApproved': 'Đã duyệt submission thành công!',
+        'toast.shiftRejected': 'Đã từ chối submission!',
+        'toast.shiftActionFailed': 'Thao tác thất bại',
 
         // Content Management Tabs
         'content.tab.media': 'Media',
@@ -974,6 +978,10 @@ const translations: Record<Language, Record<string, string>> = {
         'shifts.confirmReject': 'Confirm Reject',
         'shifts.confirmApproveMsg': 'Are you sure you want to approve this submission?',
         'shifts.reasonRequired': 'Rejection reason is required',
+        'shifts.errorLoad': 'Failed to load shift submissions',
+        'toast.shiftApproved': 'Submission approved successfully!',
+        'toast.shiftRejected': 'Submission rejected!',
+        'toast.shiftActionFailed': 'Action failed',
 
         // Media Content
         'media.title': 'Media Content',

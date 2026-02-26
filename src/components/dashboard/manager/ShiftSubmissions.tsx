@@ -24,6 +24,7 @@ import {
 } from '../../../types/manager.types';
 import { ShiftSubmissionDetailModal } from './ShiftSubmissionDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 // ============ TYPES ============
 type ViewMode = 'month' | 'week' | 'year';
@@ -109,6 +110,7 @@ const getWeekDays = (startDate: Date): Date[] => {
  */
 export const ShiftSubmissions: React.FC = () => {
     const { t, language } = useLanguage();
+    const { showToast } = useToast();
     // ============ STATE ============
     const [submissions, setSubmissions] = useState<ShiftSubmission[]>([]);
     const [loading, setLoading] = useState(true);
@@ -125,6 +127,7 @@ export const ShiftSubmissions: React.FC = () => {
     // Filter state
     const [guideFilter, setGuideFilter] = useState('');
     const [guides, setGuides] = useState<LocalGuide[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
 
     // ============ COMPUTED VALUES ============
     const today = useMemo(() => {
@@ -202,10 +205,10 @@ export const ShiftSubmissions: React.FC = () => {
             if (response.success && response.data) {
                 setSubmissions(response.data.data);
             } else {
-                setError(response.message || 'Không thể tải danh sách');
+                setError(response.message || t('shifts.errorLoad'));
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách submissions');
+            setError(err?.error?.message || t('shifts.errorLoad'));
         } finally {
             setLoading(false);
         }
@@ -254,6 +257,13 @@ export const ShiftSubmissions: React.FC = () => {
     const goToToday = () => {
         setCurrentDate(new Date());
         setSelectedDate(new Date());
+    };
+
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await fetchSubmissions();
+        setRefreshing(false);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
     };
 
     // ============ HELPERS ============
@@ -361,11 +371,11 @@ export const ShiftSubmissions: React.FC = () => {
                     </select>
 
                     <button
-                        onClick={fetchSubmissions}
-                        disabled={loading}
+                        onClick={handleManualRefresh}
+                        disabled={loading || refreshing}
                         className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
                     </button>
                 </div>

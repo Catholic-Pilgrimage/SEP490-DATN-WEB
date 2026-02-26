@@ -14,9 +14,11 @@ import {
     Minus,
     RefreshCw,
     Check,
-    Ban
+    Ban,
+    AlertTriangle
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 import { ManagerService } from '../../../services/manager.service';
 import { ShiftSubmissionDetail, ShiftSubmissionStatus, ShiftChange } from '../../../types/manager.types';
 
@@ -43,6 +45,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     onStatusChange
 }) => {
     const { t, language } = useLanguage();
+    const { showToast } = useToast();
     const [submission, setSubmission] = useState<ShiftSubmissionDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +55,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     const [showRejectForm, setShowRejectForm] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [actionError, setActionError] = useState<string | null>(null);
+    const [showConfirmApprove, setShowConfirmApprove] = useState(false);
 
     // ============ RESET STATE ============
     useEffect(() => {
@@ -61,6 +65,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             setShowRejectForm(false);
             setRejectionReason('');
             setActionError(null);
+            setShowConfirmApprove(false);
         }
     }, [isOpen]);
 
@@ -94,11 +99,13 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
     }, [isOpen, submissionId, fetchDetail]);
 
     // ============ ACTIONS ============
-    const handleApprove = async () => {
+    const handleApprove = () => {
         if (!submissionId) return;
+        setShowConfirmApprove(true);
+    };
 
-        const confirmed = window.confirm(t('shifts.confirmApproveMsg'));
-        if (!confirmed) return;
+    const handleConfirmApprove = async () => {
+        if (!submissionId) return;
 
         try {
             setActionLoading(true);
@@ -109,6 +116,8 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             });
 
             if (response.success) {
+                showToast('success', t('toast.shiftApproved'));
+                setShowConfirmApprove(false);
                 // Refresh detail
                 await fetchDetail();
                 // Notify parent to refresh list
@@ -143,6 +152,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             });
 
             if (response.success) {
+                showToast('success', t('toast.shiftRejected'));
                 setShowRejectForm(false);
                 setRejectionReason('');
                 // Refresh detail
@@ -504,6 +514,69 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                     )}
                 </div>
             </div>
+
+            {/* Confirm Approve Dialog */}
+            {showConfirmApprove && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto">
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setShowConfirmApprove(false)}
+                    />
+
+                    {/* Dialog */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+                            <div className="text-white">
+                                <h2 className="text-lg font-semibold">
+                                    {t('common.approve')}
+                                </h2>
+                                <p className="text-sm opacity-80">{submission?.guide?.full_name}</p>
+                            </div>
+                            <button
+                                onClick={() => setShowConfirmApprove(false)}
+                                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 rounded-full flex-shrink-0 bg-green-50 border border-green-200">
+                                    <AlertTriangle className="w-6 h-6 text-green-500" />
+                                </div>
+                                <p className="text-gray-600">
+                                    {t('shifts.confirmApproveMsg')}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                                <button
+                                    onClick={() => setShowConfirmApprove(false)}
+                                    disabled={actionLoading}
+                                    className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    onClick={handleConfirmApprove}
+                                    disabled={actionLoading}
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all shadow-sm disabled:opacity-50"
+                                >
+                                    {actionLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Check className="w-4 h-4" />
+                                    )}
+                                    {t('common.approve')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
