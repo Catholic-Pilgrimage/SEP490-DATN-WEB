@@ -15,15 +15,19 @@ import {
     XCircle,
     AlertCircle,
     Ban,
-    UserCheck
+    UserCheck,
+    X,
+    AlertTriangle
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
 import { LocalGuide, LocalGuideStatus } from '../../../types/manager.types';
 import { LocalGuideFormModal } from './LocalGuideFormModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export const LocalGuides: React.FC = () => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     const [guides, setGuides] = useState<LocalGuide[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -46,6 +50,11 @@ export const LocalGuides: React.FC = () => {
     // togglingId: lưu ID của Local Guide đang được toggle status
     // Để hiển loading spinner trên nút cụ thể đó
     const [togglingId, setTogglingId] = useState<string | null>(null);
+
+    // Confirm dialog state
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [guideToToggle, setGuideToToggle] = useState<LocalGuide | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Debounce search
     const [searchDebounce, setSearchDebounce] = useState('');
@@ -127,45 +136,43 @@ export const LocalGuides: React.FC = () => {
      * - Nếu đang banned -> chuyển sang active
      * - Hiện confirm dialog trước khi thực hiện
      */
-    const handleToggleStatus = async (guide: LocalGuide) => {
-        // Bước 1: Xác định status mới (ngược với status hiện tại)
-        const newStatus = guide.status === 'active' ? 'banned' : 'active';
+    const handleToggleStatus = (guide: LocalGuide) => {
+        setGuideToToggle(guide);
+        setIsConfirmOpen(true);
+    };
 
-        // Bước 2: Hiện confirm dialog
-        const confirmMessage = newStatus === 'banned'
-            ? t('localGuides.confirmBan').replace('{name}', guide.full_name)
-            : t('localGuides.confirmUnban').replace('{name}', guide.full_name);
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await fetchLocalGuides();
+        setRefreshing(false);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+    };
 
-        const confirmed = window.confirm(confirmMessage);
-        if (!confirmed) return;
+    const handleConfirmToggleStatus = async () => {
+        if (!guideToToggle) return;
+        const newStatus = guideToToggle.status === 'active' ? 'banned' : 'active';
 
         try {
-            // Bước 3: Set loading cho nút cụ thể
-            setTogglingId(guide.id);
+            setTogglingId(guideToToggle.id);
+            setIsConfirmOpen(false);
             setError(null);
 
-            // Bước 4: Gọi API
             const response = await ManagerService.updateLocalGuideStatus(
-                guide.id,
+                guideToToggle.id,
                 { status: newStatus }
             );
 
-            // Bước 5: Nếu thành công, cập nhật danh sách
             if (response.success) {
-                // Cách 1: Refresh toàn bộ danh sách
+                showToast('success', t('localGuides.updateSuccess'));
                 fetchLocalGuides();
-                // Hoặc Cách 2: Cập nhật trực tiếp trong state (nhanh hơn)
-                // setGuides(prev => prev.map(g => 
-                //     g.id === guide.id ? { ...g, status: newStatus } : g
-                // ));
             } else {
                 setError(response.message || t('localGuides.updateError'));
             }
         } catch (err: any) {
             setError(err?.error?.message || t('localGuides.updateError'));
         } finally {
-            // Bước 6: Tắt loading
             setTogglingId(null);
+            setGuideToToggle(null);
         }
     };
 
@@ -179,11 +186,11 @@ export const LocalGuides: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={fetchLocalGuides}
-                        disabled={loading}
+                        onClick={handleManualRefresh}
+                        disabled={loading || refreshing}
                         className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
                     </button>
                     <button
@@ -422,18 +429,79 @@ export const LocalGuides: React.FC = () => {
                 </>
             )}
 
-            {/* ============ MODAL ============ */}
-            {/* Form Modal để tạo Local Guide mới */}
             <LocalGuideFormModal
                 isOpen={isFormModalOpen}
-                onClose={() => setIsFormModalOpen(false)}  // Đóng modal
+                onClose={() => setIsFormModalOpen(false)}
                 onSuccess={() => {
-                    // Khi tạo thành công:
-                    // 1. Đóng modal (đã xử lý trong modal)
-                    // 2. Refresh danh sách để hiện Local Guide mới
                     fetchLocalGuides();
                 }}
             />
+
+            {/* Confirm Ban/Unban Dialog */}
+            {isConfirmOpen && guideToToggle && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => { setIsConfirmOpen(false); setGuideToToggle(null); }}
+                    />
+
+                    {/* Dialog */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+                            <div className="text-white">
+                                <h2 className="text-lg font-semibold">
+                                    {guideToToggle.status === 'active' ? t('localGuides.ban') : t('localGuides.unban')}
+                                </h2>
+                                <p className="text-sm opacity-80">{guideToToggle.full_name}</p>
+                            </div>
+                            <button
+                                onClick={() => { setIsConfirmOpen(false); setGuideToToggle(null); }}
+                                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className={`p-3 rounded-full flex-shrink-0 ${guideToToggle.status === 'active' ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+                                    <AlertTriangle className={`w-6 h-6 ${guideToToggle.status === 'active' ? 'text-red-500' : 'text-green-500'}`} />
+                                </div>
+                                <p className="text-gray-600">
+                                    {guideToToggle.status === 'active'
+                                        ? t('localGuides.confirmBan').replace('{name}', guideToToggle.full_name)
+                                        : t('localGuides.confirmUnban').replace('{name}', guideToToggle.full_name)
+                                    }
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                                <button
+                                    onClick={() => { setIsConfirmOpen(false); setGuideToToggle(null); }}
+                                    className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    onClick={handleConfirmToggleStatus}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-all shadow-sm ${guideToToggle.status === 'active'
+                                        ? 'bg-red-500 hover:bg-red-600'
+                                        : 'bg-green-500 hover:bg-green-600'
+                                        }`}
+                                >
+                                    {guideToToggle.status === 'active' ? (
+                                        <><Ban className="w-4 h-4" /> {t('localGuides.ban')}</>
+                                    ) : (
+                                        <><UserCheck className="w-4 h-4" /> {t('localGuides.unban')}</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
