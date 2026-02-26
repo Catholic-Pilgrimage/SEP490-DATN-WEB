@@ -29,9 +29,11 @@ import {
 } from '../../../types/admin.types';
 import { VerificationDetailModal } from './VerificationDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export const VerificationRequests: React.FC = () => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     const [requests, setRequests] = useState<VerificationRequest[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(true);
@@ -89,6 +91,11 @@ export const VerificationRequests: React.FC = () => {
         fetchRequests();
     }, [fetchRequests]);
 
+    const handleManualRefresh = async () => {
+        await fetchRequests();
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+    };
+
     const handlePageChange = (page: number) => {
         if (page >= 1 && pagination && page <= pagination.totalPages) {
             setCurrentPage(page);
@@ -117,9 +124,9 @@ export const VerificationRequests: React.FC = () => {
 
     const getRegionInfo = (region: SiteRegion) => {
         const regions = {
-            Bac: { label: 'Miền Bắc', color: 'text-red-600' },
-            Trung: { label: 'Miền Trung', color: 'text-yellow-600' },
-            Nam: { label: 'Miền Nam', color: 'text-blue-600' }
+            Bac: { label: t('region.bac'), color: 'text-red-600' },
+            Trung: { label: t('region.trung'), color: 'text-yellow-600' },
+            Nam: { label: t('region.nam'), color: 'text-blue-600' }
         };
         return regions[region] || regions.Nam;
     };
@@ -143,7 +150,7 @@ export const VerificationRequests: React.FC = () => {
                     <p className="text-slate-500 mt-1">{t('verification.subtitle')}</p>
                 </div>
                 <button
-                    onClick={fetchRequests}
+                    onClick={handleManualRefresh}
                     disabled={loading}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20 disabled:opacity-50"
                 >
@@ -270,7 +277,7 @@ export const VerificationRequests: React.FC = () => {
                                                                 </div>
                                                             )}
                                                             <div>
-                                                                <p className="font-medium text-slate-900 text-sm">{request.applicant?.full_name || 'Không rõ'}</p>
+                                                                <p className="font-medium text-slate-900 text-sm">{request.applicant?.full_name || t('verificationDetail.unknown')}</p>
                                                                 <p className="text-xs text-slate-500">{request.applicant?.email || 'N/A'}</p>
                                                             </div>
                                                         </div>
@@ -298,7 +305,7 @@ export const VerificationRequests: React.FC = () => {
                                                                     setIsDetailModalOpen(true);
                                                                 }}
                                                                 className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
-                                                                title="View Details"
+                                                                title={t('common.view')}
                                                             >
                                                                 <Eye className="w-5 h-5 text-gray-400 group-hover:text-[#8a6d1c]" />
                                                             </button>
@@ -317,7 +324,7 @@ export const VerificationRequests: React.FC = () => {
                     {pagination && pagination.totalPages > 1 && (
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-slate-500">
-                                Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, pagination.total)} of {pagination.total} requests
+                                {t('users.showing')} {(currentPage - 1) * limit + 1} {t('users.to')} {Math.min(currentPage * limit, pagination.total)} {t('users.of')} {pagination.total} {t('verification.requests')}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button

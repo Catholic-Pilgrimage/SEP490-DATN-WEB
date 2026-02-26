@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     X,
     Save,
-    Loader2,
-    User as UserIcon,
-    Crown,
-    UserCheck
+    Loader2
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, UpdateUserData } from '../../../types/admin.types';
@@ -93,8 +90,16 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         try {
             setLoading(true);
 
+            // Clean up formData - chỉ gửi các field có giá trị thực
+            const cleanData: UpdateUserData = {};
+            if (formData.full_name) cleanData.full_name = formData.full_name;
+            if (formData.phone) cleanData.phone = formData.phone;
+            if (formData.date_of_birth) cleanData.date_of_birth = formData.date_of_birth;
+            if (formData.role) cleanData.role = formData.role;
+            if (formData.site_id) cleanData.site_id = formData.site_id;
+
             // Gọi API update user
-            const response = await AdminService.updateUser(user.id, formData);
+            const response = await AdminService.updateUser(user.id, cleanData);
 
             if (response.success) {
                 showToast('success', t('toast.updateUserSuccess'));
@@ -108,21 +113,8 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         }
     };
 
-    // Lấy thông tin role để hiển thị icon và màu
-    const getRoleInfo = (role: string) => {
-        const roles = {
-            admin: { label: t('role.admin'), icon: Crown, color: 'text-purple-600' },
-            manager: { label: t('role.manager'), icon: UserCheck, color: 'text-blue-600' },
-            pilgrim: { label: t('role.pilgrim'), icon: UserIcon, color: 'text-amber-600' },
-            local_guide: { label: t('role.localGuide'), icon: UserCheck, color: 'text-green-600' }
-        };
-        return roles[role as keyof typeof roles] || roles.pilgrim;
-    };
-
     // Nếu modal không mở thì không render gì
     if (!isOpen || !user) return null;
-
-    const roleInfo = getRoleInfo(user.role);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">

@@ -8,7 +8,6 @@ import {
     Clock,
     CheckCircle,
     XCircle,
-    AlertCircle,
     Church,
     Building,
     Mountain,
@@ -22,6 +21,7 @@ import {
 import { AdminService } from '../../../services/admin.service';
 import { VerificationRequestDetail, VerificationStatus, SiteType, SiteRegion } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface VerificationDetailModalProps {
     requestId: string | null;
@@ -37,9 +37,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     onSuccess
 }) => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     const [request, setRequest] = useState<VerificationRequestDetail | null>(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Action states
     const [actionLoading, setActionLoading] = useState(false);
@@ -59,16 +59,15 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
 
         try {
             setLoading(true);
-            setError(null);
             const response = await AdminService.getVerificationRequestById(requestId);
 
             if (response.success && response.data) {
                 setRequest(response.data);
             } else {
-                setError(response.message || 'Failed to load verification request');
+                showToast('error', t('common.error'), response.message);
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Failed to load verification request');
+            showToast('error', t('common.error'), err?.error?.message);
         } finally {
             setLoading(false);
         }
@@ -79,17 +78,17 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
 
         try {
             setActionLoading(true);
-            setError(null);
             const response = await AdminService.updateVerificationStatus(requestId, { status: 'approved' });
 
             if (response.success) {
+                showToast('success', t('toast.approveSuccess'), t('toast.approveSuccessMsg'));
                 onSuccess?.();
                 onClose();
             } else {
-                setError(response.message || 'Failed to approve request');
+                showToast('error', t('toast.approveFailed'), response.message);
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Failed to approve request');
+            showToast('error', t('toast.approveFailed'), err?.error?.message);
         } finally {
             setActionLoading(false);
         }
@@ -97,26 +96,26 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
 
     const handleReject = async () => {
         if (!requestId || !rejectionReason.trim()) {
-            setError('Please enter a rejection reason');
+            showToast('error', t('verificationDetail.rejectionReasonRequired'));
             return;
         }
 
         try {
             setActionLoading(true);
-            setError(null);
             const response = await AdminService.updateVerificationStatus(requestId, {
                 status: 'rejected',
                 rejection_reason: rejectionReason.trim()
             });
 
             if (response.success) {
+                showToast('success', t('toast.rejectSuccess'), t('toast.rejectSuccessMsg'));
                 onSuccess?.();
                 onClose();
             } else {
-                setError(response.message || 'Failed to reject request');
+                showToast('error', t('toast.rejectFailed'), response.message);
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Failed to reject request');
+            showToast('error', t('toast.rejectFailed'), err?.error?.message);
         } finally {
             setActionLoading(false);
         }
@@ -160,12 +159,12 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
             {/* Backdrop */}
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="text-white">
@@ -182,13 +181,6 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                     {loading && (
                         <div className="flex items-center justify-center h-48">
                             <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
-                        </div>
-                    )}
-
-                    {error && (
-                        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 mb-4">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                            <span>{error}</span>
                         </div>
                     )}
 

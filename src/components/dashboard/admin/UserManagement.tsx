@@ -129,9 +129,9 @@ export const UserManagement: React.FC = () => {
   };
 
   // Handler khi edit thành công - refresh lại danh sách
+  // Toast đã được hiển thị trong UserEditModal nên không cần gọi lại ở đây
   const handleEditSuccess = () => {
     fetchUsers();
-    showToast('success', t('toast.updateUserSuccess'));
   };
 
   // Handler mở confirm dialog cho ban/unban

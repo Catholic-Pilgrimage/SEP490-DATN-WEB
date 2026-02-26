@@ -116,6 +116,7 @@ const translations: Record<Language, Record<string, string>> = {
         'verification.subtitle': 'Quản lý yêu cầu xác thực site từ khách hành hương',
         'verification.searchPlaceholder': 'Tìm theo mã hoặc tên site...',
         'verification.noRequests': 'Không tìm thấy yêu cầu xác thực',
+        'verification.requests': 'yêu cầu',
 
         // Table Headers
         'table.user': 'Người dùng',
@@ -523,6 +524,12 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.unbanUserSuccess': 'Đã mở khóa người dùng thành công.',
         'toast.banUserFailed': 'Khóa người dùng thất bại.',
         'toast.unbanUserFailed': 'Mở khóa người dùng thất bại.',
+        'toast.approveSuccess': 'Phê duyệt thành công!',
+        'toast.approveSuccessMsg': 'Yêu cầu xác minh đã được phê duyệt.',
+        'toast.approveFailed': 'Phê duyệt thất bại!',
+        'toast.rejectSuccess': 'Từ chối thành công!',
+        'toast.rejectSuccessMsg': 'Yêu cầu xác minh đã bị từ chối.',
+        'toast.rejectFailed': 'Từ chối thất bại!',
     },
     en: {
         // Sidebar
@@ -631,6 +638,7 @@ const translations: Record<Language, Record<string, string>> = {
         'verification.subtitle': 'Manage site verification requests from pilgrims',
         'verification.searchPlaceholder': 'Search by code or site name...',
         'verification.noRequests': 'No verification requests found',
+        'verification.requests': 'requests',
 
         // Table Headers
         'table.user': 'User',
@@ -1035,6 +1043,12 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.unbanUserSuccess': 'User unbanned successfully.',
         'toast.banUserFailed': 'Failed to ban user.',
         'toast.unbanUserFailed': 'Failed to unban user.',
+        'toast.approveSuccess': 'Approved successfully!',
+        'toast.approveSuccessMsg': 'The verification request has been approved.',
+        'toast.approveFailed': 'Approval failed!',
+        'toast.rejectSuccess': 'Rejected successfully!',
+        'toast.rejectSuccessMsg': 'The verification request has been rejected.',
+        'toast.rejectFailed': 'Rejection failed!',
     }
 };
 
