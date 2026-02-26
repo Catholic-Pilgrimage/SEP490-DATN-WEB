@@ -21,11 +21,14 @@ import { ManagerSite } from '../../../types/manager.types';
 import { SiteType, SiteRegion } from '../../../types/admin.types';
 import { SiteFormModal } from './SiteFormModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export const MySite: React.FC = () => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     const [site, setSite] = useState<ManagerSite | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasSite, setHasSite] = useState<boolean | null>(null);
 
@@ -37,9 +40,13 @@ export const MySite: React.FC = () => {
         fetchMySite();
     }, []);
 
-    const fetchMySite = async () => {
+    const fetchMySite = async (isRefresh = false) => {
         try {
-            setLoading(true);
+            if (isRefresh) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
             setError(null);
             const response = await ManagerService.getMySite();
 
@@ -47,12 +54,10 @@ export const MySite: React.FC = () => {
                 setSite(response.data);
                 setHasSite(true);
             } else {
-                // Manager doesn't have a site yet
                 setSite(null);
                 setHasSite(false);
             }
         } catch (err: any) {
-            // 404 or similar - manager has no site
             if (err?.error?.statusCode === 404 || err?.status === 404) {
                 setSite(null);
                 setHasSite(false);
@@ -61,6 +66,7 @@ export const MySite: React.FC = () => {
             }
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -75,7 +81,12 @@ export const MySite: React.FC = () => {
     };
 
     const handleFormSuccess = () => {
-        fetchMySite(); // Refresh data after create/edit
+        fetchMySite(true); // Refresh data after create/edit
+    };
+
+    const handleManualRefresh = async () => {
+        await fetchMySite(true);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
     };
 
     const getTypeInfo = (type: SiteType) => {
@@ -171,7 +182,7 @@ export const MySite: React.FC = () => {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
                     <XCircle className="w-5 h-5 flex-shrink-0" />
                     <span>{error}</span>
-                    <button onClick={fetchMySite} className="ml-auto px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
+                    <button onClick={() => fetchMySite()} className="ml-auto px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
                         {t('mySite.retry')}
                     </button>
                 </div>
@@ -195,10 +206,11 @@ export const MySite: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={fetchMySite}
-                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors"
+                        onClick={handleManualRefresh}
+                        disabled={refreshing}
+                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#f5f3ee] transition-colors disabled:opacity-50"
                     >
-                        <RefreshCw className="w-4 h-4" />
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
                     </button>
                     <button

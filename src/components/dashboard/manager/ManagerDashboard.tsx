@@ -1,5 +1,4 @@
 import React from 'react';
-import { MySiteCard } from './MySiteCard';
 import { TodayShifts } from './TodayShifts';
 import { PendingContent } from './PendingContent';
 import { ManagerSOSPanel } from './ManagerSOSPanel';
@@ -22,20 +21,15 @@ export const ManagerDashboard: React.FC = () => {
       <ManagerSOSPanel />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - My Site */}
-        <div className="lg:col-span-1">
-          <MySiteCard />
-        </div>
-
-        {/* Middle Column - Today's Operations */}
-        <div className="lg:col-span-1 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column - Today's Operations */}
+        <div className="space-y-6">
           <TodayShifts />
           <QuickStats />
         </div>
 
         {/* Right Column - Content & Actions */}
-        <div className="lg:col-span-1">
+        <div>
           <PendingContent />
         </div>
       </div>

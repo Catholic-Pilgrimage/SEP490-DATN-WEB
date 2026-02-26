@@ -12,13 +12,13 @@ import {
     Clock,
     Phone,
     Mail,
-    Save,
-    AlertCircle
+    Save
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
 import { ManagerSite, CreateManagerSiteData, UpdateManagerSiteData } from '../../../types/manager.types';
 import { SiteType, SiteRegion, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface SiteFormModalProps {
     isOpen: boolean;
@@ -60,8 +60,9 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     existingSite
 }) => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [submitted, setSubmitted] = useState(false);
 
     // Form fields
     const [name, setName] = useState('');
@@ -130,7 +131,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
         setOpeningHours({});
         setContactPhone('');
         setContactEmail('');
-        setError(null);
+        setSubmitted(false);
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,36 +151,36 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
     const validateForm = (): boolean => {
         if (!name.trim()) {
-            setError('Vui lòng nhập tên địa điểm');
+            showToast('error', t('siteForm.requiredName'));
             return false;
         }
         if (!address.trim()) {
-            setError('Vui lòng nhập địa chỉ');
+            showToast('error', t('siteForm.requiredAddress'));
             return false;
         }
         if (!province.trim()) {
-            setError('Vui lòng nhập tỉnh/thành phố');
+            showToast('error', t('siteForm.requiredProvince'));
             return false;
         }
         if (!latitude || !longitude) {
-            setError('Vui lòng nhập tọa độ (latitude, longitude)');
+            showToast('error', t('siteForm.requiredCoordinates'));
             return false;
         }
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
         if (isNaN(lat) || isNaN(lng)) {
-            setError('Tọa độ phải là số hợp lệ');
+            showToast('error', t('siteForm.invalidCoordinates'));
             return false;
         }
         return true;
     };
 
     const handleSubmit = async () => {
+        setSubmitted(true);
         if (!validateForm()) return;
 
         try {
             setLoading(true);
-            setError(null);
 
             // Build opening hours object (only non-empty)
             const openingHoursData: SiteOpeningHours = {};
@@ -220,13 +221,23 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
             }
 
             if (response.success) {
+                showToast('success',
+                    mode === 'create' ? t('toast.createSiteSuccess') : t('toast.updateSiteSuccess'),
+                    mode === 'create' ? t('toast.createSiteSuccessMsg') : t('toast.updateSiteSuccessMsg')
+                );
                 onSuccess();
                 onClose();
             } else {
-                setError(response.message || 'Có lỗi xảy ra');
+                showToast('error',
+                    mode === 'create' ? t('toast.createSiteFailed') : t('toast.updateSiteFailed'),
+                    response.message
+                );
             }
         } catch (err: any) {
-            setError(err?.error?.message || err?.message || 'Có lỗi xảy ra');
+            showToast('error',
+                mode === 'create' ? t('toast.createSiteFailed') : t('toast.updateSiteFailed'),
+                err?.error?.message || err?.message
+            );
         } finally {
             setLoading(false);
         }
@@ -235,12 +246,12 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
             {/* Backdrop */}
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 my-8 max-h-[90vh] overflow-hidden flex-shrink-0">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
                     <div className="text-white">
@@ -261,13 +272,6 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                 {/* Content */}
                 <div className="p-6 max-h-[calc(90vh-10rem)] overflow-y-auto space-y-6">
-                    {/* Error */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                            <span>{error}</span>
-                        </div>
-                    )}
 
                     {/* Basic Info */}
                     <div className="space-y-4">
@@ -284,7 +288,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Nhà thờ Đức Bà Sài Gòn"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !name.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                                 />
                             </div>
 
@@ -297,10 +301,11 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                             key={value}
                                             type="button"
                                             onClick={() => setType(value)}
+                                            disabled={mode === 'edit'}
                                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === value
                                                 ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white'
                                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <Icon className="w-4 h-4" />
                                             {t(labelKey)}
@@ -318,10 +323,11 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                             key={value}
                                             type="button"
                                             onClick={() => setRegion(value)}
+                                            disabled={mode === 'edit'}
                                             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${region === value
                                                 ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white'
                                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             {t(labelKey)}
                                         </button>
@@ -383,7 +389,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="01 Công xã Paris, Bến Nghé"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !address.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                                 />
                             </div>
 
@@ -396,7 +402,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={province}
                                     onChange={(e) => setProvince(e.target.value)}
                                     placeholder="Hồ Chí Minh"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !province.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                                 />
                             </div>
 
@@ -420,7 +426,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={latitude}
                                     onChange={(e) => setLatitude(e.target.value)}
                                     placeholder="10.779733"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !latitude.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                                 />
                             </div>
 
@@ -433,7 +439,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={longitude}
                                     onChange={(e) => setLongitude(e.target.value)}
                                     placeholder="106.699092"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !longitude.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                                 />
                             </div>
                         </div>
@@ -545,7 +551,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                         {loading ? (
                             <><Loader2 className="w-4 h-4 animate-spin" /> {t('siteForm.processing')}</>
                         ) : (
-                            <><Save className="w-4 h-4" /> {mode === 'create' ? t('siteForm.createButton') : t('common.save')}</>
+                            <><Save className="w-4 h-4" /> {mode === 'create' ? t('siteForm.createButton') : t('siteForm.saveButton')}</>
                         )}
                     </button>
                 </div>
