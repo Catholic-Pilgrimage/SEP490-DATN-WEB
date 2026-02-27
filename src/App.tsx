@@ -61,9 +61,13 @@ function AppContent() {
           // Try to get fresh profile from backend
           const response = await AuthService.getProfile();
           if (response.success && response.data) {
-            const userData = mapProfileToUser(response.data);
-            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
-            setUser(userData);
+            if (['local_guide', 'pilgrim'].includes(response.data.role)) {
+              AuthService.logout();
+            } else {
+              const userData = mapProfileToUser(response.data);
+              localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+              setUser(userData);
+            }
           } else {
             // Token might be expired, clear storage
             AuthService.logout();

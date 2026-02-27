@@ -29,7 +29,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         const profileResponse = await AuthService.getProfile();
 
         if (profileResponse.success && profileResponse.data) {
-          onLogin(profileResponse.data);
+          if (['local_guide', 'pilgrim'].includes(profileResponse.data.role)) {
+            await AuthService.logout();
+            triggerError(language === 'vi' ? 'Bạn không có quyền truy cập vào hệ thống này.' : 'You do not have permission to access this system.');
+          } else {
+            onLogin(profileResponse.data);
+          }
         } else {
           triggerError(language === 'vi' ? 'Không thể lấy thông tin người dùng' : 'Unable to get user information');
         }

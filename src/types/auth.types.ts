@@ -38,7 +38,7 @@ export interface UserProfile {
     avatar_url: string | null;
     phone: string | null;
     date_of_birth: string | null;
-    role: 'admin' | 'manager' | 'pilgrim';
+    role: 'admin' | 'manager' | 'pilgrim' | 'local_guide';
     status: 'active' | 'inactive' | 'banned';
     language: string;
     site_id?: string;
