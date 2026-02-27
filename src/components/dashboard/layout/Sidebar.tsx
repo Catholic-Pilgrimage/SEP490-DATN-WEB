@@ -9,7 +9,6 @@ import {
   FileText,
   BarChart3,
   ChevronLeft,
-  Church,
   ClipboardCheck,
   Calendar
 } from 'lucide-react';
@@ -62,9 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#d4af37] to-[#8a6d1c] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/20">
-                <Church className="w-6 h-6 text-white" />
-              </div>
+              <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-[#d4af37]/20" />
               <div>
                 <h1 className="text-lg font-serif font-semibold tracking-tight text-[#d4af37]">Pilgrimage</h1>
                 <p className="text-xs text-[#d4af37]/70">{portalText}</p>

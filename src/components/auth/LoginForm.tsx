@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, Eye, EyeOff, Mail, Lock, LogIn, Church, Check } from 'lucide-react';
+import { AlertCircle, Loader2, Eye, EyeOff, Mail, Lock, LogIn, Check } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
 
@@ -177,9 +177,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           {/* Header */}
           <div className="text-center lg:text-left animate-fadeIn">
             <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
-              <div className="bg-gradient-to-br from-[#d4af37] to-[#8a6d1c] p-3 rounded-lg shadow-lg shadow-[#d4af37]/20">
-                <Church className="w-8 h-8 text-white" />
-              </div>
+              <img src="/logo.png" alt="Logo" className="w-14 h-14 rounded-lg object-cover shadow-lg shadow-[#d4af37]/20" />
               <span className="text-white font-serif font-bold text-2xl tracking-wide">Pilgrimage Guide</span>
             </div>
             <h1 className="text-[#d4af37] text-4xl font-serif font-bold tracking-tight mb-2">
