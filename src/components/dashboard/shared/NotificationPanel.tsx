@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { 
-    Bell, 
-    Check, 
-    CheckCheck, 
-    X, 
-    Trash2, 
+import { useNavigate } from 'react-router-dom';
+import {
+    Bell,
+    Check,
+    CheckCheck,
+    X,
+    Trash2,
     RefreshCw,
     Calendar,
     CheckCircle,
@@ -19,12 +20,11 @@ import {
 } from 'lucide-react';
 import { useNotifications } from '../../../contexts/NotificationContext';
 import type { Notification, NotificationType } from '../../../types/notification.types';
-import type { ActiveView } from '../Dashboard';
 
 // Notification icon mapping (12 types for Admin + Manager)
 const getNotificationIcon = (type: NotificationType) => {
     const iconProps = { size: 20, className: 'flex-shrink-0' };
-    
+
     switch (type) {
         // ========== ADMIN NOTIFICATIONS (3) ==========
         case 'verification_submitted':
@@ -33,7 +33,7 @@ const getNotificationIcon = (type: NotificationType) => {
             return <FileText {...iconProps} className="text-blue-500" />;
         case 'sos_created':
             return <AlertCircle {...iconProps} className="text-red-600" />;
-        
+
         // ========== MANAGER NOTIFICATIONS (9) ==========
         // Content submitted by Local Guide
         case 'shift_submitted':
@@ -46,7 +46,7 @@ const getNotificationIcon = (type: NotificationType) => {
             return <CalendarDays {...iconProps} className="text-blue-500" />;
         case 'nearby_place_submitted':
             return <MapPin {...iconProps} className="text-blue-500" />;
-        
+
         // Site status from Admin
         case 'site_update_submitted':
             return <FileText {...iconProps} className="text-blue-500" />;
@@ -56,7 +56,7 @@ const getNotificationIcon = (type: NotificationType) => {
             return <XCircle {...iconProps} className="text-red-500" />;
         case 'site_hidden':
             return <EyeOff {...iconProps} className="text-orange-500" />;
-        
+
         default:
             return <Bell {...iconProps} className="text-gray-500" />;
     }
@@ -78,7 +78,7 @@ const formatTimeAgo = (dateString: string): string => {
 // Get navigation path based on notification type (12 types for Admin + Manager)
 const getNotificationPath = (notification: Notification): string | null => {
     const { type } = notification;
-    
+
     switch (type) {
         // ========== ADMIN NOTIFICATIONS (3) ==========
         case 'verification_submitted':
@@ -87,7 +87,7 @@ const getNotificationPath = (notification: Notification): string | null => {
             return '/dashboard/sites'; // Navigate to site management
         case 'sos_created':
             return '/dashboard/sos'; // Navigate to SOS center
-        
+
         // ========== MANAGER NOTIFICATIONS (9) ==========
         // Content submitted by Local Guide
         case 'shift_submitted':
@@ -97,14 +97,14 @@ const getNotificationPath = (notification: Notification): string | null => {
         case 'schedule_submitted':
         case 'nearby_place_submitted':
             return '/dashboard/content'; // Navigate to content management
-        
+
         // Site status from Admin
         case 'site_update_submitted':
         case 'site_approved':
         case 'site_rejected':
         case 'site_hidden':
             return '/dashboard/mysite'; // Navigate to my site
-        
+
         default:
             return null;
     }
@@ -127,45 +127,42 @@ const NotificationItem: React.FC<{
             onNavigate(path);
         }
     };
-    
+
     return (
         <div
             onClick={handleClick}
-            className={`group relative p-4 border-b last:border-b-0 transition-all cursor-pointer ${
-                notification.is_read 
-                    ? 'bg-white hover:bg-gray-50' 
-                    : 'bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100'
-            }`}
+            className={`group relative p-4 border-b last:border-b-0 transition-all cursor-pointer ${notification.is_read
+                ? 'bg-white hover:bg-gray-50'
+                : 'bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100'
+                }`}
         >
             {/* Unread indicator */}
             {!notification.is_read && (
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500"></div>
             )}
-            
+
             <div className="flex items-start gap-3 pl-2">
                 {/* Icon with background */}
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    notification.is_read ? 'bg-gray-100' : 'bg-white shadow-sm'
-                }`}>
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${notification.is_read ? 'bg-gray-100' : 'bg-white shadow-sm'
+                    }`}>
                     {getNotificationIcon(notification.type)}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                        <h4 className={`font-semibold text-sm leading-tight ${
-                            !notification.is_read ? 'text-gray-900' : 'text-gray-700'
-                        }`}>
+                        <h4 className={`font-semibold text-sm leading-tight ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
                             {notification.title}
                         </h4>
                         <span className="text-xs text-gray-500 whitespace-nowrap font-medium">
                             {formatTimeAgo(notification.created_at)}
                         </span>
                     </div>
-                    
+
                     <p className="text-sm text-gray-600 leading-relaxed mb-3">
                         {notification.message}
                     </p>
-                    
+
                     {/* Action buttons */}
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {!notification.is_read && (
@@ -191,7 +188,7 @@ const NotificationItem: React.FC<{
     );
 };
 
-export const NotificationPanel: React.FC<{ onViewChange?: (view: ActiveView) => void }> = ({ onViewChange }) => {
+export const NotificationPanel: React.FC = () => {
     const {
         notifications,
         unreadCount,
@@ -205,25 +202,12 @@ export const NotificationPanel: React.FC<{ onViewChange?: (view: ActiveView) => 
     } = useNotifications();
 
     const [isOpen, setIsOpen] = useState(false);
-    
+    const navigate = useNavigate();
+
     // Handle navigation based on notification type
     const handleNavigate = (path: string) => {
         setIsOpen(false); // Close dropdown
-        
-        // Map path to view for onViewChange callback
-        const viewMap: Record<string, ActiveView> = {
-            '/dashboard/shifts': 'shifts',
-            '/dashboard/content': 'content',
-            '/dashboard/mysite': 'mysite',
-            '/dashboard/sites': 'sites',
-            '/dashboard/verifications': 'verifications',
-            '/dashboard/sos': 'sos',
-        };
-        
-        const view = viewMap[path];
-        if (view && onViewChange) {
-            onViewChange(view);
-        }
+        navigate(path);
     };
 
     return (
@@ -278,7 +262,7 @@ export const NotificationPanel: React.FC<{ onViewChange?: (view: ActiveView) => 
                                     <X size={18} className="text-gray-500" />
                                 </button>
                             </div>
-                            
+
                             {/* Action Buttons */}
                             <div className="flex items-center gap-2">
                                 <button

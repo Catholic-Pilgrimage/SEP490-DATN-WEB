@@ -5,7 +5,7 @@ import { AuthService } from './services/auth.service';
 import { STORAGE_KEYS } from './config/api';
 import { UserProfile } from './types/auth.types';
 import { ToastProvider, useToast } from './contexts/ToastContext';
-
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 export type UserRole = 'admin' | 'manager';
 
 export interface User {
@@ -111,18 +111,32 @@ function AppContent() {
     );
   }
 
-  if (!user) {
-    return <LoginForm onLogin={handleLogin} />;
-  }
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={!user ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/dashboard" replace />}
+      />
 
-  return <Dashboard user={user} onLogout={handleLogout} />;
+      {/* Protected Dashboard Routes */}
+      <Route
+        path="/dashboard/*"
+        element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
+      />
+
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
 }
 
 function App() {
   return (
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
+    <BrowserRouter>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </BrowserRouter>
   );
 }
 

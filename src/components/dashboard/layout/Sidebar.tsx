@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   MapPin,
@@ -13,42 +14,37 @@ import {
   Calendar
 } from 'lucide-react';
 import { User } from '../../../App';
-import { ActiveView } from '../Dashboard';
 import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface SidebarProps {
   user: User;
-  activeView: ActiveView;
-  onViewChange: (view: ActiveView) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   user,
-  activeView,
-  onViewChange,
   collapsed,
   onToggleCollapse,
 }) => {
   const { t } = useLanguage();
 
   const adminMenuItems = [
-    { id: 'dashboard', label: t('menu.dashboard'), icon: LayoutDashboard },
-    { id: 'sites', label: t('menu.sites'), icon: MapPin },
-    { id: 'users', label: t('menu.users'), icon: Users },
-    { id: 'verifications', label: t('menu.verifications'), icon: ClipboardCheck },
-    { id: 'sos', label: t('menu.sos'), icon: AlertTriangle },
+    { id: 'dashboard', path: '/dashboard', label: t('menu.dashboard'), icon: LayoutDashboard, exact: true },
+    { id: 'sites', path: '/dashboard/sites', label: t('menu.sites'), icon: MapPin },
+    { id: 'users', path: '/dashboard/users', label: t('menu.users'), icon: Users },
+    { id: 'verifications', path: '/dashboard/verifications', label: t('menu.verifications'), icon: ClipboardCheck },
+    { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
   ];
 
   const managerMenuItems = [
-    { id: 'dashboard', label: t('menu.dashboard'), icon: LayoutDashboard },
-    { id: 'mysite', label: t('menu.mysite'), icon: MapPin },
-    { id: 'guides', label: t('menu.guides'), icon: UserCheck },
-    { id: 'shifts', label: t('menu.shifts'), icon: Calendar },
-    { id: 'content', label: t('menu.content'), icon: FileText },
-    { id: 'sos', label: t('menu.sos'), icon: AlertTriangle },
-    { id: 'analytics', label: t('menu.analytics'), icon: BarChart3 },
+    { id: 'dashboard', path: '/dashboard', label: t('menu.dashboard'), icon: LayoutDashboard, exact: true },
+    { id: 'mysite', path: '/dashboard/mysite', label: t('menu.mysite'), icon: MapPin },
+    { id: 'guides', path: '/dashboard/guides', label: t('menu.guides'), icon: UserCheck },
+    { id: 'shifts', path: '/dashboard/shifts', label: t('menu.shifts'), icon: Calendar },
+    { id: 'content', path: '/dashboard/content', label: t('menu.content'), icon: FileText },
+    { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
+    { id: 'analytics', path: '/dashboard/analytics', label: t('menu.analytics'), icon: BarChart3 },
   ];
 
   const menuItems = user.role === 'admin' ? adminMenuItems : managerMenuItems;
@@ -90,44 +86,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeView === item.id;
             const isSOSItem = item.id === 'sos';
 
             return (
               <li key={item.id}>
-                <button
-                  onClick={() => onViewChange(item.id as ActiveView)}
-                  className={`
+                <NavLink
+                  to={item.path}
+                  end={item.exact}
+                  className={({ isActive }) => `
                     w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left
                     transition-all duration-200 group relative
                     ${isActive
                       ? 'bg-[#d4af37]/10 text-[#d4af37] shadow-lg border border-[#d4af37]/30'
                       : 'text-white/70 hover:text-[#d4af37] hover:bg-[#d4af37]/5'
                     }
-                    ${isSOSItem ? 'hover:bg-red-500/10' : ''}
+                    ${isSOSItem && !isActive ? 'hover:bg-red-500/10' : ''}
                   `}
                   title={collapsed ? item.label : undefined}
                 >
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#d4af37] rounded-r-full" />
-                  )}
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#d4af37] rounded-r-full" />
+                      )}
 
-                  <Icon className={`
-                    w-5 h-5 flex-shrink-0 relative z-10
-                    ${isSOSItem ? 'text-red-400' : ''}
-                    ${isActive ? 'text-[#d4af37]' : ''}
-                  `} />
+                      <Icon className={`
+                        w-5 h-5 flex-shrink-0 relative z-10
+                        ${isSOSItem ? 'text-red-400' : ''}
+                        ${isActive ? 'text-[#d4af37]' : ''}
+                      `} />
 
-                  {!collapsed && (
-                    <span className="font-medium relative z-10">{item.label}</span>
-                  )}
+                      {!collapsed && (
+                        <span className="font-medium relative z-10">{item.label}</span>
+                      )}
 
-                  {isSOSItem && !collapsed && (
-                    <div className="ml-auto">
-                      <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-                    </div>
+                      {isSOSItem && !collapsed && (
+                        <div className="ml-auto">
+                          <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                        </div>
+                      )}
+                    </>
                   )}
-                </button>
+                </NavLink>
               </li>
             );
           })}

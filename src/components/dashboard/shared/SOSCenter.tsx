@@ -1,12 +1,11 @@
 import React from 'react';
-import { 
-  AlertTriangle, 
-  Phone, 
-  MapPin, 
-  Clock, 
+import {
+  AlertTriangle,
+  Phone,
+  MapPin,
+  Clock,
   User,
   CheckCircle,
-  X,
   Navigation
 } from 'lucide-react';
 
@@ -83,7 +82,7 @@ export const SOSCenter: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">SOS Emergency Center</h1>
           <p className="text-slate-600 mt-2">Monitor and respond to pilgrim emergencies</p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="text-right">
             <div className="text-sm text-slate-600">Active Alerts</div>
@@ -104,12 +103,11 @@ export const SOSCenter: React.FC = () => {
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div className="text-sm text-slate-600 mb-1">{stat.label}</div>
-            <div className={`text-3xl font-bold ${
-              stat.color === 'red' ? 'text-red-600' :
-              stat.color === 'amber' ? 'text-amber-600' :
-              stat.color === 'green' ? 'text-green-600' :
-              'text-blue-600'
-            }`}>
+            <div className={`text-3xl font-bold ${stat.color === 'red' ? 'text-red-600' :
+                stat.color === 'amber' ? 'text-amber-600' :
+                  stat.color === 'green' ? 'text-green-600' :
+                    'text-blue-600'
+              }`}>
               {stat.value}
             </div>
           </div>
@@ -121,7 +119,7 @@ export const SOSCenter: React.FC = () => {
         {sosAlerts.map((alert) => {
           const statusInfo = getStatusInfo(alert.status);
           const StatusIcon = statusInfo.icon;
-          
+
           return (
             <div
               key={alert.id}
@@ -135,15 +133,14 @@ export const SOSCenter: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className={`
                     p-3 rounded-xl
-                    ${alert.severity === 'high' ? 'bg-red-100' : 
+                    ${alert.severity === 'high' ? 'bg-red-100' :
                       alert.severity === 'medium' ? 'bg-amber-100' : 'bg-blue-100'}
                   `}>
-                    <AlertTriangle className={`w-6 h-6 ${
-                      alert.severity === 'high' ? 'text-red-600' :
-                      alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'
-                    }`} />
+                    <AlertTriangle className={`w-6 h-6 ${alert.severity === 'high' ? 'text-red-600' :
+                        alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'
+                      }`} />
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
                       {alert.issue}
@@ -159,17 +156,17 @@ export const SOSCenter: React.FC = () => {
                     inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium
                     ${statusInfo.color === 'red' ? 'bg-red-100 text-red-700' :
                       statusInfo.color === 'amber' ? 'bg-amber-100 text-amber-700' :
-                      statusInfo.color === 'green' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}
+                        statusInfo.color === 'green' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}
                   `}>
                     <StatusIcon className="w-4 h-4" />
                     {statusInfo.label}
                   </span>
-                  
+
                   <span className={`
                     px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide
                     ${alert.severity === 'high' ? 'bg-red-200 text-red-800' :
                       alert.severity === 'medium' ? 'bg-amber-200 text-amber-800' :
-                      'bg-blue-200 text-blue-800'}
+                        'bg-blue-200 text-blue-800'}
                   `}>
                     {alert.severity}
                   </span>
@@ -217,33 +214,33 @@ export const SOSCenter: React.FC = () => {
                       <Phone className="w-4 h-4" />
                       Call Pilgrim
                     </button>
-                    
+
                     <button className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                       <User className="w-4 h-4" />
                       Assign Guide
                     </button>
-                    
+
                     <button className="flex items-center gap-2 px-6 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium">
                       <Navigation className="w-4 h-4" />
                       Get Directions
                     </button>
                   </>
                 )}
-                
+
                 {alert.status === 'assigned' && (
                   <>
                     <button className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                       <CheckCircle className="w-4 h-4" />
                       Mark Resolved
                     </button>
-                    
+
                     <button className="flex items-center gap-2 px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium">
                       <Phone className="w-4 h-4" />
                       Contact Guide
                     </button>
                   </>
                 )}
-                
+
                 {alert.status === 'resolved' && (
                   <div className="flex items-center gap-2 text-green-600">
                     <CheckCircle className="w-4 h-4" />

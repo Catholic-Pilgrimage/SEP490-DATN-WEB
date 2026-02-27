@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, BarChart3, Users, MapPin } from 'lucide-react';
+import { TrendingUp, BarChart3 } from 'lucide-react';
 
 export const ChartsSection: React.FC = () => {
   // Mock chart data
@@ -52,9 +52,9 @@ export const ChartsSection: React.FC = () => {
         </div>
 
         <div className="h-64 flex items-end justify-between gap-4">
-          {checkInData.map((data, index) => (
+          {checkInData.map((data) => (
             <div key={data.day} className="flex-1 flex flex-col items-center">
-              <div 
+              <div
                 className="w-full bg-gradient-to-t from-blue-500 to-blue-600 rounded-t-lg transition-all duration-500 hover:from-blue-600 hover:to-blue-700"
                 style={{
                   height: `${(data.value / maxCheckIn) * 100}%`,
@@ -105,7 +105,7 @@ export const ChartsSection: React.FC = () => {
               <div className="flex-1">
                 <div className="relative">
                   <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-red-400 to-red-500 rounded-full transition-all duration-500"
                       style={{
                         width: `${(data.count / maxSOS) * 100}%`

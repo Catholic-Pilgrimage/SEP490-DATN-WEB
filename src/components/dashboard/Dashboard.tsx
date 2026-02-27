@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './layout/Sidebar';
 import { TopBar } from './layout/TopBar';
 import { AdminDashboard } from './admin/AdminDashboard';
@@ -25,59 +26,24 @@ interface DashboardProps {
 export type ActiveView = 'dashboard' | 'sites' | 'mysite' | 'users' | 'verifications' | 'sos' | 'guides' | 'shifts' | 'content' | 'analytics' | 'profile' | 'settings';
 
 const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
-  const [activeView, setActiveView] = useState<ActiveView>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
 
-  const renderContent = () => {
-    if (user.role === 'admin') {
-      switch (activeView) {
-        case 'dashboard':
-          return <AdminDashboard />;
-        case 'sites':
-          return <SiteManagement />;
-        case 'users':
-          return <UserManagement />;
-        case 'verifications':
-          return <VerificationRequests />;
-        case 'sos':
-          return <SOSCenter />;
-        case 'profile':
-          return <ProfilePage />;
-        case 'settings':
-          return <SettingsPage />;
-        default:
-          return <AdminDashboard />;
-      }
-    } else {
-      switch (activeView) {
-        case 'dashboard':
-          return <ManagerDashboard />;
-        case 'mysite':
-          return <MySite />;
-        case 'guides':
-          return <LocalGuides />;
-        case 'shifts':
-          return <ShiftSubmissions />;
-        case 'content':
-          return <ContentManagement />;
-        case 'sos':
-          return <SOSCenter />;
-        case 'profile':
-          return <ProfilePage />;
-        case 'settings':
-          return <SettingsPage />;
-        default:
-          return <ManagerDashboard />;
-      }
-    }
-  };
+  // Determine active view based on current path for Sidebar & TopBar
+  const pathParts = location.pathname.split('/');
+  const currentPath = pathParts[pathParts.length - 1];
+
+  // Default to dashboard if we are at root or just /dashboard
+  if (currentPath && currentPath !== 'dashboard' && currentPath !== '') {
+    // We don't need activeView anymore since Routes handle the view,
+    // but the Sidebar could theoretically use it if we wanted to pass it down.
+    // However we removed it from SidebarProps, so we do nothing here.
+  }
 
   return (
     <div className="h-screen bg-[#f5f3ee] flex overflow-hidden">
       <Sidebar
         user={user}
-        activeView={activeView}
-        onViewChange={setActiveView}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
@@ -85,14 +51,37 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar
           user={user}
-          activeView={activeView}
           onLogout={onLogout}
-          onViewChange={setActiveView}
           sidebarCollapsed={sidebarCollapsed}
         />
 
         <main className="flex-1 overflow-auto p-6">
-          {renderContent()}
+          <Routes>
+            {user.role === 'admin' ? (
+              <>
+                <Route index element={<AdminDashboard />} />
+                <Route path="sites" element={<SiteManagement />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="verifications" element={<VerificationRequests />} />
+                <Route path="sos" element={<SOSCenter />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </>
+            ) : (
+              <>
+                <Route index element={<ManagerDashboard />} />
+                <Route path="mysite" element={<MySite />} />
+                <Route path="guides" element={<LocalGuides />} />
+                <Route path="shifts" element={<ShiftSubmissions />} />
+                <Route path="content" element={<ContentManagement />} />
+                <Route path="sos" element={<SOSCenter />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </>
+            )}
+          </Routes>
         </main>
       </div>
     </div>

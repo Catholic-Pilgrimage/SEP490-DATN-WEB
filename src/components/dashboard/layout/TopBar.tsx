@@ -1,28 +1,30 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from '../../../App';
-import { ActiveView } from '../Dashboard';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { NotificationPanel } from '../shared/NotificationPanel';
 
 interface TopBarProps {
   user: User;
-  activeView: ActiveView;
   onLogout: () => void;
-  onViewChange: (view: ActiveView) => void;
   sidebarCollapsed: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   user,
-  activeView,
   onLogout,
-  onViewChange,
 }) => {
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Extract current view from URL path
+  const pathParts = location.pathname.split('/');
+  const activeView = pathParts[pathParts.length - 1] || 'dashboard';
 
   const getPageTitle = () => {
-    const titles: Record<ActiveView, string> = {
+    const titles: Record<string, string> = {
       dashboard: t('menu.dashboard'),
       sites: t('menu.sites'),
       mysite: t('menu.mysite'),
@@ -77,8 +79,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               onClick={() => setLanguage('vi')}
               className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'vi'
-                  ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
-                  : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
+                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
+                : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
                 }`}
             >
               VI
@@ -86,16 +88,16 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               onClick={() => setLanguage('en')}
               className={`flex h-full items-center justify-center rounded-md px-3 text-xs font-medium transition-all duration-300 ${language === 'en'
-                  ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
-                  : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
+                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
+                : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
                 }`}
             >
               EN
             </button>
           </div>
-          
+
           {/* Notifications */}
-          <NotificationPanel onViewChange={onViewChange} />
+          <NotificationPanel />
 
           {/* User Menu */}
           <div className="relative group">
@@ -115,13 +117,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#d4af37]/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="p-2">
                 <button
-                  onClick={() => onViewChange('profile')}
+                  onClick={() => navigate('/dashboard/profile')}
                   className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#d4af37]/10 hover:text-[#8a6d1c] rounded-lg transition-colors"
                 >
                   {t('common.profile')}
                 </button>
                 <button
-                  onClick={() => onViewChange('settings')}
+                  onClick={() => navigate('/dashboard/settings')}
                   className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#d4af37]/10 hover:text-[#8a6d1c] rounded-lg transition-colors"
                 >
                   {t('common.settings')}
