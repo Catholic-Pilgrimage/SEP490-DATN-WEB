@@ -2,8 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { User, Mail, Phone, Calendar, Clock, Camera, Save, Loader2, X, Edit3, CheckCircle } from 'lucide-react';
 import { AuthService } from '../../../services/auth.service';
 import { UserProfile } from '../../../types/auth.types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const ProfilePage: React.FC = () => {
+    const { t } = useLanguage();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -22,7 +24,7 @@ export const ProfilePage: React.FC = () => {
 
     useEffect(() => {
         fetchProfile();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchProfile = async () => {
         try {
@@ -37,10 +39,10 @@ export const ProfilePage: React.FC = () => {
                 setDateOfBirth(response.data.date_of_birth || '');
                 setLanguage(response.data.language || 'vi');
             } else {
-                setError(response.message || 'Failed to load profile');
+                setError(response.message || t('profile.loadError'));
             }
         } catch (err) {
-            setError('Failed to load profile');
+            setError(t('profile.loadError'));
         } finally {
             setLoading(false);
         }
@@ -74,16 +76,16 @@ export const ProfilePage: React.FC = () => {
 
             if (response.success && response.data) {
                 setProfile(response.data);
-                setSuccess('Profile updated successfully!');
+                setSuccess(t('profile.success'));
                 setIsEditing(false);
                 setAvatarFile(null);
                 setAvatarPreview(null);
                 setTimeout(() => setSuccess(null), 3000);
             } else {
-                setError(response.message || 'Failed to update profile');
+                setError(response.message || t('profile.error'));
             }
         } catch (err: any) {
-            setError(err?.error?.message || 'Failed to update profile');
+            setError(err?.error?.message || t('profile.error'));
         } finally {
             setSaving(false);
         }
@@ -103,15 +105,15 @@ export const ProfilePage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20 shadow-sm mt-4">
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
             </div>
         );
     }
 
     if (error && !profile) {
         return (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mt-4">
                 <p className="text-red-600">{error}</p>
             </div>
         );
@@ -122,8 +124,8 @@ export const ProfilePage: React.FC = () => {
     }
 
     const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'Not provided';
-        return new Date(dateString).toLocaleDateString('vi-VN', {
+        if (!dateString) return t('profile.notProvided');
+        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -157,41 +159,43 @@ export const ProfilePage: React.FC = () => {
     const displayAvatar = avatarPreview || profile.avatar_url || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150';
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
-                <p className="text-slate-600 mt-1">View and manage your account information</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-serif font-bold text-[#8a6d1c]">{t('profile.title')}</h1>
+                    <p className="text-gray-500 mt-1">{t('profile.subtitle')}</p>
+                </div>
             </div>
 
             {/* Success/Error Messages */}
             {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-600 flex items-center gap-2 shadow-sm">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" />
                     {success}
                 </div>
             )}
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 shadow-sm">
                     {error}
                 </div>
             )}
 
             {/* Profile Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
                 {/* Cover & Avatar */}
-                <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+                <div className="h-48 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] relative">
                     <div className="absolute -bottom-12 left-8">
                         <div className="relative">
                             <img
                                 src={displayAvatar}
                                 alt={profile.full_name}
-                                className="w-24 h-24 rounded-2xl border-4 border-white object-cover shadow-lg"
+                                className="w-24 h-24 rounded-2xl border-4 border-white object-cover shadow-lg shadow-[#d4af37]/20"
                             />
                             {isEditing && (
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="absolute bottom-0 right-0 p-1.5 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors"
+                                    className="absolute bottom-0 right-0 p-1.5 bg-[#d4af37] rounded-lg text-white hover:brightness-110 transition-all shadow-md"
                                 >
                                     <Camera className="w-4 h-4" />
                                 </button>
@@ -209,15 +213,15 @@ export const ProfilePage: React.FC = () => {
 
                 {/* Profile Info */}
                 <div className="pt-16 px-8 pb-8">
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8 border-b border-[#d4af37]/10 pb-6">
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900">{profile.full_name}</h2>
+                            <h2 className="text-2xl font-bold text-slate-900">{profile.full_name}</h2>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
-                                    {profile.role}
+                                    {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
                                 </span>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(profile.status)}`}>
-                                    {profile.status}
+                                    {profile.status === 'active' ? t('common.active') : t('common.inactive')}
                                 </span>
                             </div>
                         </div>
@@ -226,27 +230,27 @@ export const ProfilePage: React.FC = () => {
                                 <>
                                     <button
                                         onClick={handleCancel}
-                                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
+                                        className="flex items-center gap-2 px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors"
                                     >
                                         <X className="w-4 h-4" />
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
                                     >
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                        {saving ? 'Saving...' : 'Save Changes'}
+                                        {saving ? t('common.save') + '...' : t('common.save')}
                                     </button>
                                 </>
                             ) : (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20"
                                 >
                                     <Edit3 className="w-4 h-4" />
-                                    Edit Profile
+                                    {t('profile.editProfile')}
                                 </button>
                             )}
                         </div>
@@ -257,32 +261,32 @@ export const ProfilePage: React.FC = () => {
                         {/* Email (Read-only) */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <Mail className="w-4 h-4 text-slate-400" />
-                                Email
+                                <Mail className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.email')}
                             </label>
                             <input
                                 type="email"
                                 value={profile.email}
                                 readOnly
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900"
+                                className="w-full px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/10 rounded-xl text-slate-900 focus:outline-none"
                             />
                         </div>
 
                         {/* Phone */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <Phone className="w-4 h-4 text-slate-400" />
-                                Phone Number
+                                <Phone className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.phone')}
                             </label>
                             <input
                                 type="tel"
-                                value={isEditing ? phone : (profile.phone || 'Not provided')}
+                                value={isEditing ? phone : (profile.phone || t('profile.notProvided'))}
                                 onChange={(e) => setPhone(e.target.value)}
                                 readOnly={!isEditing}
-                                placeholder="Enter phone number"
-                                className={`w-full px-4 py-3 border rounded-xl text-slate-900 ${isEditing
-                                        ? 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                        : 'bg-slate-50 border-slate-200'
+                                placeholder={t('profile.phonePlaceholder')}
+                                className={`w-full px-4 py-3 rounded-xl text-slate-900 transition-all ${isEditing
+                                    ? 'bg-white border border-[#d4af37]/30 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50'
+                                    : 'bg-[#f5f3ee] border border-[#d4af37]/10 focus:outline-none'
                                     }`}
                             />
                         </div>
@@ -290,18 +294,18 @@ export const ProfilePage: React.FC = () => {
                         {/* Full Name */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <User className="w-4 h-4 text-slate-400" />
-                                Full Name
+                                <User className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.fullName')}
                             </label>
                             <input
                                 type="text"
                                 value={isEditing ? fullName : profile.full_name}
                                 onChange={(e) => setFullName(e.target.value)}
                                 readOnly={!isEditing}
-                                placeholder="Enter full name"
-                                className={`w-full px-4 py-3 border rounded-xl text-slate-900 ${isEditing
-                                        ? 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                        : 'bg-slate-50 border-slate-200'
+                                placeholder={t('profile.namePlaceholder')}
+                                className={`w-full px-4 py-3 rounded-xl text-slate-900 transition-all ${isEditing
+                                    ? 'bg-white border border-[#d4af37]/30 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50'
+                                    : 'bg-[#f5f3ee] border border-[#d4af37]/10 focus:outline-none'
                                     }`}
                             />
                         </div>
@@ -309,14 +313,14 @@ export const ProfilePage: React.FC = () => {
                         {/* Language */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <User className="w-4 h-4 text-slate-400" />
-                                Language
+                                <User className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.language')}
                             </label>
                             {isEditing ? (
                                 <select
                                     value={language}
                                     onChange={(e) => setLanguage(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-white border border-[#d4af37]/30 rounded-xl text-slate-900 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                                 >
                                     <option value="vi">Tiếng Việt</option>
                                     <option value="en">English</option>
@@ -324,9 +328,9 @@ export const ProfilePage: React.FC = () => {
                             ) : (
                                 <input
                                     type="text"
-                                    value={profile.language === 'vi' ? 'Tiếng Việt' : 'English'}
+                                    value={profile.language === 'en' ? 'English' : 'Tiếng Việt'}
                                     readOnly
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900"
+                                    className="w-full px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/10 rounded-xl text-slate-900 focus:outline-none"
                                 />
                             )}
                         </div>
@@ -334,22 +338,22 @@ export const ProfilePage: React.FC = () => {
                         {/* Date of Birth */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <Calendar className="w-4 h-4 text-slate-400" />
-                                Date of Birth
+                                <Calendar className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.dateOfBirth')}
                             </label>
                             {isEditing ? (
                                 <input
                                     type="date"
                                     value={dateOfBirth}
                                     onChange={(e) => setDateOfBirth(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-white border border-[#d4af37]/30 rounded-xl text-slate-900 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                                 />
                             ) : (
                                 <input
                                     type="text"
                                     value={formatDate(profile.date_of_birth)}
                                     readOnly
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900"
+                                    className="w-full px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/10 rounded-xl text-slate-900 focus:outline-none"
                                 />
                             )}
                         </div>
@@ -357,14 +361,14 @@ export const ProfilePage: React.FC = () => {
                         {/* Account Created */}
                         <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <Clock className="w-4 h-4 text-slate-400" />
-                                Account Created
+                                <Clock className="w-4 h-4 text-[#d4af37]" />
+                                {t('profile.accountCreated')}
                             </label>
                             <input
                                 type="text"
                                 value={formatDate(profile.created_at)}
                                 readOnly
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900"
+                                className="w-full px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/10 rounded-xl text-slate-900 focus:outline-none"
                             />
                         </div>
                     </div>
