@@ -12,20 +12,23 @@ import {
     Clock,
     CheckCircle,
     XCircle,
-    AlertCircle,
     Trash2,
-    ExternalLink
+    ExternalLink,
+    Box,
+    Upload,
+    AlertCircle
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { MediaDetailModal } from './MediaDetailModal';
+import { Upload3DModelModal } from './Upload3DModelModal';
 
 /**
  * MediaContent Component
  * 
  * Giải thích:
- * - Hiển thị danh sách media (hình ảnh, video, panorama) của site
+ * - Hiển thị danh sách media (hình ảnh, video, 3d model) của site
  * - Có filter theo: type, status, is_active
  * - Card layout với preview hình ảnh
  */
@@ -49,6 +52,9 @@ export const MediaContent: React.FC = () => {
 
     // Selected media for detail modal
     const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+
+    // Upload 3D Model Modal Modal state
+    const [isUpload3DModalOpen, setIsUpload3DModalOpen] = useState(false);
 
     // ============ FETCH DATA ============
     const fetchMediaList = useCallback(async () => {
@@ -102,7 +108,7 @@ export const MediaContent: React.FC = () => {
         const types = {
             image: { label: 'Hình ảnh', icon: Image, color: 'text-blue-600' },
             video: { label: 'Video', icon: Video, color: 'text-red-600' },
-            panorama: { label: 'Panorama', icon: Image, color: 'text-purple-600' }
+            model_3d: { label: 'Model 3D', icon: Box, color: 'text-[#8a6d1c]' }
         };
         return types[type] || types.image;
     };
@@ -137,14 +143,23 @@ export const MediaContent: React.FC = () => {
                     <h1 className="text-2xl font-bold text-slate-900">{t('media.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('media.subtitle')}</p>
                 </div>
-                <button
-                    onClick={fetchMediaList}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    {t('common.refresh')}
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsUpload3DModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-[#d4af37]/40 text-[#8a6d1c] rounded-xl hover:bg-[#f8f5ee] active:scale-95 transition-all duration-200"
+                    >
+                        <Upload className="w-4 h-4" />
+                        Tải lên 3D Model
+                    </button>
+                    <button
+                        onClick={fetchMediaList}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        {t('common.refresh')}
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -159,9 +174,9 @@ export const MediaContent: React.FC = () => {
                             className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
                             <option value="">{t('media.filterType')}</option>
-                            <option value="image">Image</option>
-                            <option value="video">Video</option>
-                            <option value="panorama">Panorama</option>
+                            <option value="image">{t('media.image')}</option>
+                            <option value="video">{t('media.video')}</option>
+                            <option value="model_3d">{t('media.model3d')}</option>
                         </select>
                     </div>
 
@@ -250,12 +265,17 @@ export const MediaContent: React.FC = () => {
                                     >
                                         {/* Media Preview */}
                                         <div className="relative aspect-video bg-slate-100">
-                                            {media.type === 'image' || media.type === 'panorama' ? (
+                                            {media.type === 'image' ? (
                                                 <img
                                                     src={media.url}
                                                     alt={media.caption}
                                                     className="w-full h-full object-cover"
                                                 />
+                                            ) : media.type === 'model_3d' ? (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-[#f5f3ee]">
+                                                    <Box className="w-12 h-12 text-[#d4af37] mb-2" />
+                                                    <span className="text-sm font-medium text-[#8a6d1c]">3D Model</span>
+                                                </div>
                                             ) : thumbnailUrl ? (
                                                 <img
                                                     src={thumbnailUrl}
@@ -408,6 +428,16 @@ export const MediaContent: React.FC = () => {
                 onClose={() => setSelectedMedia(null)}
                 onStatusChange={() => {
                     // Refresh list sau khi approve/reject
+                    fetchMediaList();
+                }}
+            />
+
+            {/* ============ UPLOAD 3D MODEL MODAL ============ */}
+            <Upload3DModelModal
+                isOpen={isUpload3DModalOpen}
+                onClose={() => setIsUpload3DModalOpen(false)}
+                onSuccess={() => {
+                    // Refresh list sau khi upload
                     fetchMediaList();
                 }}
             />

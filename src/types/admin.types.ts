@@ -326,7 +326,7 @@ export interface SiteShiftsResponse {
 // ============ SITE MEDIA APIs ============
 
 // Media type
-export type MediaType = 'image' | 'video' | 'panorama';
+export type MediaType = 'image' | 'video' | 'model_3d';
 
 // Media status
 export type MediaStatus = 'pending' | 'approved' | 'rejected';

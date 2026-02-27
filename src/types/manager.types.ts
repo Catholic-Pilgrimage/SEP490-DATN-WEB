@@ -246,8 +246,8 @@ export type UpdateShiftSubmissionStatusResponse = ShiftSubmission;
 // MANAGER CONTENT - MEDIA
 // ============================================================================
 
-// Loại media: hình ảnh, video, panorama
-export type MediaType = 'image' | 'video' | 'panorama';
+// Loại media: hình ảnh, video, 3d model
+export type MediaType = 'image' | 'video' | 'model_3d';
 
 // Trạng thái duyệt content (dùng chung cho Media, Schedule, Event, NearbyPlace)
 export type ContentStatus = 'pending' | 'approved' | 'rejected';
@@ -265,7 +265,7 @@ export interface Media {
     site_id: string;
     code: string;                   // Mã media (VD: IMG0115001, VID0115001)
     url: string;                    // URL của media (cloudinary hoặc youtube)
-    type: MediaType;                // 'image' | 'video' | 'panorama'
+    type: MediaType;                // 'image' | 'video' | 'model_3d'
     caption: string;                // Mô tả media
     status: ContentStatus;          // 'pending' | 'approved' | 'rejected'
     rejection_reason: string | null;
@@ -316,6 +316,15 @@ export interface ToggleMediaActiveData {
 // PATCH /api/manager/content/media/{id}/is-active - Response
 // Trả về media đã cập nhật
 export type ToggleMediaActiveResponse = Media;
+
+// POST /api/manager/content/media/3d-model - Request Data
+export interface Upload3DModelData {
+    file: File;
+    caption?: string;
+}
+
+// POST /api/manager/content/media/3d-model - Response
+export interface Upload3DModelResponse extends Media { }
 
 // =====================================================================
 // SCHEDULE MANAGEMENT TYPES

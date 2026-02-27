@@ -236,7 +236,8 @@ const translations: Record<Language, Record<string, string>> = {
         'media.allTypes': 'Tất cả loại',
         'media.image': 'Hình ảnh',
         'media.video': 'Video',
-        'media.panorama': 'Panorama',
+
+        'media.model3d': 'Model 3D',
 
         // Schedules Tab
         'schedules.items': 'lịch lễ',
@@ -794,7 +795,8 @@ const translations: Record<Language, Record<string, string>> = {
         'media.allTypes': 'All Types',
         'media.image': 'Image',
         'media.video': 'Video',
-        'media.panorama': 'Panorama',
+
+        'media.model3d': '3D Model',
 
         // Schedules Tab
         'schedules.items': 'schedule(s)',

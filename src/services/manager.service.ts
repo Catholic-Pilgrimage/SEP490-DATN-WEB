@@ -21,6 +21,8 @@ import {
     UpdateMediaStatusResponse,
     ToggleMediaActiveData,
     ToggleMediaActiveResponse,
+    Upload3DModelData,
+    Upload3DModelResponse,
     ScheduleListParams,
     ScheduleListResponse,
     UpdateScheduleStatusData,
@@ -315,7 +317,7 @@ export class ManagerService {
      * Get list of media for the manager's site
      * 
      * Giải thích:
-     * - Lấy danh sách media (hình ảnh, video, panorama) của site
+     * - Lấy danh sách media (hình ảnh, video, 3d model) của site
      * - Hỗ trợ filter theo: type, status, is_active
      * - Có pagination
      * 
@@ -387,6 +389,25 @@ export class ManagerService {
         return ApiService.patch<ApiResponse<ToggleMediaActiveResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA_ACTIVE(id),
             data
+        );
+    }
+
+    /**
+     * Upload 3D Model for Manager's site
+     * Uses FormData for file upload (.glb, .gltf)
+     * Auto approved by system.
+     */
+    static async upload3DModel(data: Upload3DModelData): Promise<ApiResponse<Upload3DModelResponse>> {
+        const formData = new FormData();
+
+        formData.append('file', data.file);
+        if (data.caption) {
+            formData.append('caption', data.caption);
+        }
+
+        return ApiService.postFormData<ApiResponse<Upload3DModelResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.UPLOAD_3D,
+            formData
         );
     }
 

@@ -38,6 +38,7 @@ export const API_CONFIG = {
                 MEDIA: '/api/manager/content/media', // GET list
                 MEDIA_STATUS: (id: string) => `/api/manager/content/media/${id}/status`, // PATCH approve/reject
                 MEDIA_ACTIVE: (id: string) => `/api/manager/content/media/${id}/is-active`, // PATCH soft delete/restore
+                UPLOAD_3D: '/api/manager/content/media/3d-model', // POST upload 3D model
                 SCHEDULES: '/api/manager/content/schedules', // GET list
                 SCHEDULES_STATUS: (id: string) => `/api/manager/content/schedules/${id}/status`,
                 SCHEDULES_ACTIVE: (id: string) => `/api/manager/content/schedules/${id}/is-active`,

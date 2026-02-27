@@ -15,7 +15,8 @@ import {
     Trash2,
     Calendar,
     RotateCcw,
-    EyeOff
+    EyeOff,
+    Box
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
@@ -151,14 +152,13 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
     };
 
     const getTypeInfo = (type: MediaType) => {
-        const types = {
+        const types: Record<MediaType, { label: string, icon: any, gradient: string }> = {
             image: { label: t('media.image'), icon: Image, gradient: 'from-blue-600 to-cyan-500' },
             video: { label: t('media.video'), icon: Video, gradient: 'from-red-600 to-orange-500' },
-            panorama: { label: t('media.panorama'), icon: Image, gradient: 'from-purple-600 to-pink-500' }
+            model_3d: { label: t('media.model3d'), icon: Box, gradient: 'from-[#8a6d1c] to-[#d4af37]' }
         };
         return types[type] || types.image;
     };
-
     const formatDateTime = (dateString: string) => {
         const locale = language === 'vi' ? 'vi-VN' : 'en-US';
         return new Date(dateString).toLocaleString(locale, {
@@ -227,12 +227,17 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                                     allowFullScreen
                                 />
                             </div>
-                        ) : currentMedia.type === 'image' || currentMedia.type === 'panorama' ? (
+                        ) : currentMedia.type === 'image' ? (
                             <img
                                 src={currentMedia.url}
                                 alt={currentMedia.caption}
                                 className="w-full max-h-80 object-contain bg-black/20"
                             />
+                        ) : currentMedia.type === 'model_3d' ? (
+                            <div className="aspect-video flex flex-col items-center justify-center bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc]">
+                                <Box className="w-16 h-16 text-[#d4af37] mb-4" />
+                                <span className="text-[#8a6d1c] font-medium">3D Model</span>
+                            </div>
                         ) : (
                             <div className="aspect-video flex items-center justify-center">
                                 <Video className="w-16 h-16 text-white/30" />

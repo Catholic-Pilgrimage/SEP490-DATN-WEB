@@ -25,7 +25,7 @@ import {
     AlertCircle,
     Filter,
     Play,
-    Eye
+    Box
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -839,7 +839,7 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
         const configs = {
             image: { color: 'bg-blue-100 text-blue-700', labelKey: 'media.image', icon: Image },
             video: { color: 'bg-purple-100 text-purple-700', labelKey: 'media.video', icon: Play },
-            panorama: { color: 'bg-amber-100 text-amber-700', labelKey: 'media.panorama', icon: Eye }
+            model_3d: { color: 'bg-amber-100 text-amber-700', labelKey: 'media.model3d', icon: Box }
         };
         const config = configs[type] || configs.image;
         return { ...config, label: t(config.labelKey) };
@@ -913,7 +913,7 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                         <option value="">{t('media.allTypes')}</option>
                         <option value="image">{t('media.image')}</option>
                         <option value="video">{t('media.video')}</option>
-                        <option value="panorama">{t('media.panorama')}</option>
+                        <option value="model_3d">{t('media.model3d')}</option>
                     </select>
                 </div>
             </div>
@@ -942,7 +942,7 @@ const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
 
                             const thumbnailUrl = media.type === 'video' && isYouTubeUrl(media.url)
                                 ? getYouTubeThumbnail(media.url)
-                                : media.type === 'image' || media.type === 'panorama'
+                                : media.type === 'image'
                                     ? media.url
                                     : '';
 
