@@ -567,6 +567,23 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.rejectSuccess': 'Từ chối thành công!',
         'toast.rejectSuccessMsg': 'Yêu cầu xác minh đã bị từ chối.',
         'toast.rejectFailed': 'Từ chối thất bại!',
+
+        // 3D Model Upload
+        'upload3D.title': 'Tải lên 3D Model',
+        'upload3D.subtitle': 'Hỗ trợ định dạng .glb, .gltf (Tối đa 100MB)',
+        'upload3D.errorType': 'Chỉ hỗ trợ file .glb hoặc .gltf',
+        'upload3D.errorSize': 'Dung lượng file tối đa là 100MB',
+        'upload3D.requireFile': 'Vui lòng chọn file 3D Model',
+        'upload3D.success': 'Tải lên 3D Model thành công',
+        'upload3D.caption': 'Mô tả',
+        'upload3D.optional': 'tùy chọn',
+        'upload3D.captionPlaceholder': 'Nhập mô tả cho 3D Model...',
+        'upload3D.uploading': 'Đang tải lên...',
+        'upload3D.upload': 'Tải lên',
+        'upload3D.fileLabel': 'File 3D Model',
+        'upload3D.clickOrDrag': 'Nhấn để tải lên',
+        'upload3D.orDrag': 'hoặc kéo thả file',
+        'upload3D.formatRequirement': '.GLB, .GLTF (max 100MB)',
     },
     en: {
         // Sidebar
@@ -1123,6 +1140,23 @@ const translations: Record<Language, Record<string, string>> = {
         'toast.rejectSuccess': 'Rejected successfully!',
         'toast.rejectSuccessMsg': 'The verification request has been rejected.',
         'toast.rejectFailed': 'Rejection failed!',
+
+        // 3D Model Upload
+        'upload3D.title': 'Upload 3D Model',
+        'upload3D.subtitle': 'Supports .glb, .gltf formats (Max 100MB)',
+        'upload3D.errorType': 'Only .glb or .gltf files are supported',
+        'upload3D.errorSize': 'Maximum file size is 100MB',
+        'upload3D.requireFile': 'Please select a 3D Model file',
+        'upload3D.success': '3D Model uploaded successfully',
+        'upload3D.caption': 'Caption',
+        'upload3D.optional': 'optional',
+        'upload3D.captionPlaceholder': 'Enter description for 3D Model...',
+        'upload3D.uploading': 'Uploading...',
+        'upload3D.upload': 'Upload',
+        'upload3D.fileLabel': '3D Model File',
+        'upload3D.clickOrDrag': 'Click to upload',
+        'upload3D.orDrag': 'or drag and drop file',
+        'upload3D.formatRequirement': '.GLB, .GLTF (max 100MB)',
     }
 };
 

@@ -23,6 +23,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { MediaDetailModal } from './MediaDetailModal';
 import { Upload3DModelModal } from './Upload3DModelModal';
+import { useToast } from '../../../contexts/ToastContext';
 
 /**
  * MediaContent Component
@@ -34,6 +35,7 @@ import { Upload3DModelModal } from './Upload3DModelModal';
  */
 export const MediaContent: React.FC = () => {
     const { t, language } = useLanguage();
+    const { showToast } = useToast();
     // ============ STATE ============
     const [mediaList, setMediaList] = useState<Media[]>([]);
     const [loading, setLoading] = useState(true);
@@ -55,6 +57,7 @@ export const MediaContent: React.FC = () => {
 
     // Upload 3D Model Modal Modal state
     const [isUpload3DModalOpen, setIsUpload3DModalOpen] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     // ============ FETCH DATA ============
     const fetchMediaList = useCallback(async () => {
@@ -87,6 +90,13 @@ export const MediaContent: React.FC = () => {
     useEffect(() => {
         fetchMediaList();
     }, [fetchMediaList]);
+
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await fetchMediaList();
+        setRefreshing(false);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+    };
 
     // ============ HELPERS ============
     const handlePageChange = (page: number) => {
@@ -149,14 +159,14 @@ export const MediaContent: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-[#d4af37]/40 text-[#8a6d1c] rounded-xl hover:bg-[#f8f5ee] active:scale-95 transition-all duration-200"
                     >
                         <Upload className="w-4 h-4" />
-                        Tải lên 3D Model
+                        {t('upload3D.title') || 'Tải lên 3D Model'}
                     </button>
                     <button
-                        onClick={fetchMediaList}
-                        disabled={loading}
+                        onClick={handleManualRefresh}
+                        disabled={loading || refreshing}
                         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
                     </button>
                 </div>

@@ -20,6 +20,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Event, ContentStatus } from '../../../types/manager.types';
 import { EventDetailModal } from './EventDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 /**
  * EventContent Component
@@ -29,6 +30,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
  */
 export const EventContent: React.FC = () => {
     const { t, language } = useLanguage();
+    const { showToast } = useToast();
     // ============ STATE ============
     const [eventList, setEventList] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,6 +48,7 @@ export const EventContent: React.FC = () => {
 
     // Selected event for detail modal
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     // ============ FETCH DATA ============
     const fetchEventList = useCallback(async () => {
@@ -78,6 +81,13 @@ export const EventContent: React.FC = () => {
     useEffect(() => {
         fetchEventList();
     }, [fetchEventList]);
+
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await fetchEventList();
+        setRefreshing(false);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+    };
 
     // ============ HELPERS ============
     const handlePageChange = (page: number) => {
@@ -124,11 +134,11 @@ export const EventContent: React.FC = () => {
                     <p className="text-slate-500 mt-1">{t('event.subtitle')}</p>
                 </div>
                 <button
-                    onClick={fetchEventList}
-                    disabled={loading}
+                    onClick={handleManualRefresh}
+                    disabled={loading || refreshing}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
                 </button>
             </div>

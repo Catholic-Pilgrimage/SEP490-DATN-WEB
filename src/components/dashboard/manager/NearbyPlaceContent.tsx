@@ -22,6 +22,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { NearbyPlace, ContentStatus, NearbyPlaceCategory } from '../../../types/manager.types';
 import { NearbyPlaceDetailModal } from './NearbyPlaceDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 /**
  * NearbyPlaceContent Component
@@ -31,6 +32,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
  */
 export const NearbyPlaceContent: React.FC = () => {
     const { t } = useLanguage();
+    const { showToast } = useToast();
     // ============ STATE ============
     const [placeList, setPlaceList] = useState<NearbyPlace[]>([]);
     const [loading, setLoading] = useState(true);
@@ -49,6 +51,7 @@ export const NearbyPlaceContent: React.FC = () => {
 
     // Selected place for detail modal
     const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     // ============ FETCH DATA ============
     const fetchPlaceList = useCallback(async () => {
@@ -82,6 +85,13 @@ export const NearbyPlaceContent: React.FC = () => {
     useEffect(() => {
         fetchPlaceList();
     }, [fetchPlaceList]);
+
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await fetchPlaceList();
+        setRefreshing(false);
+        showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+    };
 
     // ============ HELPERS ============
     const handlePageChange = (page: number) => {
@@ -125,11 +135,11 @@ export const NearbyPlaceContent: React.FC = () => {
                     <p className="text-slate-500 mt-1">{t('nearby.subtitle')}</p>
                 </div>
                 <button
-                    onClick={fetchPlaceList}
-                    disabled={loading}
+                    onClick={handleManualRefresh}
+                    disabled={loading || refreshing}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
                 </button>
             </div>

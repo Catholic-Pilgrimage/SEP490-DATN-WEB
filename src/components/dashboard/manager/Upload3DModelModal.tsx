@@ -182,7 +182,7 @@ export const Upload3DModelModal: React.FC<Upload3DModelModalProps> = ({
                         {/* File Upload Area */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-2">
-                                File 3D Model <span className="text-red-500">*</span>
+                                {t('upload3D.fileLabel') || 'File 3D Model'} <span className="text-red-500">*</span>
                             </label>
 
                             <input
@@ -221,10 +221,10 @@ export const Upload3DModelModal: React.FC<Upload3DModelModalProps> = ({
                                         <>
                                             <Upload className="w-10 h-10 text-slate-400 mb-3" />
                                             <p className="text-sm text-slate-500 mb-1">
-                                                <span className="font-medium text-[#d4af37]">Nhấn để tải lên</span> hoặc kéo thả file
+                                                <span className="font-medium text-[#d4af37]">{t('upload3D.clickOrDrag') || 'Nhấn để tải lên'}</span> {t('upload3D.orDrag') || 'hoặc kéo thả file'}
                                             </p>
                                             <p className="text-xs text-slate-400">
-                                                .GLB, .GLTF (max 100MB)
+                                                {t('upload3D.formatRequirement') || '.GLB, .GLTF (max 100MB)'}
                                             </p>
                                         </>
                                     )}

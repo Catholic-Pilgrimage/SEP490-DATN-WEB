@@ -12,11 +12,13 @@ import {
     Trash2,
     Calendar,
     RotateCcw,
-    EyeOff
+    EyeOff,
+    AlertTriangle
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Schedule, ContentStatus } from '../../../types/manager.types';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface ScheduleDetailModalProps {
     isOpen: boolean;
@@ -35,12 +37,16 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
     onStatusChange
 }) => {
     const { t, language } = useLanguage();
+    const { showToast } = useToast();
     // ============ STATE ============
     const [actionLoading, setActionLoading] = useState(false);
     const [showRejectForm, setShowRejectForm] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [actionError, setActionError] = useState<string | null>(null);
     const [currentSchedule, setCurrentSchedule] = useState<Schedule | null>(schedule);
+
+    // Confirm Modal State
+    const [confirmAction, setConfirmAction] = useState<'approve' | 'toggle_active' | null>(null);
 
     // ============ RESET STATE ============
     useEffect(() => {
@@ -49,35 +55,52 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
             setShowRejectForm(false);
             setRejectionReason('');
             setActionError(null);
+            setConfirmAction(null);
         }
     }, [isOpen, schedule]);
 
     // ============ ACTIONS ============
-    const handleApprove = async () => {
-        if (!currentSchedule) return;
+    const handleApproveClick = () => setConfirmAction('approve');
+    const handleToggleActiveClick = () => setConfirmAction('toggle_active');
 
-        const confirmed = window.confirm(t('content.confirmApproveMsg'));
-        if (!confirmed) return;
+    const executeAction = async () => {
+        if (!currentSchedule || !confirmAction) return;
 
         try {
             setActionLoading(true);
             setActionError(null);
 
-            const response = await ManagerService.updateScheduleStatus(currentSchedule.id, {
-                status: 'approved'
-            });
+            if (confirmAction === 'approve') {
+                const response = await ManagerService.updateScheduleStatus(currentSchedule.id, {
+                    status: 'approved'
+                });
 
-            if (response.success && response.data) {
-                setCurrentSchedule(response.data);
-                onStatusChange?.();
-            } else {
-                setActionError(response.message || t('common.error'));
+                if (response.success && response.data) {
+                    showToast('success', t('toast.approveSuccess') || 'Đã duyệt lịch biểu thành công');
+                    setCurrentSchedule(response.data);
+                    onStatusChange?.();
+                } else {
+                    setActionError(response.message || t('common.error'));
+                }
+            } else if (confirmAction === 'toggle_active') {
+                const response = await ManagerService.toggleScheduleActive(currentSchedule.id, {
+                    is_active: !currentSchedule.is_active
+                });
+
+                if (response.success && response.data) {
+                    showToast('success', currentSchedule.is_active ? (t('toast.hideSuccess') || 'Đã ẩn lịch biểu') : (t('toast.restoreSuccess') || 'Đã hiển thị lịch biểu'));
+                    setCurrentSchedule(response.data);
+                    onStatusChange?.();
+                } else {
+                    setActionError(response.message || t('common.error'));
+                }
             }
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : t('common.error');
             setActionError(message);
         } finally {
             setActionLoading(false);
+            setConfirmAction(null);
         }
     };
 
@@ -99,6 +122,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
             });
 
             if (response.success && response.data) {
+                showToast('success', t('toast.rejectSuccess') || 'Đã từ chối lịch biểu');
                 setCurrentSchedule(response.data);
                 setShowRejectForm(false);
                 setRejectionReason('');
@@ -109,33 +133,6 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : t('common.error');
             setActionError(message);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleToggleActive = async () => {
-        if (!currentSchedule) return;
-
-        const confirmed = window.confirm(`${t('content.confirmApproveMsg')}?`);
-        if (!confirmed) return;
-
-        try {
-            setActionLoading(true);
-            setActionError(null);
-
-            const response = await ManagerService.toggleScheduleActive(currentSchedule.id, {
-                is_active: !currentSchedule.is_active
-            });
-
-            if (response.success && response.data) {
-                setCurrentSchedule(response.data);
-                onStatusChange?.();
-            } else {
-                setActionError(response.message || t('common.error'));
-            }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
         }
@@ -382,7 +379,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                         {t('common.reject')}
                                     </button>
                                     <button
-                                        onClick={handleApprove}
+                                        onClick={handleApproveClick}
                                         disabled={actionLoading}
                                         className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
                                     >
@@ -400,7 +397,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
 
                     {/* Toggle Active Button */}
                     <button
-                        onClick={handleToggleActive}
+                        onClick={handleToggleActiveClick}
                         disabled={actionLoading}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 ${currentSchedule.is_active
                             ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
@@ -418,6 +415,82 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Confirm Dialog */}
+            {confirmAction && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto">
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setConfirmAction(null)}
+                    />
+
+                    {/* Dialog */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+                            <div className="text-white">
+                                <h2 className="text-lg font-semibold">
+                                    {confirmAction === 'approve'
+                                        ? t('common.approve')
+                                        : currentSchedule.is_active ? t('schedule.hide') : t('schedule.restore')}
+                                </h2>
+                                <p className="text-sm opacity-80">{currentSchedule.creator?.full_name}</p>
+                            </div>
+                            <button
+                                onClick={() => setConfirmAction(null)}
+                                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className={`p-3 rounded-full flex-shrink-0 ${confirmAction === 'approve' ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200'
+                                    }`}>
+                                    <AlertTriangle className={`w-6 h-6 ${confirmAction === 'approve' ? 'text-green-500' : 'text-orange-500'
+                                        }`} />
+                                </div>
+                                <p className="text-gray-600">
+                                    {t('content.confirmApproveMsg')}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                                <button
+                                    onClick={() => setConfirmAction(null)}
+                                    disabled={actionLoading}
+                                    className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    onClick={executeAction}
+                                    disabled={actionLoading}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl transition-all shadow-sm disabled:opacity-50 ${confirmAction === 'approve'
+                                        ? 'bg-green-500 hover:bg-green-600'
+                                        : currentSchedule.is_active ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] hover:brightness-110'
+                                        }`}
+                                >
+                                    {actionLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : confirmAction === 'approve' ? (
+                                        <Check className="w-4 h-4" />
+                                    ) : currentSchedule.is_active ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <RotateCcw className="w-4 h-4" />
+                                    )}
+                                    {confirmAction === 'approve'
+                                        ? t('common.approve')
+                                        : currentSchedule.is_active ? t('schedule.hide') : t('schedule.restore')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
