@@ -6,7 +6,6 @@ import {
   UserCheck,
   Crown,
   Eye,
-  Edit,
   Ban,
   CheckCircle,
   ChevronLeft,

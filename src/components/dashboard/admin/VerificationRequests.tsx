@@ -142,11 +142,11 @@ export const VerificationRequests: React.FC = () => {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] bg-clip-text text-transparent">{t('verification.title')}</h1>
+                    <h1 className="text-2xl font-bold text-[#8a6d1c]">{t('verification.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('verification.subtitle')}</p>
                 </div>
                 <button
