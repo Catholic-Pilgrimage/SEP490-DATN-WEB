@@ -499,3 +499,78 @@ export interface SiteNearbyPlacesResponse {
     nearby_places: SiteNearbyPlace[];
     pagination: Pagination;
 }
+
+// ============ SOS APIs ============
+
+export type SOSStatus = 'pending' | 'accepted' | 'resolved' | 'cancelled';
+
+export interface SOSPilgrim {
+    id: string;
+    full_name: string;
+    phone: string | null;
+    avatar_url?: string | null;
+}
+
+export interface SOSGuide {
+    id: string;
+    full_name: string;
+    phone?: string | null;
+    avatar_url?: string | null;
+}
+
+export interface AdminSOSRequest {
+    id: string;
+    code: string;
+    user_id: string;
+    site_id: string;
+    latitude: string | number;
+    longitude: string | number;
+    message: string;
+    contact_phone: string;
+    status: SOSStatus;
+    assigned_to: string | null;
+    assigned_at: string | null;
+    notes: string | null;
+    resolved_at: string | null;
+    created_at: string;
+    updated_at: string;
+    site: {
+        id: string;
+        name: string;
+        address?: string;
+        province: string;
+    };
+    pilgrim: SOSPilgrim;
+    assignedGuide: SOSGuide | null;
+}
+
+export interface AdminSOSListParams {
+    page?: number;
+    limit?: number;
+    status?: SOSStatus | '';
+    site_id?: string;
+    from_date?: string;
+    to_date?: string;
+}
+
+export interface AdminSOSListData {
+    sosRequests: AdminSOSRequest[];
+    pagination: Pagination;
+}
+
+// GET /api/sos/admin/stats - Response Data
+export interface AdminSOSSiteStat {
+    site_id: string;
+    site_name: string;
+    count: number;
+}
+
+export interface AdminSOSStats {
+    total: number;
+    pending: number;
+    accepted: number;
+    resolved: number;
+    cancelled: number;
+    by_site: AdminSOSSiteStat[];
+    average_resolution_minutes: number;
+}

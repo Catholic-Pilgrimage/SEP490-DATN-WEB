@@ -24,6 +24,8 @@ export const API_CONFIG = {
             SITE_NEARBY_PLACES: (siteId: string) => `/api/admin/sites/${siteId}/nearby-places`,
             VERIFICATION_REQUESTS: '/api/admin/verification-requests',
             VERIFICATION_REQUEST_DETAIL: (id: string) => `/api/admin/verification-requests/${id}`,
+            SOS_LIST: '/api/sos/admin/list',
+            SOS_STATS: '/api/sos/admin/stats',
         },
         MANAGER: {
             SITES: '/api/manager/sites', // GET my site, POST create, PUT update

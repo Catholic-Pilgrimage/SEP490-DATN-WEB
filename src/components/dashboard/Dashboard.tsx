@@ -11,7 +11,8 @@ import { MySite } from './manager/MySite';
 import { LocalGuides } from './manager/LocalGuides';
 import { ShiftSubmissions } from './manager/ShiftSubmissions';
 import { ContentManagement } from './manager/ContentManagement';
-import { SOSCenter } from './shared/SOSCenter';
+import { AdminSOSCenter } from './admin/AdminSOSCenter';
+import { ManagerSOSCenter } from './manager/ManagerSOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
@@ -63,7 +64,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <Route path="sites" element={<SiteManagement />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="verifications" element={<VerificationRequests />} />
-                <Route path="sos" element={<SOSCenter />} />
+                <Route path="sos" element={<AdminSOSCenter />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -75,7 +76,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <Route path="guides" element={<LocalGuides />} />
                 <Route path="shifts" element={<ShiftSubmissions />} />
                 <Route path="content" element={<ContentManagement />} />
-                <Route path="sos" element={<SOSCenter />} />
+                <Route path="sos" element={<ManagerSOSCenter />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

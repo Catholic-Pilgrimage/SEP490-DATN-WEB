@@ -26,7 +26,11 @@ import {
     SiteEventsParams,
     SiteEventsResponse,
     SiteNearbyPlacesParams,
-    SiteNearbyPlacesResponse
+    SiteNearbyPlacesResponse,
+    AdminSOSListParams,
+    AdminSOSListData,
+    AdminSOSStats,
+    AdminSOSSiteStat
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -418,5 +422,66 @@ export class AdminService {
             : API_CONFIG.ENDPOINTS.ADMIN.SITE_NEARBY_PLACES(siteId);
 
         return ApiService.get<ApiResponse<SiteNearbyPlacesResponse>>(endpoint);
+    }
+
+    // ============ SOS APIs ============
+
+    /**
+     * Get list of SOS requests for admin
+     * @param params - { page, limit, status, site_id, from_date, to_date }
+     */
+    static async getSOSRequests(params: AdminSOSListParams = {}): Promise<ApiResponse<AdminSOSListData>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.page && params.page > 0) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
+        if (params.site_id) {
+            queryParams.append('site_id', params.site_id);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SOS_LIST}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SOS_LIST;
+
+        return ApiService.get<ApiResponse<AdminSOSListData>>(endpoint);
+    }
+
+    /**
+     * Get SOS statistics for admin
+     * @param params - { site_id, from_date, to_date }
+     */
+    static async getSOSStats(params: { site_id?: string; from_date?: string; to_date?: string } = {}): Promise<ApiResponse<AdminSOSStats>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.site_id) {
+            queryParams.append('site_id', params.site_id);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.SOS_STATS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.SOS_STATS;
+
+        return ApiService.get<ApiResponse<AdminSOSStats>>(endpoint);
     }
 }
