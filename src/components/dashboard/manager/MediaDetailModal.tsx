@@ -9,7 +9,6 @@ import {
     AlertCircle,
     Image,
     Video,
-    ExternalLink,
     Check,
     Ban,
     Trash2,
@@ -81,6 +80,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     showToast('success', t('toast.approveSuccess') || 'Đã duyệt nội dung thành công');
                     setCurrentMedia(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -93,6 +93,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     showToast('success', currentMedia.is_active ? (t('toast.hideSuccess') || 'Đã ẩn nội dung') : (t('toast.restoreSuccess') || 'Đã hiển thị nội dung'));
                     setCurrentMedia(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -128,6 +129,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                 setShowRejectForm(false);
                 setRejectionReason('');
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('common.error'));
             }
@@ -288,15 +290,6 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                                         </div>
                                     </div>
                                 ) : <div />}
-                                <a
-                                    href={currentMedia.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#8a6d1c] bg-white border border-[#d4af37]/20 rounded-lg hover:bg-white/80 hover:border-[#d4af37]/40 transition-all flex-shrink-0"
-                                >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    {t('media.openInNewTab')}
-                                </a>
                             </div>
 
                             {/* Timestamps row */}
@@ -413,23 +406,25 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     )}
 
                     {/* Toggle Active Button */}
-                    <button
-                        onClick={handleToggleActiveClick}
-                        disabled={actionLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentMedia.is_active
-                            ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                            : 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
-                            }`}
-                    >
-                        {actionLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : currentMedia.is_active ? (
-                            <EyeOff className="w-4 h-4" />
-                        ) : (
-                            <RotateCcw className="w-4 h-4" />
-                        )}
-                        {currentMedia.is_active ? t('content.hide') : t('content.restore')}
-                    </button>
+                    {!isPending && (
+                        <button
+                            onClick={handleToggleActiveClick}
+                            disabled={actionLoading}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentMedia.is_active
+                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                                : 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
+                                }`}
+                        >
+                            {actionLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : currentMedia.is_active ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <RotateCcw className="w-4 h-4" />
+                            )}
+                            {currentMedia.is_active ? t('content.hide') : t('content.restore')}
+                        </button>
+                    )}
                 </div>
             </div>
 

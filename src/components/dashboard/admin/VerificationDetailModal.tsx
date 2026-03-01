@@ -45,12 +45,14 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     const [actionLoading, setActionLoading] = useState(false);
     const [showRejectForm, setShowRejectForm] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [showFullImage, setShowFullImage] = useState(false);
 
     useEffect(() => {
         if (isOpen && requestId) {
             fetchRequestDetail();
             setShowRejectForm(false);
             setRejectionReason('');
+            setShowFullImage(false);
         }
     }, [isOpen, requestId]);
 
@@ -241,21 +243,21 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
 
                             {/* Certificate */}
                             {request.certificate_url && (
-                                <a
-                                    href={request.certificate_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/20 hover:border-[#d4af37]/50 hover:shadow-md transition-all group"
+                                <button
+                                    onClick={() => setShowFullImage(true)}
+                                    className="w-full flex items-center justify-between p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/20 hover:border-[#d4af37]/50 hover:shadow-md transition-all group text-left"
                                 >
-                                    <div className="p-2 bg-[#d4af37]/20 rounded-lg group-hover:bg-[#d4af37]/30 transition-colors">
-                                        <FileText className="w-5 h-5 text-[#8a6d1c]" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-[#d4af37]/20 rounded-lg group-hover:bg-[#d4af37]/30 transition-colors">
+                                            <FileText className="w-5 h-5 text-[#8a6d1c]" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-[#8a6d1c]">{t('verificationDetail.certificate')}</p>
+                                            <p className="text-xs text-gray-500">{t('verificationDetail.viewCertificate')}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-[#8a6d1c]">{t('verificationDetail.certificate')}</p>
-                                        <p className="text-xs text-gray-500">{t('verificationDetail.viewCertificate')}</p>
-                                    </div>
-                                    <ExternalLink className="w-4 h-4 text-[#d4af37] group-hover:translate-x-1 transition-transform" />
-                                </a>
+                                    <ExternalLink className="w-4 h-4 text-[#d4af37] group-hover:scale-110 transition-transform" />
+                                </button>
                             )}
 
                             {/* Rejection Reason */}
@@ -395,6 +397,25 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                     )}
                 </div>
             </div>
+
+            {/* Full Image Overlay */}
+            {showFullImage && request?.certificate_url && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="relative max-w-lg w-full flex flex-col items-center justify-center">
+                        <button
+                            onClick={() => setShowFullImage(false)}
+                            className="absolute -top-12 right-0 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors z-10"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <img
+                            src={request.certificate_url}
+                            alt="Certificate Full Size"
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl bg-white"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

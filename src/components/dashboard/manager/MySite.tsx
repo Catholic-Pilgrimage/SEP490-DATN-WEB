@@ -14,12 +14,14 @@ import {
     Edit,
     CheckCircle,
     XCircle,
-    RefreshCw
+    RefreshCw,
+    Maximize2
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
-import { ManagerSite } from '../../../types/manager.types';
+import { ManagerSite, Media } from '../../../types/manager.types';
 import { SiteType, SiteRegion } from '../../../types/admin.types';
 import { SiteFormModal } from './SiteFormModal';
+import { MediaViewerModal } from './MediaViewerModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -35,6 +37,7 @@ export const MySite: React.FC = () => {
     // Modal states
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+    const [viewerMedia, setViewerMedia] = useState<Media | null>(null);
 
     useEffect(() => {
         fetchMySite();
@@ -226,15 +229,34 @@ export const MySite: React.FC = () => {
             {/* Site Card */}
             <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
                 {/* Cover Image */}
-                <div className="relative h-64 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37]">
+                <div
+                    className={`relative h-64 bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] ${site.cover_image ? 'cursor-pointer group' : ''}`}
+                    onClick={() => {
+                        if (site.cover_image) {
+                            setViewerMedia({
+                                id: site.id,
+                                type: 'image',
+                                url: site.cover_image,
+                                caption: site.name,
+                            } as Media);
+                        }
+                    }}
+                >
                     {site.cover_image && (
-                        <img
-                            src={site.cover_image}
-                            alt={site.name}
-                            className="w-full h-full object-cover"
-                        />
+                        <>
+                            <img
+                                src={site.cover_image}
+                                alt={site.name}
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full shadow-lg">
+                                    <Maximize2 className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </>
                     )}
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-20">
                         <div>
                             <span className="text-xs font-mono bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded">
                                 {site.code}
@@ -357,6 +379,13 @@ export const MySite: React.FC = () => {
                 onSuccess={handleFormSuccess}
                 mode={formMode}
                 existingSite={site}
+            />
+
+            {/* Viewer Modal */}
+            <MediaViewerModal
+                isOpen={viewerMedia !== null}
+                media={viewerMedia}
+                onClose={() => setViewerMedia(null)}
             />
         </div>
     );

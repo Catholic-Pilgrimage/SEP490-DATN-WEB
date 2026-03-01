@@ -22,6 +22,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { MediaDetailModal } from './MediaDetailModal';
+import { MediaViewerModal } from './MediaViewerModal';
 import { Upload3DModelModal } from './Upload3DModelModal';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -58,6 +59,9 @@ export const MediaContent: React.FC = () => {
     // Upload 3D Model Modal Modal state
     const [isUpload3DModalOpen, setIsUpload3DModalOpen] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Media Viewer Modal state
+    const [viewerMedia, setViewerMedia] = useState<Media | null>(null);
 
     // ============ FETCH DATA ============
     const fetchMediaList = useCallback(async () => {
@@ -354,15 +358,13 @@ export const MediaContent: React.FC = () => {
 
                                             {/* Actions */}
                                             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-                                                <a
-                                                    href={media.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    onClick={() => setViewerMedia(media)}
                                                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium border border-[#d4af37]/20 text-slate-600 rounded-lg hover:bg-[#f5f3ee] hover:text-[#8a6d1c] hover:border-[#d4af37]/40 transition-colors"
                                                 >
                                                     <ExternalLink className="w-3.5 h-3.5" />
                                                     {t('media.view')}
-                                                </a>
+                                                </button>
                                                 <button
                                                     onClick={() => setSelectedMedia(media)}
                                                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium bg-[#f5f3ee] text-[#8a6d1c] rounded-lg hover:bg-[#ece8dc] transition-colors"
@@ -450,6 +452,13 @@ export const MediaContent: React.FC = () => {
                     // Refresh list sau khi upload
                     fetchMediaList();
                 }}
+            />
+
+            {/* ============ VIEWER MODAL ============ */}
+            <MediaViewerModal
+                isOpen={viewerMedia !== null}
+                media={viewerMedia}
+                onClose={() => setViewerMedia(null)}
             />
         </div>
     );
