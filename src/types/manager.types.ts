@@ -514,3 +514,17 @@ export interface ToggleNearbyPlaceActiveData {
 
 // PATCH /api/manager/content/nearby-places/{id}/is-active - Response
 export type ToggleNearbyPlaceActiveResponse = NearbyPlace;
+
+// =====================================================================
+// SOS MANAGEMENT TYPES
+// =====================================================================
+
+export interface ManagerSOSStats {
+    total: number;
+    pending: number;
+    accepted: number;
+    resolved: number;
+    cancelled: number;
+    average_resolution_minutes: number;
+}
+

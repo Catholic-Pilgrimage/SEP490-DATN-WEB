@@ -51,6 +51,8 @@ export const API_CONFIG = {
                 NEARBY_PLACES_STATUS: (id: string) => `/api/manager/content/nearby-places/${id}/status`,
                 NEARBY_PLACES_ACTIVE: (id: string) => `/api/manager/content/nearby-places/${id}/is-active`,
             },
+            SOS_LIST: '/api/sos/manager/list',
+            SOS_STATS: '/api/sos/manager/stats',
         },
         NOTIFICATIONS: {
             BASE: '/api/notifications', // GET list, DELETE all

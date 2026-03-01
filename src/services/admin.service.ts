@@ -29,8 +29,7 @@ import {
     SiteNearbyPlacesResponse,
     AdminSOSListParams,
     AdminSOSListData,
-    AdminSOSStats,
-    AdminSOSSiteStat
+    AdminSOSStats
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
