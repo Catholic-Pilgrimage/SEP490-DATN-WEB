@@ -13,7 +13,8 @@ import {
     User as UserIcon,
     Crown,
     UserCheck,
-    Globe
+    Globe,
+    Edit2
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser } from '../../../types/admin.types';
@@ -23,12 +24,14 @@ interface UserDetailModalProps {
     userId: string | null;
     isOpen: boolean;
     onClose: () => void;
+    onEdit?: (user: AdminUser) => void;
 }
 
 export const UserDetailModal: React.FC<UserDetailModalProps> = ({
     userId,
     isOpen,
-    onClose
+    onClose,
+    onEdit
 }) => {
     const { t } = useLanguage();
     const [user, setUser] = useState<AdminUser | null>(null);
@@ -133,13 +136,15 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 
             {/* Modal */}
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-[#d4af37]/20 flex-shrink-0">
-                {/* Close button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 border border-[#d4af37]/20"
-                >
-                    <X className="w-5 h-5 text-[#8a6d1c]" />
-                </button>
+                {/* Actions container (Close) */}
+                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                    <button
+                        onClick={onClose}
+                        className="p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 border border-[#d4af37]/20"
+                    >
+                        <X className="w-5 h-5 text-[#8a6d1c]" />
+                    </button>
+                </div>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-80">
@@ -187,7 +192,21 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 
                         {/* User name and status */}
                         <div className="text-center px-6 pt-3 pb-4">
-                            <h2 className="text-xl font-bold text-[#8a6d1c]">{user.full_name}</h2>
+                            <div className="flex items-center justify-center gap-2">
+                                <h2 className="text-xl font-bold text-[#8a6d1c]">{user.full_name}</h2>
+                                {onEdit && user && (
+                                    <button
+                                        onClick={() => {
+                                            onClose();
+                                            onEdit(user);
+                                        }}
+                                        className="p-1.5 bg-[#f5f3ee] hover:bg-[#d4af37]/20 rounded-full transition-colors text-[#8a6d1c]/70 hover:text-[#8a6d1c]"
+                                        title={t('common.edit')}
+                                    >
+                                        <Edit2 className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
                             <span className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                 {user.status === 'active' ? t('status.active') : t('status.banned')}
                             </span>

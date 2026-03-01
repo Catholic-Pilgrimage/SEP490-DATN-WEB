@@ -331,13 +331,6 @@ export const UserManagement: React.FC = () => {
                           >
                             <Eye className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
                           </button>
-                          <button
-                            onClick={() => handleEditUser(user)}
-                            className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
-                            title={t('common.edit')}
-                          >
-                            <Edit className="w-4 h-4 text-gray-400 group-hover:text-[#8a6d1c]" />
-                          </button>
                           {/* Ban/Unban button - không hiện cho admin */}
                           {user.role !== 'admin' && (
                             <button
@@ -422,6 +415,7 @@ export const UserManagement: React.FC = () => {
         userId={selectedUserId}
         isOpen={isDetailModalOpen}
         onClose={handleCloseModal}
+        onEdit={handleEditUser}
       />
 
       {/* User Edit Modal */}

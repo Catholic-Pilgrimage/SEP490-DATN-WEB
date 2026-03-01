@@ -90,24 +90,26 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         try {
             setLoading(true);
 
-            // Clean up formData - chỉ gửi các field có giá trị thực
+            // Clean up formData - chỉ gửi các field được phép update
             const cleanData: UpdateUserData = {};
             if (formData.full_name) cleanData.full_name = formData.full_name;
             if (formData.phone) cleanData.phone = formData.phone;
             if (formData.date_of_birth) cleanData.date_of_birth = formData.date_of_birth;
-            if (formData.role) cleanData.role = formData.role;
-            if (formData.site_id) cleanData.site_id = formData.site_id;
+            // Không gửi role và site_id vì đã disable chức năng này trong form
 
             // Gọi API update user
             const response = await AdminService.updateUser(user.id, cleanData);
 
             if (response.success) {
-                showToast('success', t('toast.updateUserSuccess'));
+                showToast('success', t('toast.updateUserSuccess') || 'Cập nhật thành công!');
                 onSuccess();  // Gọi callback để refresh danh sách
                 onClose();    // Đóng modal
             }
         } catch (err: any) {
-            showToast('error', t('common.error'), err?.error?.message);
+            console.error('Update user error:', err);
+            // API service throws object from response.json(), so the message is usually inside `err.message`
+            const errorMessage = err?.message || err?.error?.message || t('common.error');
+            showToast('error', t('common.error'), errorMessage);
         } finally {
             setLoading(false);
         }
@@ -204,19 +206,14 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                             name="role"
                             value={formData.role || 'pilgrim'}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                            disabled={user.role === 'admin'}  // Không cho đổi role admin
+                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl transition-all cursor-not-allowed opacity-70"
+                            disabled
                         >
                             <option value="pilgrim">{t('role.pilgrim')}</option>
                             <option value="local_guide">{t('role.localGuide')}</option>
                             <option value="manager">{t('role.manager')}</option>
-                            {user.role === 'admin' && <option value="admin">{t('role.admin')}</option>}
+                            <option value="admin">{t('role.admin')}</option>
                         </select>
-                        {user.role === 'admin' && (
-                            <p className="text-xs text-amber-600 mt-1">
-                                ⚠️ {t('userEdit.cannotChangeAdmin')}
-                            </p>
-                        )}
                     </div>
 
                     {/* Site - chỉ hiện khi role là manager hoặc local_guide */}
