@@ -7,12 +7,32 @@ import {
   User,
   CheckCircle,
   RefreshCw,
-  Filter
+  Filter,
+  CalendarIcon,
+  X
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSOSRequest, SOSStatus, AdminSite, AdminSOSStats } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { format } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const AdminSOSCenter: React.FC = () => {
   const { t } = useLanguage();
@@ -38,14 +58,14 @@ export const AdminSOSCenter: React.FC = () => {
     try {
       const [listRes, statsRes] = await Promise.all([
         AdminService.getSOSRequests({
-          status: statusFilter,
-          site_id: siteFilter || undefined,
+          status: statusFilter === '' ? undefined : statusFilter,
+          site_id: siteFilter === 'all' ? undefined : (siteFilter || undefined),
           from_date: fromDate || undefined,
           to_date: toDate || undefined,
           limit: 100 // Load up to 100 alerts for the view
         }),
         AdminService.getSOSStats({
-          site_id: siteFilter || undefined,
+          site_id: siteFilter === 'all' ? undefined : (siteFilter || undefined),
           from_date: fromDate || undefined,
           to_date: toDate || undefined,
         })
@@ -81,8 +101,8 @@ export const AdminSOSCenter: React.FC = () => {
 
   useEffect(() => {
     fetchSOSData();
-    // Refresh every 30 seconds
-    const interval = setInterval(() => fetchSOSData(false), 30000);
+    // Refresh every 5 minutes (300000ms)
+    const interval = setInterval(() => fetchSOSData(false), 300000);
     return () => clearInterval(interval);
   }, [statusFilter, siteFilter, fromDate, toDate]);
 
@@ -144,65 +164,99 @@ export const AdminSOSCenter: React.FC = () => {
 
             {/* Site Dropdown */}
             <div className="relative">
-              <select
-                className="appearance-none pr-8 py-2 pl-3 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 border border-slate-200 cursor-pointer min-w-[150px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23334155' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: 'right 0.5rem center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: '1.25em 1.25em',
-                }}
-                value={siteFilter}
-                onChange={(e) => setSiteFilter(e.target.value)}
-              >
-                <option value="">{t('sos.allSites')}</option>
-                {sites.map(site => (
-                  <option key={site.id} value={site.id}>{site.name}</option>
-                ))}
-              </select>
+              <Select value={siteFilter} onValueChange={setSiteFilter}>
+                <SelectTrigger className="w-[150px] h-[38px] bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-[#d4af37]/50 border-slate-200">
+                  <SelectValue placeholder={t('sos.allSites')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('sos.allSites')}</SelectItem>
+                  {sites.map(site => (
+                    <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* From Date */}
-            <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-3 py-2 border border-slate-200 focus-within:ring-2 focus-within:ring-[#d4af37]/50">
-              <span className="text-sm text-slate-500 font-medium hidden sm:inline">{t('sos.fromDate')}:</span>
-              <input
-                type="date"
-                className="bg-transparent text-slate-700 font-medium focus:outline-none cursor-pointer text-sm"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
+            <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-1 border border-slate-200">
+              <span className="text-sm text-slate-500 font-medium hidden sm:inline pl-2">{t('sos.fromDate')}:</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"ghost"}
+                    className={`justify-start text-left font-normal h-9 px-2 hover:bg-transparent ${!fromDate && "text-muted-foreground"}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(new Date(fromDate), "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate ? new Date(fromDate) : undefined}
+                    onSelect={(date) => setFromDate(date ? format(date, "yyyy-MM-dd") : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {fromDate && (
+                <button
+                  onClick={() => setFromDate('')}
+                  className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors mr-1 cursor-pointer"
+                  title="Xóa ngày lọc"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* To Date */}
-            <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-3 py-2 border border-slate-200 focus-within:ring-2 focus-within:ring-[#d4af37]/50">
-              <span className="text-sm text-slate-500 font-medium hidden sm:inline">{t('sos.toDate')}:</span>
-              <input
-                type="date"
-                className="bg-transparent text-slate-700 font-medium focus:outline-none cursor-pointer text-sm"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
+            <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-1 border border-slate-200">
+              <span className="text-sm text-slate-500 font-medium hidden sm:inline pl-2">{t('sos.toDate')}:</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"ghost"}
+                    className={`justify-start text-left font-normal h-9 px-2 hover:bg-transparent ${!toDate && "text-muted-foreground"}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(new Date(toDate), "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate ? new Date(toDate) : undefined}
+                    onSelect={(date) => setToDate(date ? format(date, "yyyy-MM-dd") : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {toDate && (
+                <button
+                  onClick={() => setToDate('')}
+                  className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors mr-1 cursor-pointer"
+                  title="Xóa ngày lọc"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Status Dropdown */}
             <div className="relative">
-              <select
-                className="appearance-none pr-8 py-2 pl-3 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 border border-slate-200 cursor-pointer min-w-[150px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23334155' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: 'right 0.5rem center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: '1.25em 1.25em',
-                }}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as SOSStatus | '')}
-              >
-                <option value="">{t('sos.allStatuses')}</option>
-                <option value="pending">{t('sos.statusPending')}</option>
-                <option value="accepted">{t('sos.statusAccepted')}</option>
-                <option value="resolved">{t('sos.statusResolved')}</option>
-                <option value="cancelled">{t('sos.statusCancelled')}</option>
-              </select>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value === 'all' ? '' : value as SOSStatus)}>
+                <SelectTrigger className="w-[150px] h-[38px] bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-[#d4af37]/50 border-slate-200">
+                  <SelectValue placeholder={t('sos.allStatuses')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('sos.allStatuses')}</SelectItem>
+                  <SelectItem value="pending">{t('sos.statusPending')}</SelectItem>
+                  <SelectItem value="accepted">{t('sos.statusAccepted')}</SelectItem>
+                  <SelectItem value="resolved">{t('sos.statusResolved')}</SelectItem>
+                  <SelectItem value="cancelled">{t('sos.statusCancelled')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -212,40 +266,67 @@ export const AdminSOSCenter: React.FC = () => {
               <span className="text-sm font-bold">{stats?.pending || 0} <span className="font-medium text-red-600/80">{t('sos.activeAlerts')}</span></span>
             </div>
 
-            <button
+            <Button
               onClick={handleManualRefresh}
               disabled={isLoading || refreshing}
               className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-md shadow-[#d4af37]/20"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading || refreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">{t('common.refresh')}</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Emergency Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 lg:gap-6">
         {[
-          { label: t('sos.statTotal'), value: stats?.total || 0, color: 'gold' },
-          { label: t('sos.statPending'), value: stats?.pending || 0, color: 'red' },
-          { label: t('sos.statInProgress'), value: stats?.accepted || 0, color: 'amber' },
-          { label: t('sos.statResolved'), value: stats?.resolved || 0, color: 'green' },
-          { label: t('sos.statusCancelled'), value: stats?.cancelled || 0, color: 'gray' }
-        ].map((stat) => (
-          <div key={stat.label} className={`bg-white rounded-2xl p-6 border transition-all hover:shadow-md ${stat.color === 'gold' ? 'border-[#d4af37]/30 shadow-sm shadow-[#d4af37]/5' : 'border-slate-100 shadow-sm'
-            }`}>
-            <div className={`text-sm font-semibold uppercase tracking-wider mb-2 ${stat.color === 'gold' ? 'text-[#8a6d1c]/80' : 'text-slate-500'
-              }`}>{stat.label}</div>
-            <div className={`text-3xl font-bold ${stat.color === 'red' ? 'text-red-600' :
-              stat.color === 'amber' ? 'text-amber-500' :
-                stat.color === 'green' ? 'text-green-500' :
-                  stat.color === 'gray' ? 'text-slate-500' :
-                    'text-slate-800'
-              }`}>
-              {isLoading ? '-' : stat.value}
-            </div>
-          </div>
+          { label: t('sos.statTotal'), value: stats?.total || 0, color: 'gold', icon: AlertTriangle },
+          { label: t('sos.statPending'), value: stats?.pending || 0, color: 'red', icon: Phone },
+          { label: t('sos.statInProgress'), value: stats?.accepted || 0, color: 'amber', icon: Clock },
+          { label: t('sos.statResolved'), value: stats?.resolved || 0, color: 'green', icon: CheckCircle },
+          { label: t('sos.statusCancelled'), value: stats?.cancelled || 0, color: 'gray', icon: RefreshCw }
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+          >
+            <Card className={`
+              h-full relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+              ${stat.color === 'gold' ? 'border-[#d4af37]/30 shadow-md shadow-[#d4af37]/10 bg-gradient-to-br from-white to-[#fdfbf7]' : 'border-slate-100/60 shadow-sm bg-white hover:border-slate-200'}
+            `}>
+              {/* Colored Top Right Corner Accent */}
+              <div className={`absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-[0.25] pointer-events-none transition-transform group-hover:scale-110 
+               ${stat.color === 'gold' ? 'bg-[#d4af37]' :
+                  stat.color === 'red' ? 'bg-red-500' :
+                    stat.color === 'amber' ? 'bg-amber-500' :
+                      stat.color === 'green' ? 'bg-green-500' : 'bg-slate-500'
+                }
+             `} />
+
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-3">
+                <CardTitle className={`text-xs font-bold uppercase tracking-wider ${stat.color === 'gold' ? 'text-[#8a6d1c]' : 'text-slate-500'}`}>
+                  {stat.label}
+                </CardTitle>
+                <stat.icon className={`h-4 w-4 relative z-10 ${stat.color === 'gold' ? 'text-[#d4af37]' :
+                  stat.color === 'red' ? 'text-red-400' :
+                    stat.color === 'amber' ? 'text-amber-400' :
+                      stat.color === 'green' ? 'text-green-400' : 'text-slate-400'
+                  }`} />
+              </CardHeader>
+              <CardContent className="p-5 pt-0">
+                <div className={`text-4xl font-extrabold ${stat.color === 'gold' ? 'text-[#8a6d1c]' :
+                  stat.color === 'red' ? 'text-red-600' :
+                    stat.color === 'amber' ? 'text-amber-600' :
+                      stat.color === 'green' ? 'text-green-600' : 'text-slate-600'
+                  }`}>
+                  {isLoading ? '-' : stat.value}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
@@ -265,131 +346,143 @@ export const AdminSOSCenter: React.FC = () => {
             <p className="text-slate-500">{t('sos.noAlerts')}</p>
           </div>
         ) : (
-          sosAlerts.map((alert) => {
-            const statusInfo = getStatusInfo(alert.status);
-            const StatusIcon = statusInfo.icon;
-            // Determine severity for visual emphasis based on status
-            const severity = alert.status === 'pending' ? 'high' : alert.status === 'accepted' ? 'medium' : 'low';
+          <AnimatePresence mode="popLayout">
+            {sosAlerts.map((alert) => {
+              const statusInfo = getStatusInfo(alert.status);
+              const StatusIcon = statusInfo.icon;
+              // Determine severity for visual emphasis based on status
+              const severity = alert.status === 'pending' ? 'high' : alert.status === 'accepted' ? 'medium' : 'low';
 
-            return (
-              <div
-                key={alert.id}
-                className={`
-                  relative bg-white rounded-2xl shadow-sm border-l-[6px] p-6 transition-all hover:shadow-md
-                  ${getSeverityColor(severity)}
-                `}
-              >
-                {alert.status === 'pending' && (
-                  <span className="absolute top-0 right-0 -mt-2 -mr-2 flex h-5 w-5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white"></span>
-                  </span>
-                )}
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`
+              return (
+                <motion.div
+                  key={alert.id}
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -15 }}
+                  transition={{ duration: 0.25 }}
+                  layout
+                >
+                  <Card
+                    className={`
+                      relative overflow-hidden shadow-sm border-0 border-l-[6px] transition-all hover:shadow-md
+                      ${getSeverityColor(severity)}
+                    `}
+                  >
+                    <CardContent className="p-6">
+                      {alert.status === 'pending' && (
+                        <span className="absolute top-0 right-0 -mt-2 -mr-2 flex h-5 w-5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white"></span>
+                        </span>
+                      )}
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`
                       w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border
                       ${severity === 'high' ? 'bg-red-100 border-red-200 text-red-600' :
-                        severity === 'medium' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-[#fdfbf7] border-[#d4af37]/30 text-[#8a6d1c]'}
+                              severity === 'medium' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-[#fdfbf7] border-[#d4af37]/30 text-[#8a6d1c]'}
                     `}>
-                      <AlertTriangle className="w-6 h-6" />
-                    </div>
+                            <AlertTriangle className="w-6 h-6" />
+                          </div>
 
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                        {alert.message || t('sos.emergencyRequest')}
-                      </h3>
-                      <p className="text-slate-600 text-sm mt-1">
-                        <span className="font-semibold text-slate-800">{alert.site?.name}</span> <span className="mx-2 text-[#d4af37]">•</span> Code: <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{alert.code}</span>
-                      </p>
-                    </div>
-                  </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                              {alert.message || t('sos.emergencyRequest')}
+                            </h3>
+                            <p className="text-slate-600 text-sm mt-1">
+                              <span className="font-semibold text-slate-800">{alert.site?.name}</span> <span className="mx-2 text-[#d4af37]">•</span> Code: <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{alert.code}</span>
+                            </p>
+                          </div>
+                        </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className={`
-                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider
-                      ${severity === 'high' ? 'bg-red-500/10 text-red-700 border border-red-200' :
-                        severity === 'medium' ? 'bg-amber-500/10 text-amber-700 border border-amber-200' :
-                          'bg-[#d4af37]/10 text-[#8a6d1c] border border-[#d4af37]/30'}
-                    `}>
-                      {severity === 'high' ? t('sos.severityHigh') : severity === 'medium' ? t('sos.severityMedium') : t('sos.severityLow')}
-                    </span>
+                        <div className="flex flex-wrap items-center gap-2 pl-14 sm:pl-0">
+                          <Badge variant="outline" className={`
+                        gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider
+                        ${severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' :
+                              severity === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-slate-50 text-slate-700 border-slate-200'}
+                      `}>
+                            {severity === 'high' ? t('sos.severityHigh') : severity === 'medium' ? t('sos.severityMedium') : t('sos.severityLow')}
+                          </Badge>
 
-                    <span className={`
-                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border
-                      ${statusInfo.color === 'red' ? 'bg-red-50 text-red-700 border-red-200' :
-                        statusInfo.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                          statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}
-                    `}>
-                      <StatusIcon className="w-3.5 h-3.5" />
-                      {statusInfo.label}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  {/* Pilgrim Col */}
-                  <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
-                    <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
-                      <User className="w-3.5 h-3.5" />
-                      <span>{t('sos.pilgrim')}</span>
-                    </div>
-                    <div className="font-bold text-slate-900 text-[15px]">{alert.pilgrim?.full_name || t('sos.unknown')}</div>
-                    <div className="text-sm text-slate-600 flex items-center gap-1.5 mt-1">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      {alert.contact_phone || alert.pilgrim?.phone || 'N/A'}
-                    </div>
-                  </div>
-
-                  {/* Location Col */}
-                  <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
-                    <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{t('sos.location')}</span>
-                    </div>
-                    <div className="font-bold text-slate-900 text-sm font-mono truncate">
-                      {Number(alert.latitude).toFixed(5)}, {Number(alert.longitude).toFixed(5)}
-                    </div>
-                    <div className="text-sm text-slate-600 mt-1 truncate">{alert.site?.province || alert.site?.name}</div>
-                  </div>
-
-                  {/* Timeline Col */}
-                  <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
-                    <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{t('sos.responseTimeline')}</span>
-                    </div>
-                    <div className="font-bold text-slate-900 text-[15px] truncate">
-                      {alert.assignedGuide ? alert.assignedGuide.full_name : t('sos.unassigned')}
-                    </div>
-                    <div className="text-sm text-slate-600 mt-1">
-                      <span className="text-slate-400 mr-1">{t('sos.created')}</span> {new Date(alert.created_at).toLocaleTimeString()}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                {(alert.status === 'resolved' || alert.status === 'cancelled') && (
-                  <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
-                    {alert.status === 'resolved' && (
-                      <div className="flex items-center gap-2 text-green-700 bg-green-50/80 px-4 py-2.5 rounded-xl border border-green-200">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="font-semibold text-sm">
-                          {alert.resolved_at ? `${t('sos.resolvedAt')} ${new Date(alert.resolved_at).toLocaleTimeString()}` : t('sos.resolvedSuccessfully')}
-                        </span>
+                          <Badge variant="outline" className={`
+                        gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider
+                        ${statusInfo.color === 'red' ? 'bg-red-50 text-red-700 border-red-200' :
+                              statusInfo.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-700 border-slate-200'}
+                      `}>
+                            <StatusIcon className="w-3.5 h-3.5" />
+                            {statusInfo.label}
+                          </Badge>
+                        </div>
                       </div>
-                    )}
-                    {alert.status === 'cancelled' && (
-                      <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span className="font-semibold text-sm">{t('sos.requestCancelled')}</span>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        {/* Pilgrim Col */}
+                        <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
+                          <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
+                            <User className="w-3.5 h-3.5" />
+                            <span>{t('sos.pilgrim')}</span>
+                          </div>
+                          <div className="font-bold text-slate-900 text-[15px]">{alert.pilgrim?.full_name || t('sos.unknown')}</div>
+                          <div className="text-sm text-slate-600 flex items-center gap-1.5 mt-1">
+                            <Phone className="w-3.5 h-3.5 text-slate-400" />
+                            {alert.contact_phone || alert.pilgrim?.phone || 'N/A'}
+                          </div>
+                        </div>
+
+                        {/* Location Col */}
+                        <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
+                          <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span>{t('sos.location')}</span>
+                          </div>
+                          <div className="font-bold text-slate-900 text-sm font-mono truncate">
+                            {Number(alert.latitude).toFixed(5)}, {Number(alert.longitude).toFixed(5)}
+                          </div>
+                          <div className="text-sm text-slate-600 mt-1 truncate">{alert.site?.province || alert.site?.name}</div>
+                        </div>
+
+                        {/* Timeline Col */}
+                        <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
+                          <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{t('sos.responseTimeline')}</span>
+                          </div>
+                          <div className="font-bold text-slate-900 text-[15px] truncate">
+                            {alert.assignedGuide ? alert.assignedGuide.full_name : t('sos.unassigned')}
+                          </div>
+                          <div className="text-sm text-slate-600 mt-1">
+                            <span className="text-slate-400 mr-1">{t('sos.created')}</span> {new Date(alert.created_at).toLocaleTimeString()}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })
+
+                      {/* Actions */}
+                      {(alert.status === 'resolved' || alert.status === 'cancelled') && (
+                        <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
+                          {alert.status === 'resolved' && (
+                            <div className="flex items-center gap-2 text-green-700 bg-green-50/80 px-4 py-2.5 rounded-xl border border-green-200">
+                              <CheckCircle className="w-4 h-4" />
+                              <span className="font-semibold text-sm">
+                                {alert.resolved_at ? `${t('sos.resolvedAt')} ${new Date(alert.resolved_at).toLocaleTimeString()}` : t('sos.resolvedSuccessfully')}
+                              </span>
+                            </div>
+                          )}
+                          {alert.status === 'cancelled' && (
+                            <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
+                              <AlertTriangle className="w-4 h-4" />
+                              <span className="font-semibold text-sm">{t('sos.requestCancelled')}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
       </div>
     </div>
