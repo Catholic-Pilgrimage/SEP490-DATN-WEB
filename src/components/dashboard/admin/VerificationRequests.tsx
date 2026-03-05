@@ -6,7 +6,6 @@ import {
     ChevronRight,
     Loader2,
     RefreshCw,
-    Eye,
     CheckCircle,
     XCircle,
     Clock,
@@ -18,6 +17,17 @@ import {
     Home,
     HelpCircle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { AdminService } from '../../../services/admin.service';
 import {
     VerificationRequest,
@@ -149,14 +159,14 @@ export const VerificationRequests: React.FC = () => {
                     <h1 className="text-2xl font-bold text-[#8a6d1c]">{t('verification.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('verification.subtitle')}</p>
                 </div>
-                <button
+                <Button
                     onClick={handleManualRefresh}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20 disabled:opacity-50"
+                    className="flex items-center gap-2 h-[46px] px-6 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20 disabled:opacity-50 font-semibold"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
-                </button>
+                </Button>
             </div>
 
             {/* Filters */}
@@ -166,29 +176,36 @@ export const VerificationRequests: React.FC = () => {
                     <div className="flex-1 min-w-[250px]">
                         <div className="relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
-                            <input
+                            <Input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder={t('verification.searchPlaceholder')}
-                                className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                                className="w-full h-[46px] pl-12 pr-4 bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#d4af37] hover:border-[#d4af37]/50 transition-all text-base"
                             />
                         </div>
                     </div>
 
-                    {/* Status Filter */}
-                    <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value as VerificationStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('status.allStatus')}</option>
-                            <option value="pending">{t('status.pending')}</option>
-                            <option value="approved">{t('status.approved')}</option>
-                            <option value="rejected">{t('status.rejected')}</option>
-                        </select>
+                    {/* Filter Group */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Status Filter */}
+                        <div className="flex items-center gap-2">
+                            <Filter className="w-5 h-5 text-[#8a6d1c]/50 hidden sm:block" />
+                            <Select
+                                value={statusFilter}
+                                onValueChange={(value) => { setStatusFilter(value as VerificationStatus | ''); setCurrentPage(1); }}
+                            >
+                                <SelectTrigger className="w-[160px] h-[46px] bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] hover:border-[#d4af37]/50 transition-all font-medium">
+                                    <SelectValue placeholder={t('status.allStatus')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('status.allStatus')}</SelectItem>
+                                    <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                                    <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                                    <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,116 +225,112 @@ export const VerificationRequests: React.FC = () => {
                 </div>
             ) : (
                 <>
-                    {/* Table */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-[#f5f3ee] border-b-2 border-[#d4af37]/30">
-                                    <tr>
-                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.code') || 'Mã'}</th>
-                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.site') || 'Site'}</th>
-                                        <th className="text-left px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.applicant') || 'Người nộp'}</th>
-                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.status')}</th>
-                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c] border-r border-[#d4af37]/20">{t('table.created')}</th>
-                                        <th className="text-center px-6 py-4 text-sm font-semibold text-[#8a6d1c]">{t('table.actions')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#d4af37]/10">
-                                    {requests.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                                {t('verification.noRequests')}
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        requests.map((request) => {
-                                            const statusInfo = getStatusInfo(request.status);
-                                            const StatusIcon = statusInfo.icon;
-                                            const TypeIcon = getTypeIcon(request.site_type);
-                                            const regionInfo = getRegionInfo(request.site_region);
+                    {/* Verification Requests List */}
+                    <div className="space-y-4">
+                        {requests.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-3xl border border-[#d4af37]/10 shadow-sm">
+                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-slate-100">
+                                    <HelpCircle className="w-10 h-10 text-slate-400" />
+                                </div>
+                                <p className="text-xl font-bold text-slate-900 mb-2">{t('verification.noRequests')}</p>
+                                <p className="text-slate-500">Thử thay đổi bộ lọc hoặc tìm kiếm lại</p>
+                            </div>
+                        ) : (
+                            <AnimatePresence mode="popLayout">
+                                {requests.map((request) => {
+                                    const statusInfo = getStatusInfo(request.status);
+                                    const StatusIcon = statusInfo.icon;
+                                    const TypeIcon = getTypeIcon(request.site_type);
+                                    const regionInfo = getRegionInfo(request.site_region);
 
-                                            return (
-                                                <tr key={request.id} className="hover:bg-slate-50 transition-colors">
-                                                    {/* Code */}
-                                                    <td className="px-6 py-4">
-                                                        <span className="font-mono text-sm font-medium text-slate-900 bg-slate-100 px-2 py-1 rounded">
-                                                            {request.code}
-                                                        </span>
-                                                    </td>
-
-                                                    {/* Site */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="p-2 bg-[#d4af37]/20 rounded-lg">
-                                                                <TypeIcon className="w-4 h-4 text-[#8a6d1c]" />
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-medium text-slate-900 text-sm">{request.site_name}</p>
-                                                                <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                                                                    <MapPin className="w-3 h-3" />
-                                                                    <span>{request.site_province}</span>
-                                                                    <span className={`font-medium ${regionInfo.color}`}>• {regionInfo.label}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    {/* Applicant */}
-                                                    <td className="px-6 py-4">
+                                    return (
+                                        <motion.div
+                                            key={request.id}
+                                            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95, y: -15 }}
+                                            transition={{ duration: 0.25 }}
+                                            layout
+                                        >
+                                            <Card className="relative bg-white border border-slate-100 transition-all hover:shadow-md overflow-hidden cursor-pointer"
+                                                onClick={() => {
+                                                    setSelectedRequestId(request.id);
+                                                    setIsDetailModalOpen(true);
+                                                }}>
+                                                <CardContent className="p-0">
+                                                    {/* Header row */}
+                                                    <div className="flex items-start justify-between p-5 pb-4">
                                                         <div className="flex items-center gap-3">
                                                             {request.applicant?.avatar_url ? (
                                                                 <img
                                                                     src={request.applicant.avatar_url}
                                                                     alt={request.applicant.full_name || 'User'}
-                                                                    className="w-8 h-8 rounded-full object-cover"
+                                                                    className="w-11 h-11 rounded-full object-cover border-2 border-slate-100"
                                                                 />
                                                             ) : (
-                                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                                                                    <User className="w-4 h-4 text-white" />
+                                                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8a6d1c]/10 to-[#d4af37]/20 border border-[#d4af37]/30 flex items-center justify-center text-[#8a6d1c] shrink-0">
+                                                                    <User className="w-5 h-5" />
                                                                 </div>
                                                             )}
                                                             <div>
-                                                                <p className="font-medium text-slate-900 text-sm">{request.applicant?.full_name || t('verificationDetail.unknown')}</p>
-                                                                <p className="text-xs text-slate-500">{request.applicant?.email || 'N/A'}</p>
+                                                                <h3 className="text-[15px] font-semibold text-slate-800 leading-snug">
+                                                                    {request.applicant?.full_name || t('verificationDetail.unknown')}
+                                                                </h3>
+                                                                <p className="text-slate-500 text-xs mt-0.5">
+                                                                    {request.applicant?.email || 'N/A'}
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    </td>
 
-                                                    {/* Status */}
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                                                            <StatusIcon className="w-3.5 h-3.5" />
-                                                            {statusInfo.label}
-                                                        </span>
-                                                    </td>
-
-                                                    {/* Date */}
-                                                    <td className="px-6 py-4">
-                                                        <span className="text-sm text-slate-600">{formatDate(request.created_at)}</span>
-                                                    </td>
-
-                                                    {/* Actions */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center justify-center">
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedRequestId(request.id);
-                                                                    setIsDetailModalOpen(true);
-                                                                }}
-                                                                className="p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors group"
-                                                                title={t('common.view')}
-                                                            >
-                                                                <Eye className="w-5 h-5 text-gray-400 group-hover:text-[#8a6d1c]" />
-                                                            </button>
+                                                        <div className="flex items-center gap-2 shrink-0 ml-4">
+                                                            <span className="font-mono text-slate-400 text-xs bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                                                                {request.code}
+                                                            </span>
+                                                            <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full ${statusInfo.color}`}>
+                                                                <StatusIcon className="w-3.5 h-3.5" />
+                                                                {statusInfo.label}
+                                                            </span>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                                    </div>
+
+                                                    {/* Info row */}
+                                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 border-t border-slate-50 bg-slate-50/40">
+                                                        <div className="px-5 py-3.5 col-span-2 lg:col-span-1">
+                                                            <p className="text-[11px] text-slate-400 mb-1 flex items-center gap-1">
+                                                                <TypeIcon className="w-3 h-3 text-[#d4af37]" />
+                                                                {t('table.site') || 'Cơ sở'}
+                                                            </p>
+                                                            <p className="text-sm font-medium text-slate-700 truncate">{request.site_name}</p>
+                                                        </div>
+
+                                                        <div className="px-5 py-3.5">
+                                                            <p className="text-[11px] text-slate-400 mb-1 flex items-center gap-1">
+                                                                <MapPin className="w-3 h-3" />
+                                                                Tọa lạc tại
+                                                            </p>
+                                                            <p className="text-sm font-medium text-slate-700 truncate">{request.site_province}</p>
+                                                            <p className={`text-[10px] font-semibold uppercase mt-0.5 ${regionInfo.color}`}>
+                                                                {regionInfo.label}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="px-5 py-3.5 border-t sm:border-t-0">
+                                                            <p className="text-[11px] text-slate-400 mb-1 flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                {t('table.created')}
+                                                            </p>
+                                                            <p className="text-sm font-medium text-slate-700 truncate">
+                                                                {formatDate(request.created_at)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
+                                    );
+                                })}
+                            </AnimatePresence>
+                        )}
                     </div>
 
                     {/* Pagination */}
@@ -327,34 +340,39 @@ export const VerificationRequests: React.FC = () => {
                                 {t('users.showing')} {(currentPage - 1) * limit + 1} {t('users.to')} {Math.min(currentPage * limit, pagination.total)} {t('users.of')} {pagination.total} {t('verification.requests')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="w-10 h-10 rounded-lg border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5 text-[#8a6d1c]" />
-                                </button>
+                                </Button>
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                                        <button
+                                        <Button
                                             key={pageNum}
+                                            variant={pageNum === currentPage ? "default" : "ghost"}
                                             onClick={() => handlePageChange(pageNum)}
                                             className={`w-10 h-10 rounded-lg font-medium transition-all ${pageNum === currentPage
-                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
-                                                : 'hover:bg-[#d4af37]/10 text-[#8a6d1c]'
+                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md shadow-[#d4af37]/20 hover:brightness-110'
+                                                : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
                                                 }`}
                                         >
                                             {pageNum}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === pagination.totalPages}
-                                    className="p-2 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="w-10 h-10 rounded-lg border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 transition-colors"
                                 >
                                     <ChevronRight className="w-5 h-5 text-[#8a6d1c]" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
