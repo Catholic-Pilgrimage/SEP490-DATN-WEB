@@ -8,6 +8,9 @@ export const API_CONFIG = {
             REFRESH: '/api/auth/refresh-token',
             PROFILE: '/api/auth/profile',
             CHANGE_PASSWORD: '/api/auth/change-password',
+            FORGOT_PASSWORD: '/api/auth/forgot-password',
+            VERIFY_OTP: '/api/auth/verify-otp',
+            RESET_PASSWORD: '/api/auth/reset-password',
         },
         ADMIN: {
             USERS: '/api/admin/users',

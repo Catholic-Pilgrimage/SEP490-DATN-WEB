@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, Loader2, Eye, EyeOff, Mail, Lock, LogIn, Check } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 
 interface LoginFormProps {
   onLogin: (profile: UserProfile) => void;
@@ -16,6 +17,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [shake, setShake] = useState(false);
   const [language, setLanguage] = useState<'vi' | 'en'>('vi');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,17 +43,32 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       } else {
         triggerError(loginResponse.error?.message || (language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
 
-      if (err.status === 401) {
+      const error = err as Record<string, unknown>;
+      const status = typeof error?.status === 'number' ? error.status : undefined;
+      const nested = error?.error as Record<string, unknown> | undefined;
+      const details = nested?.details;
+
+      if (status === 401) {
         triggerError(language === 'vi' ? 'Email hoặc mật khẩu không đúng' : 'Invalid email or password');
-      } else if (err.status === 403) {
+      } else if (status === 403) {
         triggerError(language === 'vi' ? 'Tài khoản của bạn đã bị khóa' : 'Your account has been locked');
-      } else if (err.status === 500) {
+      } else if (status === 500) {
         triggerError(language === 'vi' ? 'Lỗi server. Vui lòng thử lại sau.' : 'Server error. Please try again later.');
-      } else if (err.error?.message) {
-        triggerError(err.error.message);
+      } else if (Array.isArray(details) && details.length > 0) {
+        const messages = details
+          .map((d: unknown) => {
+            const detail = d as Record<string, unknown>;
+            return typeof detail?.message === 'string' ? detail.message : null;
+          })
+          .filter(Boolean);
+        triggerError(messages.length > 0 ? messages.join('. ') : (typeof nested?.message === 'string' ? nested.message : (language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed')));
+      } else if (typeof nested?.message === 'string') {
+        triggerError(nested.message);
+      } else if (typeof error?.message === 'string' && error.message !== '') {
+        triggerError(error.message);
       } else {
         triggerError(language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
       }
@@ -173,6 +190,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         </div>
 
         {/* Form Container */}
+        {showForgotPassword ? (
+          <ForgotPasswordForm
+            onBack={() => setShowForgotPassword(false)}
+            language={language}
+          />
+        ) : (
         <div className={`w-full max-w-[440px] space-y-8 relative z-10 ${shake ? 'animate-shake' : ''}`}>
           {/* Header */}
           <div className="text-center lg:text-left animate-fadeIn">
@@ -257,7 +280,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                   {t.rememberMe}
                 </label>
               </div>
-              <button type="button" className="text-sm font-semibold text-[#d4af37] hover:text-white transition-colors underline decoration-[#d4af37]/30 hover:decoration-[#d4af37]">
+              <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm font-semibold text-[#d4af37] hover:text-white transition-colors underline decoration-[#d4af37]/30 hover:decoration-[#d4af37]">
                 {t.forgotPassword}
               </button>
             </div>
@@ -296,6 +319,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             </p>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

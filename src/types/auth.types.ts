@@ -72,3 +72,22 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
     accessToken: string;
 }
+
+// Forgot Password Request
+export interface ForgotPasswordRequest {
+    email: string;
+}
+
+// Verify OTP Request
+export interface VerifyOtpRequest {
+    email: string;
+    otp: string;
+}
+
+// Reset Password Request
+export interface ResetPasswordRequest {
+    email: string;
+    otp: string;
+    new_password: string;
+    confirm_password: string;
+}

@@ -1,5 +1,5 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
-import { ApiResponse, LoginRequest, LoginResponseData, UserProfile, UpdateProfileRequest, ChangePasswordRequest, RefreshTokenResponse } from '../types/auth.types';
+import { ApiResponse, LoginRequest, LoginResponseData, UserProfile, UpdateProfileRequest, ChangePasswordRequest, RefreshTokenResponse, ForgotPasswordRequest, VerifyOtpRequest, ResetPasswordRequest } from '../types/auth.types';
 import { ApiService } from './api.service';
 
 export class AuthService {
@@ -93,6 +93,36 @@ export class AuthService {
             // Always clear local tokens
             this.clearTokens();
         }
+    }
+
+    /**
+     * Forgot password - send OTP to email
+     */
+    static async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<null>> {
+        return ApiService.post<ApiResponse<null>>(
+            API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD,
+            data
+        );
+    }
+
+    /**
+     * Verify OTP
+     */
+    static async verifyOtp(data: VerifyOtpRequest): Promise<ApiResponse<null>> {
+        return ApiService.post<ApiResponse<null>>(
+            API_CONFIG.ENDPOINTS.AUTH.VERIFY_OTP,
+            data
+        );
+    }
+
+    /**
+     * Reset password with OTP
+     */
+    static async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<null>> {
+        return ApiService.post<ApiResponse<null>>(
+            API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD,
+            data
+        );
     }
 
     /**
