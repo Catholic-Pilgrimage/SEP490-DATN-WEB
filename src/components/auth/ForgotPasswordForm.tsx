@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AlertCircle, Loader2, Mail, Lock, ArrowLeft, CheckCircle2, KeyRound, ShieldCheck } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft, CheckCircle2, KeyRound, ShieldCheck } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ForgotPasswordFormProps {
   onBack: () => void;
@@ -93,12 +94,12 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { showToast } = useToast();
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const t = texts[language];
@@ -109,13 +110,13 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  const triggerError = (message: string) => {
-    setError(message);
+  const triggerError = (title: string, message?: string) => {
+    showToast('error', title, message);
     setShake(true);
     setTimeout(() => setShake(false), 500);
   };
 
-  const extractErrorMessage = (err: unknown, fallback: string): string => {
+  const extractErrorMessage = (err: unknown): string => {
     const error = err as Record<string, unknown>;
     const nested = error?.error as Record<string, unknown> | undefined;
     const details = nested?.details;
@@ -132,15 +133,13 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
 
     if (typeof nested?.message === 'string') return nested.message;
     if (typeof error?.message === 'string' && error.message !== '') return error.message;
-
-    return fallback;
+    return language === 'vi' ? 'Đã xảy ra lỗi không xác định.' : 'An unknown error occurred.';
   };
 
   const otpString = otp.join('');
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -149,10 +148,16 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
         setStep('otp');
         setCountdown(60);
       } else {
-        triggerError(response.error?.message || (language === 'vi' ? 'Không thể gửi OTP' : 'Failed to send OTP'));
+        triggerError(
+          language === 'vi' ? 'Gửi OTP thất bại' : 'Failed to Send OTP',
+          response.error?.message || (language === 'vi' ? 'Không thể gửi mã OTP đến email của bạn.' : 'Could not send OTP to your email.')
+        );
       }
     } catch (err: unknown) {
-      triggerError(extractErrorMessage(err, language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.'));
+      triggerError(
+        language === 'vi' ? 'Gửi OTP thất bại' : 'Failed to Send OTP',
+        extractErrorMessage(err)
+      );
     } finally {
       setLoading(false);
     }
@@ -160,7 +165,6 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
 
   const handleResendOtp = async () => {
     if (countdown > 0) return;
-    setError('');
     setLoading(true);
 
     try {
@@ -168,11 +172,18 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
       if (response.success) {
         setCountdown(60);
         setOtp(['', '', '', '', '', '']);
+        showToast('success', language === 'vi' ? 'Đã gửi lại mã OTP' : 'OTP Resent', language === 'vi' ? 'Vui lòng kiểm tra email của bạn.' : 'Please check your email.');
       } else {
-        triggerError(response.error?.message || (language === 'vi' ? 'Không thể gửi lại OTP' : 'Failed to resend OTP'));
+        triggerError(
+          language === 'vi' ? 'Gửi lại OTP thất bại' : 'Resend OTP Failed',
+          response.error?.message || (language === 'vi' ? 'Không thể gửi lại mã OTP.' : 'Could not resend OTP.')
+        );
       }
-    } catch {
-      triggerError(language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
+    } catch (err: unknown) {
+      triggerError(
+        language === 'vi' ? 'Gửi lại OTP thất bại' : 'Resend OTP Failed',
+        extractErrorMessage(err)
+      );
     } finally {
       setLoading(false);
     }
@@ -180,7 +191,6 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -188,10 +198,16 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
       if (response.success) {
         setStep('reset');
       } else {
-        triggerError(response.error?.message || (language === 'vi' ? 'Mã OTP không hợp lệ' : 'Invalid OTP code'));
+        triggerError(
+          language === 'vi' ? 'Xác minh thất bại' : 'Verification Failed',
+          response.error?.message || (language === 'vi' ? 'Mã OTP không hợp lệ hoặc đã hết hạn.' : 'Invalid or expired OTP code.')
+        );
       }
     } catch (err: unknown) {
-      triggerError(extractErrorMessage(err, language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.'));
+      triggerError(
+        language === 'vi' ? 'Xác minh thất bại' : 'Verification Failed',
+        extractErrorMessage(err)
+      );
     } finally {
       setLoading(false);
     }
@@ -199,14 +215,19 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (newPassword.length < 6) {
-      triggerError(t.passwordTooShort);
+      triggerError(
+        language === 'vi' ? 'Mật khẩu không hợp lệ' : 'Invalid Password',
+        t.passwordTooShort
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
-      triggerError(t.passwordMismatch);
+      triggerError(
+        language === 'vi' ? 'Mật khẩu không khớp' : 'Password Mismatch',
+        t.passwordMismatch
+      );
       return;
     }
 
@@ -222,10 +243,16 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
       if (response.success) {
         setSuccess(true);
       } else {
-        triggerError(response.error?.message || (language === 'vi' ? 'Không thể đặt lại mật khẩu' : 'Failed to reset password'));
+        triggerError(
+          language === 'vi' ? 'Đặt lại mật khẩu thất bại' : 'Reset Password Failed',
+          response.error?.message || (language === 'vi' ? 'Không thể đặt lại mật khẩu.' : 'Could not reset password.')
+        );
       }
     } catch (err: unknown) {
-      triggerError(extractErrorMessage(err, language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.'));
+      triggerError(
+        language === 'vi' ? 'Đặt lại mật khẩu thất bại' : 'Reset Password Failed',
+        extractErrorMessage(err)
+      );
     } finally {
       setLoading(false);
     }
@@ -325,14 +352,6 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
           </span>
         </div>
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-300">{error}</p>
-        </div>
-      )}
 
       {/* Step 1: Email */}
       {step === 'email' && (

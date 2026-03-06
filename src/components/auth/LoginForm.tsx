@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, Eye, EyeOff, Mail, Lock, LogIn, Check } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Mail, Lock, LogIn, Check } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LoginFormProps {
   onLogin: (profile: UserProfile) => void;
@@ -12,16 +13,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [shake, setShake] = useState(false);
   const [language, setLanguage] = useState<'vi' | 'en'>('vi');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -33,15 +33,24 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         if (profileResponse.success && profileResponse.data) {
           if (['local_guide', 'pilgrim'].includes(profileResponse.data.role)) {
             await AuthService.logout();
-            triggerError(language === 'vi' ? 'Bạn không có quyền truy cập vào hệ thống này.' : 'You do not have permission to access this system.');
+            triggerError(
+              language === 'vi' ? 'Truy cập bị từ chối' : 'Access Denied',
+              language === 'vi' ? 'Bạn không có quyền truy cập vào hệ thống này.' : 'You do not have permission to access this system.'
+            );
           } else {
             onLogin(profileResponse.data);
           }
         } else {
-          triggerError(language === 'vi' ? 'Không thể lấy thông tin người dùng' : 'Unable to get user information');
+          triggerError(
+            language === 'vi' ? 'Lỗi' : 'Error',
+            language === 'vi' ? 'Không thể lấy thông tin người dùng.' : 'Unable to get user information.'
+          );
         }
       } else {
-        triggerError(loginResponse.error?.message || (language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed'));
+        triggerError(
+          language === 'vi' ? 'Đăng nhập thất bại' : 'Login Failed',
+          loginResponse.error?.message || (language === 'vi' ? 'Vui lòng kiểm tra lại thông tin đăng nhập.' : 'Please check your credentials.')
+        );
       }
     } catch (err: unknown) {
       console.error('Login error:', err);
@@ -50,13 +59,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       const status = typeof error?.status === 'number' ? error.status : undefined;
       const nested = error?.error as Record<string, unknown> | undefined;
       const details = nested?.details;
+      const errorTitle = language === 'vi' ? 'Đăng nhập thất bại' : 'Login Failed';
 
       if (status === 401) {
-        triggerError(language === 'vi' ? 'Email hoặc mật khẩu không đúng' : 'Invalid email or password');
+        triggerError(errorTitle, language === 'vi' ? 'Email hoặc mật khẩu không đúng.' : 'Invalid email or password.');
       } else if (status === 403) {
-        triggerError(language === 'vi' ? 'Tài khoản của bạn đã bị khóa' : 'Your account has been locked');
+        triggerError(errorTitle, language === 'vi' ? 'Tài khoản của bạn đã bị khóa.' : 'Your account has been locked.');
       } else if (status === 500) {
-        triggerError(language === 'vi' ? 'Lỗi server. Vui lòng thử lại sau.' : 'Server error. Please try again later.');
+        triggerError(language === 'vi' ? 'Lỗi hệ thống' : 'System Error', language === 'vi' ? 'Lỗi server. Vui lòng thử lại sau.' : 'Server error. Please try again later.');
       } else if (Array.isArray(details) && details.length > 0) {
         const messages = details
           .map((d: unknown) => {
@@ -64,21 +74,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             return typeof detail?.message === 'string' ? detail.message : null;
           })
           .filter(Boolean);
-        triggerError(messages.length > 0 ? messages.join('. ') : (typeof nested?.message === 'string' ? nested.message : (language === 'vi' ? 'Đăng nhập thất bại' : 'Login failed')));
+        triggerError(errorTitle, messages.length > 0 ? messages.join('. ') : (typeof nested?.message === 'string' ? nested.message : (language === 'vi' ? 'Vui lòng thử lại.' : 'Please try again.')));
       } else if (typeof nested?.message === 'string') {
-        triggerError(nested.message);
+        triggerError(errorTitle, nested.message);
       } else if (typeof error?.message === 'string' && error.message !== '') {
-        triggerError(error.message);
+        triggerError(errorTitle, error.message);
       } else {
-        triggerError(language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
+        triggerError(language === 'vi' ? 'Lỗi kết nối' : 'Connection Error', language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const triggerError = (message: string) => {
-    setError(message);
+  const triggerError = (title: string, message?: string) => {
+    showToast('error', title, message);
     setShake(true);
     setTimeout(() => setShake(false), 500);
   };
@@ -208,14 +218,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             </h1>
             <p className="text-gray-400 text-sm">{t.subtitle}</p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-300">{error}</p>
-            </div>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
