@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail } from '../../../types/admin.types';
-import { SiteDetailModal } from './SiteDetailModal';
 import { SiteEditModal } from './SiteEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
@@ -31,6 +31,7 @@ import { useToast } from '../../../contexts/ToastContext';
 export const SiteManagement: React.FC = () => {
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [sites, setSites] = useState<AdminSite[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,8 +44,6 @@ export const SiteManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(9);
 
-  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -272,7 +271,7 @@ export const SiteManagement: React.FC = () => {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => { setSelectedSiteId(site.id); setIsDetailModalOpen(true); }}
+                          onClick={() => navigate(`/dashboard/sites/${site.id}`)}
                           className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
                           title={t('common.view')}
                         >
@@ -428,12 +427,6 @@ export const SiteManagement: React.FC = () => {
       )}
 
       {/* Modals */}
-      <SiteDetailModal
-        siteId={selectedSiteId}
-        isOpen={isDetailModalOpen}
-        onClose={() => { setIsDetailModalOpen(false); setSelectedSiteId(null); }}
-      />
-
       <SiteEditModal
         site={siteForEdit}
         isOpen={isEditModalOpen}

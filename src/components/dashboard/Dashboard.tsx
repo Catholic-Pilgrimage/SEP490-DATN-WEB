@@ -5,6 +5,7 @@ import { TopBar } from './layout/TopBar';
 import { AdminDashboard } from './admin/AdminDashboard';
 import { ManagerDashboard } from './manager/ManagerDashboard';
 import { SiteManagement } from './admin/SiteManagement';
+import { SiteDetailPage } from './admin/site-detail/SiteDetailPage';
 import { UserManagement } from './admin/UserManagement';
 import { VerificationRequests } from './admin/VerificationRequests';
 import { MySite } from './manager/MySite';
@@ -62,6 +63,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <>
                 <Route index element={<AdminDashboard />} />
                 <Route path="sites" element={<SiteManagement />} />
+                <Route path="sites/:siteId" element={<SiteDetailPage />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="verifications" element={<VerificationRequests />} />
                 <Route path="sos" element={<AdminSOSCenter />} />
