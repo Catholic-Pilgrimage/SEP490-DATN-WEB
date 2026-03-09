@@ -117,12 +117,6 @@ export const SiteDetailPage: React.FC = () => {
         });
     };
 
-    const openGoogleMaps = () => {
-        if (site?.latitude && site?.longitude) {
-            window.open(`https://www.google.com/maps?q=${site.latitude},${site.longitude}`, '_blank');
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh]">
@@ -165,7 +159,7 @@ export const SiteDetailPage: React.FC = () => {
     const renderActiveTab = () => {
         switch (activeTab) {
             case 'info':
-                return <SiteInfoTab site={site} regionInfo={regionInfo} formatDate={formatDate} openGoogleMaps={openGoogleMaps} />;
+                return <SiteInfoTab site={site} regionInfo={regionInfo} formatDate={formatDate} />;
             case 'local-guides':
                 return siteId ? <SiteLocalGuidesTab siteId={siteId} /> : null;
             case 'shifts':
@@ -246,11 +240,10 @@ export const SiteDetailPage: React.FC = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                                            isActive
-                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md shadow-[#d4af37]/20'
-                                                : 'text-slate-600 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]'
-                                        }`}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                                            ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md shadow-[#d4af37]/20'
+                                            : 'text-slate-600 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]'
+                                            }`}
                                     >
                                         <Icon className="w-4 h-4" />
                                         {tab.label}
@@ -271,11 +264,10 @@ export const SiteDetailPage: React.FC = () => {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${
-                                        isActive
-                                            ? 'border-[#d4af37] text-[#8a6d1c]'
-                                            : 'border-transparent text-slate-500 hover:text-[#8a6d1c] hover:border-[#d4af37]/50'
-                                    }`}
+                                    className={`flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${isActive
+                                        ? 'border-[#d4af37] text-[#8a6d1c]'
+                                        : 'border-transparent text-slate-500 hover:text-[#8a6d1c] hover:border-[#d4af37]/50'
+                                        }`}
                                 >
                                     <Icon className="w-3.5 h-3.5" />
                                     {tab.label}

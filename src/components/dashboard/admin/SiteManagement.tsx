@@ -20,13 +20,16 @@ import {
   RotateCcw,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Map as MapIcon,
+  List
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail } from '../../../types/admin.types';
 import { SiteEditModal } from './SiteEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import VietMapView from '../../../components/shared/VietMapView';
 
 export const SiteManagement: React.FC = () => {
   const { t } = useLanguage();
@@ -43,6 +46,7 @@ export const SiteManagement: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<boolean | ''>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(9);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -142,62 +146,88 @@ export const SiteManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters & View Toggle */}
       <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[250px]">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
-              <input
-                type="text"
-                placeholder={t('sites.searchPlaceholder')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
-              />
+        <div className="flex flex-col lg:flex-row gap-4 justify-between">
+          <div className="flex flex-wrap items-center gap-4 flex-1">
+            <div className="flex-1 min-w-[250px]">
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
+                <input
+                  type="text"
+                  placeholder={t('sites.searchPlaceholder')}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
+              <select
+                value={regionFilter}
+                onChange={(e) => { setRegionFilter(e.target.value as SiteRegion | ''); setCurrentPage(1); }}
+                className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
+              >
+                <option value="">{t('sites.allRegions')}</option>
+                <option value="Bac">{t('region.bac')}</option>
+                <option value="Trung">{t('region.trung')}</option>
+                <option value="Nam">{t('region.nam')}</option>
+              </select>
+            </div>
+
             <select
-              value={regionFilter}
-              onChange={(e) => { setRegionFilter(e.target.value as SiteRegion | ''); setCurrentPage(1); }}
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value as SiteType | ''); setCurrentPage(1); }}
               className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
             >
-              <option value="">{t('sites.allRegions')}</option>
-              <option value="Bac">{t('region.bac')}</option>
-              <option value="Trung">{t('region.trung')}</option>
-              <option value="Nam">{t('region.nam')}</option>
+              <option value="">{t('sites.allTypes')}</option>
+              <option value="church">{t('type.church')}</option>
+              <option value="shrine">{t('type.shrine')}</option>
+              <option value="monastery">{t('type.monastery')}</option>
+              <option value="center">{t('type.center')}</option>
+              <option value="other">{t('type.other')}</option>
+            </select>
+
+            <select
+              value={activeFilter === '' ? '' : activeFilter.toString()}
+              onChange={(e) => {
+                const val = e.target.value;
+                setActiveFilter(val === '' ? '' : val === 'true');
+                setCurrentPage(1);
+              }}
+              className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
+            >
+              <option value="">{t('sites.allStatus')}</option>
+              <option value="true">{t('common.active')}</option>
+              <option value="false">{t('common.inactive')}</option>
             </select>
           </div>
 
-          <select
-            value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.target.value as SiteType | ''); setCurrentPage(1); }}
-            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-          >
-            <option value="">{t('sites.allTypes')}</option>
-            <option value="church">{t('type.church')}</option>
-            <option value="shrine">{t('type.shrine')}</option>
-            <option value="monastery">{t('type.monastery')}</option>
-            <option value="center">{t('type.center')}</option>
-            <option value="other">{t('type.other')}</option>
-          </select>
-
-          <select
-            value={activeFilter === '' ? '' : activeFilter.toString()}
-            onChange={(e) => {
-              const val = e.target.value;
-              setActiveFilter(val === '' ? '' : val === 'true');
-              setCurrentPage(1);
-            }}
-            className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-          >
-            <option value="">{t('sites.allStatus')}</option>
-            <option value="true">{t('common.active')}</option>
-            <option value="false">{t('common.inactive')}</option>
-          </select>
+          {/* View Toggle */}
+          <div className="flex items-center bg-[#f5f3ee] p-1 rounded-xl border border-[#d4af37]/30">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'list'
+                  ? 'bg-white text-[#8a6d1c] shadow-sm'
+                  : 'text-gray-500 hover:text-[#8a6d1c]'
+                }`}
+            >
+              <List className="w-4 h-4" />
+              {t('common.list')}
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'map'
+                  ? 'bg-white text-[#8a6d1c] shadow-sm'
+                  : 'text-gray-500 hover:text-[#8a6d1c]'
+                }`}
+            >
+              <MapIcon className="w-4 h-4" />
+              {t('common.map')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -209,7 +239,7 @@ export const SiteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Sites Grid */}
+      {/* Sites Grid/Map */}
       {loading ? (
         <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20">
           <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
@@ -218,6 +248,25 @@ export const SiteManagement: React.FC = () => {
         <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20 text-gray-400">
           <MapPin className="w-12 h-12 mb-4 text-[#d4af37]/40" />
           <p>{t('sites.noSites')}</p>
+        </div>
+      ) : viewMode === 'map' ? (
+        <div className="bg-white p-2 rounded-2xl border border-[#d4af37]/20 shadow-sm">
+          <VietMapView
+            latitude={16.0544}
+            longitude={108.2022}
+            zoom={5}
+            markers={sites
+              .filter(s => s.latitude && s.longitude)
+              .map(s => ({
+                id: s.id,
+                lat: Number(s.latitude),
+                lng: Number(s.longitude),
+                title: s.name,
+                color: s.is_active ? '#22c55e' : '#ef4444'
+              }))}
+            onMarkerClick={(m) => navigate(`/dashboard/sites/${m.id}`)}
+            className="w-full h-[600px] rounded-xl overflow-hidden"
+          />
         </div>
       ) : (
         <>

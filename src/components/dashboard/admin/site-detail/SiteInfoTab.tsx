@@ -1,16 +1,16 @@
 import React from 'react';
-import { MapPin, Phone, Mail, Clock, Calendar, User, ExternalLink, BookOpen } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Calendar, User, BookOpen } from 'lucide-react';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteDetail } from '../../../../types/admin.types';
+import VietMapView from '../../../../components/shared/VietMapView';
 
 interface SiteInfoTabProps {
     site: SiteDetail;
     regionInfo: { label: string; color: string; gradient: string } | null;
     formatDate: (date: string) => string;
-    openGoogleMaps: () => void;
 }
 
-export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate, openGoogleMaps }) => {
+export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, formatDate }) => {
     const { t } = useLanguage();
     return (
         <div className="p-6 space-y-6">
@@ -30,16 +30,24 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
                         {regionInfo?.label}
                     </span>
                 </div>
-                {site.latitude && site.longitude && (
-                    <button
-                        onClick={openGoogleMaps}
-                        className="p-2 text-[#8a6d1c] hover:bg-[#d4af37]/20 rounded-lg transition-colors"
-                        title="Open in Google Maps"
-                    >
-                        <ExternalLink className="w-4 h-4" />
-                    </button>
-                )}
             </div>
+
+            {/* Map View */}
+            {site.latitude && site.longitude && (
+                <VietMapView
+                    latitude={Number(site.latitude)}
+                    longitude={Number(site.longitude)}
+                    zoom={15}
+                    markers={[{
+                        id: site.id,
+                        lat: Number(site.latitude),
+                        lng: Number(site.longitude),
+                        title: site.name,
+                        color: '#c8a951',
+                    }]}
+                    className="w-full h-[400px] rounded-xl overflow-hidden border border-[#d4af37]/20 shadow-sm"
+                />
+            )}
 
             {/* Description */}
             {site.description && (

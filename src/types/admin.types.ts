@@ -71,6 +71,8 @@ export interface AdminSite {
     address: string | null;
     province: string | null;
     district: string | null;
+    latitude: string | null;
+    longitude: string | null;
     region: SiteRegion;
     type: SiteType;
     patron_saint: string | null;
@@ -122,8 +124,6 @@ export interface SiteCreatedBy {
 // GET /api/admin/sites/{id} - Site Detail Response
 export interface SiteDetail extends AdminSite {
     history: string | null;
-    latitude: string | null;
-    longitude: string | null;
     opening_hours: SiteOpeningHours | null;
     contact_info: SiteContactInfo | null;
     created_by: SiteCreatedBy | null;
