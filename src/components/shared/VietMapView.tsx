@@ -38,7 +38,18 @@ export default function VietMapView({
         // Khởi tạo map
         const map = new vietmapgl.Map({
             container: mapContainer.current,
-            style: VIETMAP_CONFIG.STYLE_URL,
+            style: {
+                version: 8,
+                name: "empty",
+                sources: {},
+                layers: [
+                    {
+                        id: "background",
+                        type: "background",
+                        paint: { "background-color": "#fdf8f0" },
+                    },
+                ],
+            },
             center: [longitude, latitude],
             zoom,
             interactive,
@@ -51,6 +62,18 @@ export default function VietMapView({
 
         // Thêm markers khi map ready
         map.on('load', () => {
+            // Thêm lớp Raster giống hệt như phiên bản Mobile yêu cầu
+            map.addSource('vietmap-raster', {
+                type: 'raster',
+                tiles: [VIETMAP_CONFIG.TILE_URL],
+                tileSize: 256,
+            });
+            map.addLayer({
+                id: 'vietmap-raster-layer',
+                type: 'raster',
+                source: 'vietmap-raster',
+                paint: { 'raster-opacity': 1 },
+            });
             markers.forEach((m) => {
                 // Tạo marker element
                 const el = document.createElement('div');
@@ -73,7 +96,7 @@ export default function VietMapView({
                     .setHTML(`<strong>${m.title}</strong>`);
 
                 // Thêm marker vào map
-                const marker = new vietmapgl.Marker({ element: el })
+                new vietmapgl.Marker({ element: el })
                     .setLngLat([m.lng, m.lat])
                     .setPopup(popup)
                     .addTo(map);
