@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "echo \"No tests configured yet\"",
+    "ci:check": "echo \"Running CI checks locally...\" && npm run lint --if-present && npm run typecheck --if-present && npm test --if-present && echo \"All checks passed!\""
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
