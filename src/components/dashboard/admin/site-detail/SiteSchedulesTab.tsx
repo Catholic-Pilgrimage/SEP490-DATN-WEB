@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, Clock, Calendar, User, ChevronLeft, ChevronRight, AlertCircle, Filter } from 'lucide-react';
+import { Loader2, Calendar, User, ChevronLeft, ChevronRight, AlertCircle, Filter } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteSchedule, SiteSchedulesResponse, ScheduleStatus } from '../../../../types/admin.types';
