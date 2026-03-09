@@ -86,8 +86,9 @@ export const SiteManagement: React.FC = () => {
       } else {
         setError(response.message || 'Failed to load sites');
       }
-    } catch (err: any) {
-      setError(err?.error?.message || 'Failed to load sites');
+    } catch (err: unknown) {
+      const error = err as { error?: { message?: string } };
+      setError(error?.error?.message || 'Failed to load sites');
     } finally {
       setLoading(false);
     }
@@ -210,8 +211,8 @@ export const SiteManagement: React.FC = () => {
             <button
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'list'
-                  ? 'bg-white text-[#8a6d1c] shadow-sm'
-                  : 'text-gray-500 hover:text-[#8a6d1c]'
+                ? 'bg-white text-[#8a6d1c] shadow-sm'
+                : 'text-gray-500 hover:text-[#8a6d1c]'
                 }`}
             >
               <List className="w-4 h-4" />
@@ -220,8 +221,8 @@ export const SiteManagement: React.FC = () => {
             <button
               onClick={() => setViewMode('map')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'map'
-                  ? 'bg-white text-[#8a6d1c] shadow-sm'
-                  : 'text-gray-500 hover:text-[#8a6d1c]'
+                ? 'bg-white text-[#8a6d1c] shadow-sm'
+                : 'text-gray-500 hover:text-[#8a6d1c]'
                 }`}
             >
               <MapIcon className="w-4 h-4" />
@@ -373,9 +374,10 @@ export const SiteManagement: React.FC = () => {
                                   showToast('error', t('toast.restoreSiteFailed'), response.message || t('toast.restoreSiteFailedMsg'));
                                   setError(response.message || 'Failed to restore site');
                                 }
-                              } catch (err: any) {
-                                showToast('error', t('toast.restoreSiteFailed'), err?.error?.message || t('toast.restoreSiteFailedMsg'));
-                                setError(err?.error?.message || 'Failed to restore site');
+                              } catch (err: unknown) {
+                                const error = err as { error?: { message?: string } };
+                                showToast('error', t('toast.restoreSiteFailed'), error?.error?.message || t('toast.restoreSiteFailedMsg'));
+                                setError(error?.error?.message || 'Failed to restore site');
                               } finally {
                                 setRestoreLoading(null);
                               }
@@ -539,9 +541,10 @@ export const SiteManagement: React.FC = () => {
                         showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
                         setError(response.message || 'Failed to delete site');
                       }
-                    } catch (err: any) {
-                      showToast('error', t('toast.deleteSiteFailed'), err?.error?.message || t('toast.deleteSiteFailedMsg'));
-                      setError(err?.error?.message || 'Failed to delete site');
+                    } catch (err: unknown) {
+                      const error = err as { error?: { message?: string } };
+                      showToast('error', t('toast.deleteSiteFailed'), error?.error?.message || t('toast.deleteSiteFailedMsg'));
+                      setError(error?.error?.message || 'Failed to delete site');
                     } finally {
                       setDeleteLoading(false);
                       setIsDeleteConfirmOpen(false);

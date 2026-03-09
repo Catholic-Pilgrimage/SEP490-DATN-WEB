@@ -49,6 +49,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             setSiteName(null);
             setError(null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, userId]);
 
     const fetchUserDetail = async () => {
@@ -68,8 +69,9 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             } else {
                 setError(response.message || 'Failed to load user details');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Failed to load user details');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Failed to load user details');
         } finally {
             setLoading(false);
         }
@@ -82,7 +84,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             if (response.success && response.data) {
                 setSiteName(response.data.name);
             }
-        } catch (err) {
+        } catch {
             // Fallback to site_id if fetch fails
             setSiteName(null);
         } finally {

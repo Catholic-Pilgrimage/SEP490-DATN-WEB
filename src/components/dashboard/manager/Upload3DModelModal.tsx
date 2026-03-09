@@ -116,8 +116,9 @@ export const Upload3DModelModal: React.FC<Upload3DModelModalProps> = ({
             } else {
                 setError(response.message || t('common.error'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || t('common.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || t('common.error'));
         } finally {
             setIsSubmitting(false);
         }

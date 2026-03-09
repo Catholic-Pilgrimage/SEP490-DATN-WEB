@@ -76,7 +76,7 @@ export const EventContent: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, activeFilter]);
+    }, [currentPage, limit, statusFilter, activeFilter, t]);
 
     useEffect(() => {
         fetchEventList();

@@ -207,12 +207,13 @@ export const ShiftSubmissions: React.FC = () => {
             } else {
                 setError(response.message || t('shifts.errorLoad'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || t('shifts.errorLoad'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || t('shifts.errorLoad'));
         } finally {
             setLoading(false);
         }
-    }, [guideFilter]);
+    }, [guideFilter, t]);
 
     const fetchGuides = useCallback(async () => {
         try {

@@ -324,7 +324,7 @@ export interface Upload3DModelData {
 }
 
 // POST /api/manager/content/media/3d-model - Response
-export interface Upload3DModelResponse extends Media { }
+export type Upload3DModelResponse = Media;
 
 // =====================================================================
 // SCHEDULE MANAGEMENT TYPES

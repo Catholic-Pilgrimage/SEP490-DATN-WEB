@@ -78,7 +78,7 @@ export const ScheduleContent: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, dayFilter, activeFilter]);
+    }, [currentPage, limit, statusFilter, dayFilter, activeFilter, t]);
 
     useEffect(() => {
         fetchScheduleList();

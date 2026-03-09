@@ -86,40 +86,35 @@ export class ApiService {
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
 
-        try {
-            const response = await fetch(url, {
-                ...options,
-                headers,
-            });
+        const response = await fetch(url, {
+            ...options,
+            headers,
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            // Handle 401 - try to refresh token (except for auth endpoints)
-            if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
-                const refreshed = await this.tryRefreshToken();
-                if (refreshed) {
-                    // Retry the original request with new token
-                    return this.request<T>(endpoint, options, true);
-                } else {
-                    // Refresh failed, logout user
-                    this.handleAuthFailure();
-                    throw { status: 401, message: 'Session expired. Please login again.' };
-                }
+        // Handle 401 - try to refresh token (except for auth endpoints)
+        if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+            const refreshed = await this.tryRefreshToken();
+            if (refreshed) {
+                // Retry the original request with new token
+                return this.request<T>(endpoint, options, true);
+            } else {
+                // Refresh failed, logout user
+                this.handleAuthFailure();
+                throw { status: 401, message: 'Session expired. Please login again.' };
             }
-
-            // Handle other HTTP errors
-            if (!response.ok) {
-                throw {
-                    status: response.status,
-                    ...data,
-                };
-            }
-
-            return data as T;
-        } catch (error) {
-            // Re-throw the error for handling in the calling code
-            throw error;
         }
+
+        // Handle other HTTP errors
+        if (!response.ok) {
+            throw {
+                status: response.status,
+                ...data,
+            };
+        }
+
+        return data as T;
     }
 
     /**
@@ -184,37 +179,33 @@ export class ApiService {
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
 
-        try {
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers,
-                body: formData,
-            });
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers,
+            body: formData,
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            // Handle 401 - try to refresh token
-            if (response.status === 401 && !isRetry) {
-                const refreshed = await this.tryRefreshToken();
-                if (refreshed) {
-                    return this.putFormData<T>(endpoint, formData, true);
-                } else {
-                    this.handleAuthFailure();
-                    throw { status: 401, message: 'Session expired. Please login again.' };
-                }
+        // Handle 401 - try to refresh token
+        if (response.status === 401 && !isRetry) {
+            const refreshed = await this.tryRefreshToken();
+            if (refreshed) {
+                return this.putFormData<T>(endpoint, formData, true);
+            } else {
+                this.handleAuthFailure();
+                throw { status: 401, message: 'Session expired. Please login again.' };
             }
-
-            if (!response.ok) {
-                throw {
-                    status: response.status,
-                    ...data,
-                };
-            }
-
-            return data as T;
-        } catch (error) {
-            throw error;
         }
+
+        if (!response.ok) {
+            throw {
+                status: response.status,
+                ...data,
+            };
+        }
+
+        return data as T;
     }
 
     /**
@@ -231,36 +222,32 @@ export class ApiService {
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: formData,
-            });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            // Handle 401 - try to refresh token
-            if (response.status === 401 && !isRetry) {
-                const refreshed = await this.tryRefreshToken();
-                if (refreshed) {
-                    return this.postFormData<T>(endpoint, formData, true);
-                } else {
-                    this.handleAuthFailure();
-                    throw { status: 401, message: 'Session expired. Please login again.' };
-                }
+        // Handle 401 - try to refresh token
+        if (response.status === 401 && !isRetry) {
+            const refreshed = await this.tryRefreshToken();
+            if (refreshed) {
+                return this.postFormData<T>(endpoint, formData, true);
+            } else {
+                this.handleAuthFailure();
+                throw { status: 401, message: 'Session expired. Please login again.' };
             }
-
-            if (!response.ok) {
-                throw {
-                    status: response.status,
-                    ...data,
-                };
-            }
-
-            return data as T;
-        } catch (error) {
-            throw error;
         }
+
+        if (!response.ok) {
+            throw {
+                status: response.status,
+                ...data,
+            };
+        }
+
+        return data as T;
     }
 }

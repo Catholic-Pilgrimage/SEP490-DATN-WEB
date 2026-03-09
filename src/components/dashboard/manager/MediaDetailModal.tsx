@@ -98,8 +98,9 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     setActionError(response.message || t('common.error'));
                 }
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('common.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setActionError(error?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
             setConfirmAction(null);
@@ -133,8 +134,9 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
             } else {
                 setActionError(response.message || t('common.error'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('common.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setActionError(error?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
         }
@@ -151,7 +153,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
     };
 
     const getTypeInfo = (type: MediaType) => {
-        const types: Record<MediaType, { label: string, icon: any, gradient: string }> = {
+        const types: Record<MediaType, { label: string, icon: React.ElementType, gradient: string }> = {
             image: { label: t('media.image'), icon: Image, gradient: 'from-blue-600 to-cyan-500' },
             video: { label: t('media.video'), icon: Video, gradient: 'from-red-600 to-orange-500' },
             model_3d: { label: t('media.model3d'), icon: Box, gradient: 'from-[#8a6d1c] to-[#d4af37]' }

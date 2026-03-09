@@ -117,8 +117,9 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
             } else {
                 showToast('error', t('toast.editSiteFailed'), response.message || t('toast.editSiteFailedMsg'));
             }
-        } catch (err: any) {
-            showToast('error', t('toast.editSiteFailed'), err?.error?.message || t('toast.editSiteFailedMsg'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            showToast('error', t('toast.editSiteFailed'), error?.error?.message || t('toast.editSiteFailedMsg'));
         } finally {
             setSubmitting(false);
         }
@@ -363,7 +364,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         <label className="block text-xs font-medium text-slate-500 mb-1 capitalize">{t(`day.${day}`)}</label>
                                         <input
                                             type="text"
-                                            value={(openingHours as any)[day] || ''}
+                                            value={(openingHours as Record<string, string>)[day] || ''}
                                             onChange={(e) => handleOpeningHoursChange(day, e.target.value)}
                                             placeholder="05:00-18:00"
                                             className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

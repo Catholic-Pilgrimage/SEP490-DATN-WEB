@@ -93,12 +93,13 @@ export const LocalGuideFormModal: React.FC<LocalGuideFormModalProps> = ({
             } else {
                 showToast('error', t('toast.createGuideFailed'), response.message);
             }
-        } catch (err: any) {
-            const errorMessage = err?.error?.message || err?.message;
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string, statusCode?: number }, message?: string };
+            const errorMessage = error?.error?.message || error?.message;
 
-            if (errorMessage?.includes('đã tồn tại') || err?.error?.statusCode === 409) {
+            if (errorMessage?.includes('đã tồn tại') || error?.error?.statusCode === 409) {
                 showToast('error', t('toast.createGuideFailed'), t('localGuideForm.emailExists'));
-            } else if (err?.error?.statusCode === 400) {
+            } else if (error?.error?.statusCode === 400) {
                 showToast('error', t('toast.createGuideFailed'), t('localGuideForm.needSiteFirst'));
             } else {
                 showToast('error', t('toast.createGuideFailed'), errorMessage);

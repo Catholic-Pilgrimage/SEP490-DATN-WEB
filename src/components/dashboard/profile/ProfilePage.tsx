@@ -41,7 +41,7 @@ export const ProfilePage: React.FC = () => {
             } else {
                 setError(response.message || t('profile.loadError'));
             }
-        } catch (err) {
+        } catch {
             setError(t('profile.loadError'));
         } finally {
             setLoading(false);
@@ -84,8 +84,9 @@ export const ProfilePage: React.FC = () => {
             } else {
                 setError(response.message || t('profile.error'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || t('profile.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || t('profile.error'));
         } finally {
             setSaving(false);
         }

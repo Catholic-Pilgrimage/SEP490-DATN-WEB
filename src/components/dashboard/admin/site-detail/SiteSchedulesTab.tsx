@@ -33,8 +33,9 @@ export const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) =>
             } else {
                 setError(response.message || 'Không thể tải danh sách lịch lễ');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách lịch lễ');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Không thể tải danh sách lịch lễ');
         } finally {
             setLoading(false);
         }

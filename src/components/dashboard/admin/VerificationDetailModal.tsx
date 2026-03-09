@@ -54,6 +54,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             setRejectionReason('');
             setShowFullImage(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, requestId]);
 
     const fetchRequestDetail = async () => {
@@ -68,8 +69,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('common.error'), response.message);
             }
-        } catch (err: any) {
-            showToast('error', t('common.error'), err?.error?.message);
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            showToast('error', t('common.error'), error?.error?.message);
         } finally {
             setLoading(false);
         }
@@ -89,8 +91,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('toast.approveFailed'), response.message);
             }
-        } catch (err: any) {
-            showToast('error', t('toast.approveFailed'), err?.error?.message);
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            showToast('error', t('toast.approveFailed'), error?.error?.message);
         } finally {
             setActionLoading(false);
         }
@@ -116,8 +119,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('toast.rejectFailed'), response.message);
             }
-        } catch (err: any) {
-            showToast('error', t('toast.rejectFailed'), err?.error?.message);
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            showToast('error', t('toast.rejectFailed'), error?.error?.message);
         } finally {
             setActionLoading(false);
         }

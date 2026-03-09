@@ -50,7 +50,8 @@ export const ManagerSOSCenter: React.FC = () => {
             ]);
 
             if (listRes.success && listRes.data) {
-                setSosAlerts(listRes.data.sosRequests || []);
+                const data = listRes.data as { sosRequests?: AdminSOSRequest[] };
+                setSosAlerts(data.sosRequests || []);
             }
 
             if (statsRes.success && statsRes.data) {
@@ -82,6 +83,7 @@ export const ManagerSOSCenter: React.FC = () => {
         // Refresh every 30 seconds
         const interval = setInterval(() => fetchSOSData(false), 30000);
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [statusFilter, fromDate, toDate]);
 
     const getSeverityColor = (severity: string) => {

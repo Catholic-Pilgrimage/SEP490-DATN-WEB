@@ -65,7 +65,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             if (response.success && response.data) {
                 setSiteName(response.data.name);
             }
-        } catch (err) {
+        } catch {
             setSiteName(null);
         } finally {
             setSiteLoading(false);
@@ -105,10 +105,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 onSuccess();  // Gọi callback để refresh danh sách
                 onClose();    // Đóng modal
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Update user error:', err);
             // API service throws object from response.json(), so the message is usually inside `err.message`
-            const errorMessage = err?.message || err?.error?.message || t('common.error');
+            const error = err as { message?: string, error?: { message?: string } };
+            const errorMessage = error?.message || error?.error?.message || t('common.error');
             showToast('error', t('common.error'), errorMessage);
         } finally {
             setLoading(false);

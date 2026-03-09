@@ -26,8 +26,9 @@ export const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }
             } else {
                 setError(response.message || 'Không thể tải danh sách Local Guides');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách Local Guides');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Không thể tải danh sách Local Guides');
         } finally {
             setLoading(false);
         }

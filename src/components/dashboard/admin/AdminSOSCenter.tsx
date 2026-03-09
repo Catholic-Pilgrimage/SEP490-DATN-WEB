@@ -104,6 +104,7 @@ export const AdminSOSCenter: React.FC = () => {
     // Refresh every 5 minutes (300000ms)
     const interval = setInterval(() => fetchSOSData(false), 300000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, siteFilter, fromDate, toDate]);
 
   useEffect(() => {

@@ -2,22 +2,25 @@ import { useEffect, useRef } from 'react';
 import { VIETMAP_CONFIG } from '@/config/vietmap.config';
 
 // Khai báo type cho vietmapgl (khi dùng CDN)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const vietmapgl: any;
+
+export interface VietMapMarker {
+    id: string;
+    lat: number;
+    lng: number;
+    title: string;
+    color?: string;
+}
 
 interface VietMapViewProps {
     latitude: number;
     longitude: number;
     zoom?: number;
-    markers?: Array<{
-        id: string;
-        lat: number;
-        lng: number;
-        title: string;
-        color?: string;
-    }>;
+    markers?: VietMapMarker[];
     className?: string;
     interactive?: boolean;
-    onMarkerClick?: (marker: any) => void;
+    onMarkerClick?: (marker: VietMapMarker) => void;
 }
 
 export default function VietMapView({
@@ -30,6 +33,7 @@ export default function VietMapView({
     onMarkerClick,
 }: VietMapViewProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapRef = useRef<any>(null);
 
     useEffect(() => {

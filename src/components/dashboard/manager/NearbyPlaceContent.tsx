@@ -80,7 +80,7 @@ export const NearbyPlaceContent: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, categoryFilter, activeFilter]);
+    }, [currentPage, limit, statusFilter, categoryFilter, activeFilter, t]);
 
     useEffect(() => {
         fetchPlaceList();

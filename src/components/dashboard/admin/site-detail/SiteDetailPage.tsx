@@ -66,6 +66,7 @@ export const SiteDetailPage: React.FC = () => {
 
     useEffect(() => {
         if (siteId) fetchSiteDetail();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId]);
 
     const fetchSiteDetail = async () => {
@@ -79,8 +80,9 @@ export const SiteDetailPage: React.FC = () => {
             } else {
                 setError(response.message || 'Failed to load site details');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Failed to load site details');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Failed to load site details');
         } finally {
             setLoading(false);
         }

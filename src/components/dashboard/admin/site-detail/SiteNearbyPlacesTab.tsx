@@ -35,8 +35,9 @@ export const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId
             } else {
                 setError(response.message || 'Không thể tải danh sách địa điểm lân cận');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách địa điểm lân cận');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Không thể tải danh sách địa điểm lân cận');
         } finally {
             setLoading(false);
         }

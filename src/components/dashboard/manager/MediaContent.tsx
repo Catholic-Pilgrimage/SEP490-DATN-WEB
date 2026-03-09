@@ -84,8 +84,9 @@ export const MediaContent: React.FC = () => {
             } else {
                 setError(response.message || 'Không thể tải danh sách media');
             }
-        } catch (err: any) {
-            setError(err?.error?.message || 'Không thể tải danh sách media');
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || 'Không thể tải danh sách media');
         } finally {
             setLoading(false);
         }

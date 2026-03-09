@@ -40,7 +40,8 @@ import {
     UpdateNearbyPlaceStatusData,
     UpdateNearbyPlaceStatusResponse,
     ToggleNearbyPlaceActiveData,
-    ToggleNearbyPlaceActiveResponse
+    ToggleNearbyPlaceActiveResponse,
+    ManagerSOSStats
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -606,22 +607,22 @@ export class ManagerService {
      * Get list of SOS requests for manager's site
      * @param params - { page, limit, status, from_date, to_date }
      */
-    static async getSOSRequests(params: any = {}): Promise<ApiResponse<any>> {
+    static async getSOSRequests(params: Record<string, unknown> = {}): Promise<ApiResponse<unknown>> {
         const queryParams = new URLSearchParams();
 
-        if (params.page && params.page > 0) {
+        if (params.page && typeof params.page === 'number' && params.page > 0) {
             queryParams.append('page', params.page.toString());
         }
-        if (params.limit && params.limit > 0) {
+        if (params.limit && typeof params.limit === 'number' && params.limit > 0) {
             queryParams.append('limit', params.limit.toString());
         }
-        if (params.status) {
+        if (params.status && typeof params.status === 'string') {
             queryParams.append('status', params.status);
         }
-        if (params.from_date) {
+        if (params.from_date && typeof params.from_date === 'string') {
             queryParams.append('from_date', params.from_date);
         }
-        if (params.to_date) {
+        if (params.to_date && typeof params.to_date === 'string') {
             queryParams.append('to_date', params.to_date);
         }
 
@@ -630,14 +631,14 @@ export class ManagerService {
             ? `${API_CONFIG.ENDPOINTS.MANAGER.SOS_LIST}?${queryString}`
             : API_CONFIG.ENDPOINTS.MANAGER.SOS_LIST;
 
-        return ApiService.get<ApiResponse<any>>(endpoint);
+        return ApiService.get<ApiResponse<unknown>>(endpoint);
     }
 
     /**
      * Get SOS statistics for manager's site
      * @param params - { from_date, to_date }
      */
-    static async getSOSStats(params: { from_date?: string; to_date?: string } = {}): Promise<ApiResponse<any>> {
+    static async getSOSStats(params: { from_date?: string; to_date?: string } = {}): Promise<ApiResponse<ManagerSOSStats>> {
         const queryParams = new URLSearchParams();
 
         if (params.from_date) {
@@ -652,7 +653,7 @@ export class ManagerService {
             ? `${API_CONFIG.ENDPOINTS.MANAGER.SOS_STATS}?${queryString}`
             : API_CONFIG.ENDPOINTS.MANAGER.SOS_STATS;
 
-        return ApiService.get<ApiResponse<any>>(endpoint);
+        return ApiService.get<ApiResponse<ManagerSOSStats>>(endpoint);
     }
 }
 

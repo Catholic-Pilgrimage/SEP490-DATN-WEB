@@ -86,17 +86,18 @@ export const LocalGuides: React.FC = () => {
             } else {
                 setError(response.message || t('localGuides.errorLoad'));
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { error?: { statusCode?: number; message?: string } };
             // Check if manager has no site
-            if (err?.error?.statusCode === 400) {
+            if (error?.error?.statusCode === 400) {
                 setError(t('localGuides.errorNoSite'));
             } else {
-                setError(err?.error?.message || t('localGuides.errorLoad'));
+                setError(error?.error?.message || t('localGuides.errorLoad'));
             }
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, searchDebounce]);
+    }, [currentPage, limit, statusFilter, searchDebounce, t]);
 
     useEffect(() => {
         fetchLocalGuides();
@@ -168,8 +169,9 @@ export const LocalGuides: React.FC = () => {
             } else {
                 setError(response.message || t('localGuides.updateError'));
             }
-        } catch (err: any) {
-            setError(err?.error?.message || t('localGuides.updateError'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setError(error?.error?.message || t('localGuides.updateError'));
         } finally {
             setTogglingId(null);
             setGuideToToggle(null);

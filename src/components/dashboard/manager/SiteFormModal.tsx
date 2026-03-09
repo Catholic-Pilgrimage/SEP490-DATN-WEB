@@ -233,10 +233,11 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                     response.message
                 );
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string }, message?: string };
             showToast('error',
                 mode === 'create' ? t('toast.createSiteFailed') : t('toast.updateSiteFailed'),
-                err?.error?.message || err?.message
+                error?.error?.message || error?.message
             );
         } finally {
             setLoading(false);

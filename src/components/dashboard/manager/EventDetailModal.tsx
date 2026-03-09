@@ -98,8 +98,9 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     setActionError(response.message || t('common.error'));
                 }
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('common.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setActionError(error?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
             setConfirmAction(null);
@@ -132,8 +133,9 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
             } else {
                 setActionError(response.message || t('common.error'));
             }
-        } catch (err: any) {
-            setActionError(err?.error?.message || t('common.error'));
+        } catch (err: unknown) {
+            const error = err as { error?: { message?: string } };
+            setActionError(error?.error?.message || t('common.error'));
         } finally {
             setActionLoading(false);
         }

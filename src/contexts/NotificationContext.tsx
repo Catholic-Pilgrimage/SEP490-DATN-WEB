@@ -17,6 +17,7 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useNotifications = () => {
     const context = useContext(NotificationContext);
     if (!context) {
@@ -41,7 +42,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         try {
             const response = await NotificationService.getNotifications({ page: 1, limit: 20 });
             console.log('📥 Fetch notifications response:', response);
-            
+
             // Backend returns: response.data.notifications (not response.data.data)
             if (response.success && response.data && response.data.notifications) {
                 console.log('✅ Setting notifications:', response.data.notifications.length, 'items');
@@ -67,7 +68,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         if (!notification.is_read) {
             setUnreadCount(prev => prev + 1);
         }
-        
+
         // Show browser notification if supported
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification(notification.title, {
@@ -76,7 +77,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
                 tag: notification.id
             });
         }
-        
+
         // Play notification sound (optional)
         const audio = new Audio('/notification.mp3');
         audio.play().catch(e => console.log('Cannot play notification sound:', e));
@@ -85,20 +86,20 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     // Initialize WebSocket connection
     useEffect(() => {
         console.log('🔌 Initializing WebSocket connection...');
-        
+
         // Connect to WebSocket
         WebSocketService.connect();
-        
+
         // Check connection status periodically
         const checkConnection = () => {
             const connected = WebSocketService.isConnected();
             console.log('WebSocket status:', connected ? 'Connected' : 'Disconnected');
             setIsConnected(connected);
         };
-        
+
         // Initial check
         checkConnection();
-        
+
         // Check every 2 seconds
         const intervalId = setInterval(checkConnection, 2000);
 
