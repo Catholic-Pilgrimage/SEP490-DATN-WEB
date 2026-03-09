@@ -116,9 +116,9 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
     setTimeout(() => setShake(false), 500);
   };
 
-  const extractErrorMessage = (err: unknown): string => {
-    const error = err as Record<string, unknown>;
-    const nested = error?.error as Record<string, unknown> | undefined;
+  const extractErrorMessage = (error: unknown): string => {
+    const err = error as Record<string, unknown>;
+    const nested = err?.error as Record<string, unknown> | undefined;
     const details = nested?.details;
 
     if (Array.isArray(details) && details.length > 0) {
@@ -132,7 +132,7 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
     }
 
     if (typeof nested?.message === 'string') return nested.message;
-    if (typeof error?.message === 'string' && error.message !== '') return error.message;
+    if (typeof err?.message === 'string' && err.message !== '') return err.message;
     return language === 'vi' ? 'Đã xảy ra lỗi không xác định.' : 'An unknown error occurred.';
   };
 
@@ -153,10 +153,10 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
           response.error?.message || (language === 'vi' ? 'Không thể gửi mã OTP đến email của bạn.' : 'Could not send OTP to your email.')
         );
       }
-    } catch (err: unknown) {
+    } catch (error) {
       triggerError(
         language === 'vi' ? 'Gửi OTP thất bại' : 'Failed to Send OTP',
-        extractErrorMessage(err)
+        extractErrorMessage(error)
       );
     } finally {
       setLoading(false);
@@ -179,10 +179,10 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
           response.error?.message || (language === 'vi' ? 'Không thể gửi lại mã OTP.' : 'Could not resend OTP.')
         );
       }
-    } catch (err: unknown) {
+    } catch (error) {
       triggerError(
         language === 'vi' ? 'Gửi lại OTP thất bại' : 'Resend OTP Failed',
-        extractErrorMessage(err)
+        extractErrorMessage(error)
       );
     } finally {
       setLoading(false);
@@ -203,10 +203,10 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
           response.error?.message || (language === 'vi' ? 'Mã OTP không hợp lệ hoặc đã hết hạn.' : 'Invalid or expired OTP code.')
         );
       }
-    } catch (err: unknown) {
+    } catch (error) {
       triggerError(
         language === 'vi' ? 'Xác minh thất bại' : 'Verification Failed',
-        extractErrorMessage(err)
+        extractErrorMessage(error)
       );
     } finally {
       setLoading(false);
@@ -248,10 +248,10 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, 
           response.error?.message || (language === 'vi' ? 'Không thể đặt lại mật khẩu.' : 'Could not reset password.')
         );
       }
-    } catch (err: unknown) {
+    } catch (error) {
       triggerError(
         language === 'vi' ? 'Đặt lại mật khẩu thất bại' : 'Reset Password Failed',
-        extractErrorMessage(err)
+        extractErrorMessage(error)
       );
     } finally {
       setLoading(false);

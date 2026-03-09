@@ -90,9 +90,9 @@ export const VerificationRequests: React.FC = () => {
             } else {
                 setError(response.message || 'Failed to load verification requests');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Failed to load verification requests');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to load verification requests';
+            setError(message);
         } finally {
             setLoading(false);
         }

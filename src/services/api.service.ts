@@ -40,7 +40,8 @@ export class ApiService {
 
                 return false;
             } catch (error) {
-                console.error('Token refresh failed:', error);
+                const message = error instanceof Error ? error.message : 'Token refresh failed';
+                console.error('Token refresh failed:', message);
                 return false;
             } finally {
                 isRefreshing = false;

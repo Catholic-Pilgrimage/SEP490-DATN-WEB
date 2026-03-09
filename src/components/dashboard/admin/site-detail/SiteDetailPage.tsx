@@ -80,9 +80,9 @@ export const SiteDetailPage: React.FC = () => {
             } else {
                 setError(response.message || 'Failed to load site details');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Failed to load site details');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to load site details';
+            setError(message);
         } finally {
             setLoading(false);
         }

@@ -47,9 +47,9 @@ export const SettingsPage: React.FC = () => {
             } else {
                 setError(response.error?.message || t('settings.errorFailed'));
             }
-        } catch (err) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || t('settings.errorFailed'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('settings.errorFailed');
+            setError(message);
         } finally {
             setSaving(false);
         }

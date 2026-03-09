@@ -103,9 +103,9 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                     setActionError(response.message || t('common.error'));
                 }
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setActionError(error?.error?.message || t('common.error'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('common.error');
+            setActionError(message);
         } finally {
             setActionLoading(false);
             setConfirmAction(null);
@@ -138,9 +138,9 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
             } else {
                 setActionError(response.message || t('common.error'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setActionError(error?.error?.message || t('common.error'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('common.error');
+            setActionError(message);
         } finally {
             setActionLoading(false);
         }

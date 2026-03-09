@@ -69,9 +69,9 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
             } else {
                 setError(response.message || 'Failed to load user details');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Failed to load user details');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to load user details';
+            setError(message);
         } finally {
             setLoading(false);
         }

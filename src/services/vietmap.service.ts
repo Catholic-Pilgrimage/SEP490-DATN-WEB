@@ -66,9 +66,10 @@ export const calculateRoute = async (
       durationText,
       distanceKm,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Calculate route error:', error);
-    throw new Error(error.message || 'Không thể tính toán lộ trình');
+    const message = error instanceof Error ? error.message : 'Không thể tính toán lộ trình';
+    throw new Error(message);
   }
 };
 

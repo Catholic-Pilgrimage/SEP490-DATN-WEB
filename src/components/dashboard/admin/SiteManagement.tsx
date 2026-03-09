@@ -86,9 +86,9 @@ export const SiteManagement: React.FC = () => {
       } else {
         setError(response.message || 'Failed to load sites');
       }
-    } catch (err: unknown) {
-      const error = err as { error?: { message?: string } };
-      setError(error?.error?.message || 'Failed to load sites');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load sites';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -336,8 +336,8 @@ export const SiteManagement: React.FC = () => {
                                 setSiteForEdit(response.data);
                                 setIsEditModalOpen(true);
                               }
-                            } catch (err) {
-                              console.error('Failed to load site for edit:', err);
+                            } catch (error) {
+                              console.error('Failed to load site for edit:', error);
                             } finally {
                               setEditLoading(false);
                             }
@@ -374,10 +374,10 @@ export const SiteManagement: React.FC = () => {
                                   showToast('error', t('toast.restoreSiteFailed'), response.message || t('toast.restoreSiteFailedMsg'));
                                   setError(response.message || 'Failed to restore site');
                                 }
-                              } catch (err: unknown) {
-                                const error = err as { error?: { message?: string } };
-                                showToast('error', t('toast.restoreSiteFailed'), error?.error?.message || t('toast.restoreSiteFailedMsg'));
-                                setError(error?.error?.message || 'Failed to restore site');
+                              } catch (error) {
+                                const message = error instanceof Error ? error.message : t('toast.restoreSiteFailedMsg');
+                                showToast('error', t('toast.restoreSiteFailed'), message);
+                                setError(message);
                               } finally {
                                 setRestoreLoading(null);
                               }
@@ -541,10 +541,10 @@ export const SiteManagement: React.FC = () => {
                         showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
                         setError(response.message || 'Failed to delete site');
                       }
-                    } catch (err: unknown) {
-                      const error = err as { error?: { message?: string } };
-                      showToast('error', t('toast.deleteSiteFailed'), error?.error?.message || t('toast.deleteSiteFailedMsg'));
-                      setError(error?.error?.message || 'Failed to delete site');
+                    } catch (error) {
+                      const message = error instanceof Error ? error.message : t('toast.deleteSiteFailedMsg');
+                      showToast('error', t('toast.deleteSiteFailed'), message);
+                      setError(message);
                     } finally {
                       setDeleteLoading(false);
                       setIsDeleteConfirmOpen(false);

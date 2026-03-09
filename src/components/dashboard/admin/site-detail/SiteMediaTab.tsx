@@ -36,9 +36,9 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
             } else {
                 setError(response.message || 'Không thể tải danh sách media');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Không thể tải danh sách media');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Không thể tải danh sách media';
+            setError(message);
         } finally {
             setLoading(false);
         }

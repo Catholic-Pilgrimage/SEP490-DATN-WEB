@@ -86,13 +86,15 @@ export const LocalGuides: React.FC = () => {
             } else {
                 setError(response.message || t('localGuides.errorLoad'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { statusCode?: number; message?: string } };
-            // Check if manager has no site
-            if (error?.error?.statusCode === 400) {
+        } catch (error) {
+            // Check if manager has no site (400 status code)
+            const err = error as { error?: { statusCode?: number } };
+            const is400 = err?.error?.statusCode === 400;
+            if (is400) {
                 setError(t('localGuides.errorNoSite'));
             } else {
-                setError(error?.error?.message || t('localGuides.errorLoad'));
+                const message = error instanceof Error ? error.message : t('localGuides.errorLoad');
+                setError(message);
             }
         } finally {
             setLoading(false);
@@ -169,9 +171,9 @@ export const LocalGuides: React.FC = () => {
             } else {
                 setError(response.message || t('localGuides.updateError'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || t('localGuides.updateError'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('localGuides.updateError');
+            setError(message);
         } finally {
             setTogglingId(null);
             setGuideToToggle(null);

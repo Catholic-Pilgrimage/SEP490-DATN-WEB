@@ -33,9 +33,9 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
             } else {
                 setError(response.message || 'Không thể tải danh sách lịch trực');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Không thể tải danh sách lịch trực');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Không thể tải danh sách lịch trực';
+            setError(message);
         } finally {
             setLoading(false);
         }

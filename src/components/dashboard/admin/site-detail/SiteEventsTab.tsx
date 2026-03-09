@@ -33,9 +33,9 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
             } else {
                 setError(response.message || 'Không thể tải danh sách sự kiện');
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || 'Không thể tải danh sách sự kiện');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Không thể tải danh sách sự kiện';
+            setError(message);
         } finally {
             setLoading(false);
         }

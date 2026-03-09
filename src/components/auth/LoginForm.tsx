@@ -52,12 +52,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           loginResponse.error?.message || (language === 'vi' ? 'Vui lòng kiểm tra lại thông tin đăng nhập.' : 'Please check your credentials.')
         );
       }
-    } catch (err: unknown) {
-      console.error('Login error:', err);
+    } catch (error) {
+      console.error('Login error:', error);
 
-      const error = err as Record<string, unknown>;
-      const status = typeof error?.status === 'number' ? error.status : undefined;
-      const nested = error?.error as Record<string, unknown> | undefined;
+      const err = error as Record<string, unknown>;
+      const status = typeof err?.status === 'number' ? err.status : undefined;
+      const nested = err?.error as Record<string, unknown> | undefined;
       const details = nested?.details;
       const errorTitle = language === 'vi' ? 'Đăng nhập thất bại' : 'Login Failed';
 
@@ -77,7 +77,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         triggerError(errorTitle, messages.length > 0 ? messages.join('. ') : (typeof nested?.message === 'string' ? nested.message : (language === 'vi' ? 'Vui lòng thử lại.' : 'Please try again.')));
       } else if (typeof nested?.message === 'string') {
         triggerError(errorTitle, nested.message);
-      } else if (typeof error?.message === 'string' && error.message !== '') {
+      } else if (error instanceof Error && error.message) {
         triggerError(errorTitle, error.message);
       } else {
         triggerError(language === 'vi' ? 'Lỗi kết nối' : 'Connection Error', language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');

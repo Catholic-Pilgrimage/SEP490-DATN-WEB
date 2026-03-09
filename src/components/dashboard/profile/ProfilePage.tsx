@@ -84,9 +84,9 @@ export const ProfilePage: React.FC = () => {
             } else {
                 setError(response.message || t('profile.error'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || t('profile.error'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('profile.error');
+            setError(message);
         } finally {
             setSaving(false);
         }

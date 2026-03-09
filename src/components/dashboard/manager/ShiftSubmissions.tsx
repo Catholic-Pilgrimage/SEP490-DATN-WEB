@@ -207,9 +207,9 @@ export const ShiftSubmissions: React.FC = () => {
             } else {
                 setError(response.message || t('shifts.errorLoad'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            setError(error?.error?.message || t('shifts.errorLoad'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('shifts.errorLoad');
+            setError(message);
         } finally {
             setLoading(false);
         }

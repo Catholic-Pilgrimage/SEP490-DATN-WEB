@@ -117,9 +117,9 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
             } else {
                 showToast('error', t('toast.editSiteFailed'), response.message || t('toast.editSiteFailedMsg'));
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            showToast('error', t('toast.editSiteFailed'), error?.error?.message || t('toast.editSiteFailedMsg'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('toast.editSiteFailedMsg');
+            showToast('error', t('toast.editSiteFailed'), message);
         } finally {
             setSubmitting(false);
         }

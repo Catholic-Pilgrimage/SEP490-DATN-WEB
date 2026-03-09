@@ -83,9 +83,9 @@ export const UserManagement: React.FC = () => {
       } else {
         setError(response.message || 'Failed to load users');
       }
-    } catch (err: unknown) {
-      const error = err as { error?: { message?: string } };
-      setError(error?.error?.message || 'Failed to load users');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load users';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -158,10 +158,10 @@ export const UserManagement: React.FC = () => {
         showToast('error', newStatus === 'active' ? t('toast.unbanUserFailed') : t('toast.banUserFailed'), response.message);
         setError(response.message || 'Failed to update status');
       }
-    } catch (err: unknown) {
-      const error = err as { error?: { message?: string } };
-      showToast('error', t('common.error'), error?.error?.message);
-      setError(error?.error?.message || 'Failed to update status');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update status';
+      showToast('error', t('common.error'), message);
+      setError(message);
     } finally {
       setStatusLoading(false);
       setIsConfirmOpen(false);

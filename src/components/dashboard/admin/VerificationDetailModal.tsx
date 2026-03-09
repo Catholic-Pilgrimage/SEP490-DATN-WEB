@@ -69,9 +69,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('common.error'), response.message);
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            showToast('error', t('common.error'), error?.error?.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('common.error');
+            showToast('error', t('common.error'), message);
         } finally {
             setLoading(false);
         }
@@ -91,9 +91,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('toast.approveFailed'), response.message);
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            showToast('error', t('toast.approveFailed'), error?.error?.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('toast.approveFailed');
+            showToast('error', t('toast.approveFailed'), message);
         } finally {
             setActionLoading(false);
         }
@@ -119,9 +119,9 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
             } else {
                 showToast('error', t('toast.rejectFailed'), response.message);
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { message?: string } };
-            showToast('error', t('toast.rejectFailed'), error?.error?.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t('toast.rejectFailed');
+            showToast('error', t('toast.rejectFailed'), message);
         } finally {
             setActionLoading(false);
         }

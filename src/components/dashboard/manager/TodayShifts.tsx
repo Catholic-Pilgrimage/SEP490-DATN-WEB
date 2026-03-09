@@ -78,9 +78,10 @@ export const TodayShifts: React.FC = () => {
 
         setShifts(todayShifts);
       }
-    } catch (err) {
-      console.error('Error fetching today shifts:', err);
-      setError('Không thể tải lịch trực hôm nay');
+    } catch (error) {
+      console.error('Error fetching today shifts:', error);
+      const message = error instanceof Error ? error.message : 'Không thể tải lịch trực hôm nay';
+      setError(message);
     } finally {
       setLoading(false);
     }

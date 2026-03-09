@@ -60,13 +60,16 @@ export const MySite: React.FC = () => {
                 setSite(null);
                 setHasSite(false);
             }
-        } catch (err: unknown) {
-            const error = err as { error?: { statusCode?: number, message?: string }, status?: number };
-            if (error?.error?.statusCode === 404 || error?.status === 404) {
+        } catch (error) {
+            // Check for 404 status - means manager has no site yet
+            const err = error as { error?: { statusCode?: number }; status?: number };
+            const is404 = err?.error?.statusCode === 404 || err?.status === 404;
+            if (is404) {
                 setSite(null);
                 setHasSite(false);
             } else {
-                setError(error?.error?.message || 'Failed to load site');
+                const message = error instanceof Error ? error.message : 'Failed to load site';
+                setError(message);
             }
         } finally {
             setLoading(false);

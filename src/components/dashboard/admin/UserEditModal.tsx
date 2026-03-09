@@ -105,12 +105,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 onSuccess();  // Gọi callback để refresh danh sách
                 onClose();    // Đóng modal
             }
-        } catch (err: unknown) {
-            console.error('Update user error:', err);
-            // API service throws object from response.json(), so the message is usually inside `err.message`
-            const error = err as { message?: string, error?: { message?: string } };
-            const errorMessage = error?.message || error?.error?.message || t('common.error');
-            showToast('error', t('common.error'), errorMessage);
+        } catch (error) {
+            console.error('Update user error:', error);
+            const message = error instanceof Error ? error.message : t('common.error');
+            showToast('error', t('common.error'), message);
         } finally {
             setLoading(false);
         }
