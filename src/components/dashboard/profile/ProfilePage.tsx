@@ -157,7 +157,7 @@ export const ProfilePage: React.FC = () => {
         }
     };
 
-    const displayAvatar = avatarPreview || profile.avatar_url || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150';
+    const displayAvatar = avatarPreview || profile.avatar_url;
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -188,11 +188,17 @@ export const ProfilePage: React.FC = () => {
                 <div className="h-48 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] relative">
                     <div className="absolute -bottom-12 left-8">
                         <div className="relative">
-                            <img
-                                src={displayAvatar}
-                                alt={profile.full_name}
-                                className="w-24 h-24 rounded-2xl border-4 border-white object-cover shadow-lg shadow-[#d4af37]/20"
-                            />
+                            {displayAvatar ? (
+                                <img
+                                    src={displayAvatar}
+                                    alt={profile.full_name}
+                                    className="w-24 h-24 rounded-2xl border-4 border-white object-cover shadow-lg shadow-[#d4af37]/20"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 rounded-2xl border-4 border-white bg-[#d4af37] flex items-center justify-center shadow-lg shadow-[#d4af37]/20">
+                                    <User className="w-10 h-10 text-white/90" />
+                                </div>
+                            )}
                             {isEditing && (
                                 <button
                                     onClick={() => fileInputRef.current?.click()}

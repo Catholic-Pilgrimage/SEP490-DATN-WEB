@@ -6,6 +6,7 @@ import {
   Users,
   AlertTriangle,
   UserCheck,
+  User as UserIcon,
   FileText,
   BarChart3,
   ChevronLeft,
@@ -134,11 +135,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* User Info */}
       <div className="p-4 border-t border-[#d4af37]/20">
         <div className="flex items-center gap-3">
-          <img
-            src={user.avatar || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150'}
-            alt={user.name}
-            className="w-10 h-10 rounded-xl object-cover border-2 border-[#d4af37]/30"
-          />
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="w-10 h-10 rounded-xl object-cover border-2 border-[#d4af37]/30"
+            />
+          ) : (
+            <div
+              aria-label="User"
+              className="w-10 h-10 rounded-xl border-2 border-[#d4af37]/30 bg-[#d4af37] flex items-center justify-center"
+            >
+              <UserIcon className="w-5 h-5 text-white/90" />
+            </div>
+          )}
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-medium truncate text-white">{user.name}</h3>

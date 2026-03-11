@@ -41,6 +41,8 @@ const translations: Record<Language, Record<string, string>> = {
         'common.restore': 'Khôi phục',
         'common.active': 'Hoạt động',
         'common.inactive': 'Không hoạt động',
+        'common.list': 'Danh sách',
+        'common.map': 'Bản đồ',
         'portal.admin': 'Portal Quản trị',
         'portal.manager': 'Portal Quản lý',
 
@@ -217,6 +219,8 @@ const translations: Record<Language, Record<string, string>> = {
 
         // Pagination
         'pagination.page': 'Trang',
+        'pagination.previous': 'Trang trước',
+        'pagination.next': 'Trang sau',
 
         // Status
         'status.pending': 'Chờ duyệt',
@@ -714,6 +718,8 @@ const translations: Record<Language, Record<string, string>> = {
         'common.restore': 'Restore',
         'common.active': 'Active',
         'common.inactive': 'Inactive',
+        'common.list': 'List',
+        'common.map': 'Map',
         'portal.admin': 'Admin Portal',
         'portal.manager': 'Manager Portal',
 
@@ -890,6 +896,8 @@ const translations: Record<Language, Record<string, string>> = {
 
         // Pagination
         'pagination.page': 'Page',
+        'pagination.previous': 'Previous',
+        'pagination.next': 'Next',
 
         // Status
         'status.pending': 'Pending',

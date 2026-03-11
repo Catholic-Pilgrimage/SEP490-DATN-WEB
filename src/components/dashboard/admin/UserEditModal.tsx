@@ -2,12 +2,28 @@ import React, { useEffect, useState } from 'react';
 import {
     X,
     Save,
-    Loader2
+    Loader2,
+    User as UserIcon
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser, UpdateUserData } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 interface UserEditModalProps {
     user: AdminUser | null;      // User hiện tại để edit
@@ -118,35 +134,36 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     if (!isOpen || !user) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
-            {/* Backdrop - click để đóng modal */}
-            <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                onClick={onClose}
-            />
-
-            {/* Modal container */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
+        <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="p-0 overflow-hidden border-[#d4af37]/20 rounded-2xl max-w-md [&>button]:hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
-                    <div className="flex items-center gap-3">
-                        <img
-                            src={user.avatar_url || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=50'}
-                            alt={user.full_name}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
-                        />
-                        <div className="text-white">
-                            <h2 className="text-lg font-semibold">{t('userEdit.title')}</h2>
-                            <p className="text-sm opacity-80">{user.email}</p>
+                <DialogHeader className="px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] m-0">
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                            {user.avatar_url ? (
+                                <img
+                                    src={user.avatar_url}
+                                    alt={user.full_name}
+                                    className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
+                                />
+                            ) : (
+                                <div className="w-10 h-10 rounded-full bg-[#d4af37] border-2 border-white/50 flex items-center justify-center">
+                                    <UserIcon className="w-5 h-5 text-white/90" />
+                                </div>
+                            )}
+                            <div className="text-white text-left">
+                                <DialogTitle className="text-lg font-semibold">{t('userEdit.title')}</DialogTitle>
+                                <p className="text-sm opacity-80 font-normal">{user.email}</p>
+                            </div>
                         </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </DialogHeader>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -156,14 +173,14 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                         <label className="block text-sm font-medium text-[#8a6d1c] mb-1">
                             {t('userEdit.fullName')} <span className="text-red-500">*</span>
                         </label>
-                        <input
+                        <Input
                             type="text"
                             name="full_name"
                             value={formData.full_name || ''}
                             onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
-                            placeholder="Nguyen Van A"
+                            className="w-full bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all h-11"
+                            placeholder={t('userEdit.fullNamePlaceholder') || "Nguyen Van A"}
                         />
                     </div>
 
@@ -172,13 +189,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                         <label className="block text-sm font-medium text-[#8a6d1c] mb-1">
                             {t('table.phone')}
                         </label>
-                        <input
+                        <Input
                             type="tel"
                             name="phone"
                             value={formData.phone || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
-                            placeholder="0123456789"
+                            className="w-full bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all h-11"
+                            placeholder={t('userEdit.phonePlaceholder') || "0123456789"}
                         />
                     </div>
 
@@ -187,12 +204,12 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                         <label className="block text-sm font-medium text-[#8a6d1c] mb-1">
                             {t('userDetail.dateOfBirth')}
                         </label>
-                        <input
+                        <Input
                             type="date"
                             name="date_of_birth"
                             value={formData.date_of_birth || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                            className="w-full bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all h-11"
                         />
                     </div>
 
@@ -201,18 +218,21 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                         <label className="block text-sm font-medium text-[#8a6d1c] mb-1">
                             {t('table.role')} <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            name="role"
+                        <Select
                             value={formData.role || 'pilgrim'}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl transition-all cursor-not-allowed opacity-70"
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, role: value as AdminUser['role'] }))}
                             disabled
                         >
-                            <option value="pilgrim">{t('role.pilgrim')}</option>
-                            <option value="local_guide">{t('role.localGuide')}</option>
-                            <option value="manager">{t('role.manager')}</option>
-                            <option value="admin">{t('role.admin')}</option>
-                        </select>
+                            <SelectTrigger className="w-full h-11 bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl disabled:opacity-70">
+                                <SelectValue placeholder={t('role.pilgrim')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="pilgrim">{t('role.pilgrim')}</SelectItem>
+                                <SelectItem value="local_guide">{t('role.localGuide')}</SelectItem>
+                                <SelectItem value="manager">{t('role.manager')}</SelectItem>
+                                <SelectItem value="admin">{t('role.admin')}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Site - chỉ hiện khi role là manager hoặc local_guide */}
@@ -236,18 +256,19 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 pt-4 border-t border-[#d4af37]/20">
-                        <button
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={onClose}
                             disabled={loading}
-                            className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                            className="flex-1 h-11 border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10"
                         >
                             {t('userEdit.cancel')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
+                            className="flex-1 flex items-center justify-center gap-2 h-11 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 shadow-lg shadow-[#d4af37]/20"
                         >
                             {loading ? (
                                 <>
@@ -260,10 +281,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                                     {t('userEdit.saveChanges')}
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };

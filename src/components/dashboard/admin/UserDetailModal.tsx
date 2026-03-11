@@ -19,6 +19,14 @@ import {
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface UserDetailModalProps {
     userId: string | null;
@@ -125,19 +133,14 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 
     if (!isOpen) return null;
 
+    if (isOpen && !loading && !error && !user) return null; // Fallback to avoid null errors when rendering user details
+
     const roleInfo = user ? getRoleInfo(user.role) : null;
     const RoleIcon = roleInfo?.icon || UserIcon;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
-            {/* Backdrop */}
-            <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
-            />
-
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-[#d4af37]/20 flex-shrink-0">
+        <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="p-0 overflow-hidden border-[#d4af37]/20 rounded-2xl max-w-lg max-h-[90vh] flex flex-col gap-0 outline-none [&>button]:hidden">
                 {/* Actions container (Close) */}
                 <div className="absolute top-4 right-4 z-10 flex gap-2">
                     <button
@@ -146,6 +149,10 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                     >
                         <X className="w-5 h-5 text-[#8a6d1c]" />
                     </button>
+                    {/* Empty DialogHeader to fix accessibility warning if DialogTitle is rendered elsewhere or not rendered immediately */}
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>{t('userEdit.title')}</DialogTitle>
+                    </DialogHeader>
                 </div>
 
                 {loading ? (
@@ -157,12 +164,12 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                     <div className="flex flex-col items-center justify-center h-80 p-6">
                         <XCircle className="w-12 h-12 text-red-500 mb-4" />
                         <p className="text-red-600 text-center">{error}</p>
-                        <button
+                        <Button
                             onClick={fetchUserDetail}
-                            className="mt-4 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all shadow-lg shadow-[#d4af37]/20"
+                            className="mt-4 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 shadow-lg shadow-[#d4af37]/20"
                         >
                             {t('modal.retry')}
-                        </button>
+                        </Button>
                     </div>
                 ) : user ? (
                     <>
@@ -177,11 +184,17 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                         {/* Avatar - overlapping header */}
                         <div className="flex justify-center -mt-12">
                             <div className="relative">
-                                <img
-                                    src={user.avatar_url || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150'}
-                                    alt={user.full_name}
-                                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                                />
+                                {user.avatar_url ? (
+                                    <img
+                                        src={user.avatar_url}
+                                        alt={user.full_name}
+                                        className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                                    />
+                                ) : (
+                                    <div className="w-24 h-24 rounded-full bg-[#d4af37] border-4 border-white shadow-lg flex items-center justify-center">
+                                        <UserIcon className="w-10 h-10 text-white/90" />
+                                    </div>
+                                )}
                                 <div className={`absolute -bottom-1 -right-1 p-1.5 rounded-full ${user.status === 'active' ? 'bg-green-500' : 'bg-red-500'} border-2 border-white`}>
                                     {user.status === 'active' ? (
                                         <CheckCircle className="w-3 h-3 text-white" />
@@ -209,9 +222,9 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                                     </button>
                                 )}
                             </div>
-                            <span className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            <Badge variant={user.status === 'active' ? 'outline' : 'destructive'} className={`mt-2 ${user.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'} hover:opacity-80`}>
                                 {user.status === 'active' ? t('status.active') : t('status.banned')}
-                            </span>
+                            </Badge>
                         </div>
 
                         <div className="px-6 pb-6 space-y-4 max-h-[40vh] overflow-y-auto">
@@ -316,7 +329,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                         </div>
                     </>
                 ) : null}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };

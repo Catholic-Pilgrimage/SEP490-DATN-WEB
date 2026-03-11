@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
     Search,
     Filter,
-    ChevronLeft,
-    ChevronRight,
     Loader2,
     RefreshCw,
     CheckCircle,
@@ -28,6 +26,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Pagination as ShadcnPagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 import { AdminService } from '../../../services/admin.service';
 import {
     VerificationRequest,
@@ -269,8 +276,8 @@ export const VerificationRequests: React.FC = () => {
                                                                     className="w-11 h-11 rounded-full object-cover border-2 border-slate-100"
                                                                 />
                                                             ) : (
-                                                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8a6d1c]/10 to-[#d4af37]/20 border border-[#d4af37]/30 flex items-center justify-center text-[#8a6d1c] shrink-0">
-                                                                    <User className="w-5 h-5" />
+                                                                <div className="w-11 h-11 rounded-full bg-[#d4af37] border border-[#d4af37]/30 flex items-center justify-center shrink-0">
+                                                                    <User className="w-5 h-5 text-white/90" />
                                                                 </div>
                                                             )}
                                                             <div>
@@ -340,41 +347,56 @@ export const VerificationRequests: React.FC = () => {
                             <p className="text-sm text-slate-500">
                                 {t('users.showing')} {(currentPage - 1) * limit + 1} {t('users.to')} {Math.min(currentPage * limit, pagination.total)} {t('users.of')} {pagination.total} {t('verification.requests')}
                             </p>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="w-10 h-10 rounded-lg border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 transition-colors"
-                                >
-                                    <ChevronLeft className="w-5 h-5 text-[#8a6d1c]" />
-                                </Button>
-                                <div className="flex items-center gap-1">
-                                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                                        <Button
-                                            key={pageNum}
-                                            variant={pageNum === currentPage ? "default" : "ghost"}
-                                            onClick={() => handlePageChange(pageNum)}
-                                            className={`w-10 h-10 rounded-lg font-medium transition-all ${pageNum === currentPage
-                                                ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md shadow-[#d4af37]/20 hover:brightness-110'
-                                                : 'text-[#8a6d1c] hover:bg-[#d4af37]/10'
-                                                }`}
-                                        >
-                                            {pageNum}
-                                        </Button>
-                                    ))}
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === pagination.totalPages}
-                                    className="w-10 h-10 rounded-lg border-[#d4af37]/30 hover:bg-[#d4af37]/10 disabled:opacity-50 transition-colors"
-                                >
-                                    <ChevronRight className="w-5 h-5 text-[#8a6d1c]" />
-                                </Button>
-                            </div>
+                            <ShadcnPagination className="justify-end w-auto mx-0">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious 
+                                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                    
+                                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                                        let pageNum: number;
+                                        if (pagination.totalPages <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage >= pagination.totalPages - 2) {
+                                            pageNum = pagination.totalPages - 4 + i;
+                                        } else {
+                                            pageNum = currentPage - 2 + i;
+                                        }
+                                        
+                                        return (
+                                            <PaginationItem key={pageNum}>
+                                                <PaginationLink
+                                                    onClick={() => handlePageChange(pageNum)}
+                                                    isActive={currentPage === pageNum}
+                                                    className={`cursor-pointer ${
+                                                        currentPage === pageNum ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white hover:text-white hover:brightness-110' : ''
+                                                    }`}
+                                                >
+                                                    {pageNum}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    })}
+                                    
+                                    {pagination.totalPages > 5 && currentPage < pagination.totalPages - 2 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext 
+                                            onClick={() => currentPage < pagination.totalPages && handlePageChange(currentPage + 1)}
+                                            className={currentPage === pagination.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </ShadcnPagination>
                         </div>
                     )}
                 </>

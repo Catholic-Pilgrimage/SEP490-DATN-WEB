@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, User as UserIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from '../../../App';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -102,11 +102,20 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* User Menu */}
           <div className="relative group">
             <button className="flex items-center gap-3 p-2 hover:bg-[#d4af37]/10 rounded-lg transition-colors border border-[#d4af37]/20">
-              <img
-                src={user.avatar || 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150'}
-                alt={user.name}
-                className="w-8 h-8 rounded-lg object-cover border border-[#d4af37]/30"
-              />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-lg object-cover border border-[#d4af37]/30"
+                />
+              ) : (
+                <div
+                  aria-label="User"
+                  className="w-8 h-8 rounded-lg border border-[#d4af37]/30 bg-[#d4af37] flex items-center justify-center"
+                >
+                  <UserIcon className="w-4 h-4 text-white/90" />
+                </div>
+              )}
               <div className="text-left">
                 <div className="text-sm font-medium text-gray-800">{user.name}</div>
                 <div className="text-xs text-[#8a6d1c] capitalize">{user.role}</div>
