@@ -6,6 +6,7 @@ import { STORAGE_KEYS } from './config/api';
 import { UserProfile } from './types/auth.types';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import InviteRedirectPage from './components/shared/InviteRedirectPage';
 export type UserRole = 'admin' | 'manager';
 
 export interface User {
@@ -126,6 +127,12 @@ function AppContent() {
       <Route
         path="/dashboard/*"
         element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
+      />
+
+      {/* Public Invite Redirect Page - Không cần đăng nhập */}
+      <Route
+        path="/planners/invite/:token"
+        element={<InviteRedirectPage />}
       />
 
       {/* Root redirect */}
