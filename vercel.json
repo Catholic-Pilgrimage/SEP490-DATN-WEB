@@ -1,6 +1,10 @@
 {
     "rewrites": [
       {
+        "source": "/vietmap-api/:path*",
+        "destination": "https://maps.vietmap.vn/api/:path*"
+      },
+      {
         "source": "/(.*)",
         "destination": "/index.html"
       }

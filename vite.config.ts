@@ -13,4 +13,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/vietmap-api': {
+        target: 'https://maps.vietmap.vn/api',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/vietmap-api/, ''),
+      },
+    },
+  },
 });

@@ -71,6 +71,10 @@ export const SiteManagement: React.FC = () => {
   const [limit] = useState(9);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
+  const [mapSites, setMapSites] = useState<AdminSite[]>([]);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [mapMarkersCount, setMapMarkersCount] = useState(0);
+
   const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -117,9 +121,68 @@ export const SiteManagement: React.FC = () => {
     }
   }, [currentPage, limit, searchDebounce, regionFilter, typeFilter, activeFilter]);
 
+  const fetchSitesForMap = useCallback(async () => {
+    try {
+      setMapLoading(true);
+      setMapMarkersCount(0);
+
+      const params: SiteListParams = { page: 1, limit: 500 };
+      if (searchDebounce) params.search = searchDebounce;
+      if (regionFilter) params.region = regionFilter;
+      if (typeFilter) params.type = typeFilter;
+      if (activeFilter !== '') params.is_active = activeFilter;
+
+      const response = await AdminService.getSites(params);
+      if (response.success && response.data) {
+        const sitesFromApi = response.data.sites;
+        setMapSites(sitesFromApi);
+
+        // Ưu tiên dùng luôn lat/lng từ list nếu BE đã trả
+        const directCoords = sitesFromApi.filter(s => s.latitude && s.longitude);
+        if (directCoords.length > 0) {
+          setMapMarkersCount(directCoords.length);
+        } else if (sitesFromApi.length > 0) {
+          // Fallback: gọi thêm chi tiết cho một số site để lấy toạ độ
+          const limitedSites = sitesFromApi.slice(0, 50); // tránh gọi quá nhiều
+          try {
+            const detailsResponses = await Promise.all(
+              limitedSites.map((s) => AdminService.getSiteById(s.id))
+            );
+            const sitesWithCoords: SiteDetail[] = [];
+            detailsResponses.forEach((res) => {
+              if (res.success && res.data && res.data.latitude && res.data.longitude) {
+                sitesWithCoords.push(res.data);
+              }
+            });
+
+            if (sitesWithCoords.length > 0) {
+              // Gán lại mapSites bằng bản detail cho việc render marker
+              setMapSites(sitesWithCoords);
+              setMapMarkersCount(sitesWithCoords.length);
+            }
+          } catch {
+            // bỏ qua lỗi fallback, chỉ không có marker
+          }
+        }
+      } else {
+        setMapSites([]);
+      }
+    } catch {
+      setMapSites([]);
+    } finally {
+      setMapLoading(false);
+    }
+  }, [searchDebounce, regionFilter, typeFilter, activeFilter]);
+
   useEffect(() => {
     fetchSites();
   }, [fetchSites]);
+
+  useEffect(() => {
+    if (viewMode === 'map') {
+      fetchSitesForMap();
+    }
+  }, [viewMode, fetchSitesForMap]);
 
   const handleManualRefresh = async () => {
     await fetchSites();
@@ -275,7 +338,49 @@ export const SiteManagement: React.FC = () => {
       )}
 
       {/* Sites Grid/Map */}
-      {loading ? (
+      {viewMode === 'map' ? (
+        <>
+          {mapLoading ? (
+            <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20">
+              <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
+            </div>
+          ) : mapSites.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20 text-gray-400">
+              <MapPin className="w-12 h-12 mb-4 text-[#d4af37]/40" />
+              <p>{t('sites.noSites')}</p>
+            </div>
+          ) : (
+            <div className="bg-white p-2 rounded-2xl border border-[#d4af37]/20 shadow-sm">
+              <div className="flex items-center justify-between px-3 pt-2 pb-3">
+                <div className="text-xs text-gray-500">
+                  Đang hiển thị{' '}
+                  <span className="font-semibold text-[#8a6d1c]">
+                    {mapMarkersCount}
+                  </span>{' '}
+                  địa điểm có tọa độ trên bản đồ
+                </div>
+              </div>
+              <VietMapView
+                latitude={16.0544}
+                longitude={108.2022}
+                zoom={5}
+                markers={mapSites
+                  .filter(s => s.latitude && s.longitude)
+                  .map(s => ({
+                    id: s.id,
+                    lat: Number(s.latitude),
+                    lng: Number(s.longitude),
+                    title: s.name,
+                    color: s.is_active ? '#22c55e' : '#ef4444',
+                    icon: s.is_active ? '⛪' : '⛔',
+                  }))}
+                onMarkerClick={(m) => navigate(`/dashboard/sites/${m.id}`)}
+                className="w-full h-[560px] rounded-xl overflow-hidden"
+              />
+            </div>
+          )}
+        </>
+      ) : loading ? (
         <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20">
           <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
         </div>
@@ -283,25 +388,6 @@ export const SiteManagement: React.FC = () => {
         <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-[#d4af37]/20 text-gray-400">
           <MapPin className="w-12 h-12 mb-4 text-[#d4af37]/40" />
           <p>{t('sites.noSites')}</p>
-        </div>
-      ) : viewMode === 'map' ? (
-        <div className="bg-white p-2 rounded-2xl border border-[#d4af37]/20 shadow-sm">
-          <VietMapView
-            latitude={16.0544}
-            longitude={108.2022}
-            zoom={5}
-            markers={sites
-              .filter(s => s.latitude && s.longitude)
-              .map(s => ({
-                id: s.id,
-                lat: Number(s.latitude),
-                lng: Number(s.longitude),
-                title: s.name,
-                color: s.is_active ? '#22c55e' : '#ef4444'
-              }))}
-            onMarkerClick={(m) => navigate(`/dashboard/sites/${m.id}`)}
-            className="w-full h-[600px] rounded-xl overflow-hidden"
-          />
         </div>
       ) : (
         <>

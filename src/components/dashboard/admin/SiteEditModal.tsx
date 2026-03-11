@@ -8,8 +8,10 @@ import {
     Phone,
     Mail,
     Clock,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Map
 } from 'lucide-react';
+import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
 import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -50,8 +52,20 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     const [openingHours, setOpeningHours] = useState<SiteOpeningHours>({});
     const [contactInfo, setContactInfo] = useState<SiteContactInfo>({});
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
 
     const [submitting, setSubmitting] = useState(false);
+
+    const handleLocationSelect = (location: LocationResult) => {
+        setFormData(prev => ({
+            ...prev,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            address: location.address || prev.address,
+            district: location.district || prev.district,
+            province: location.province || prev.province,
+        }));
+    };
 
     // Khởi tạo form khi site thay đổi
     useEffect(() => {
@@ -286,9 +300,32 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                         {/* Location Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <MapPin className="w-4 h-4" /> {t('edit.location')}
-                            </h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" /> {t('edit.location')}
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMapPicker(prev => !prev)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all"
+                                    style={showMapPicker
+                                        ? { background: 'linear-gradient(to right, #8a6d1c, #d4af37)', color: 'white', borderColor: 'transparent' }
+                                        : { background: 'transparent', color: '#8a6d1c', borderColor: '#d4af37' }
+                                    }
+                                >
+                                    <Map className="w-3.5 h-3.5" />
+                                    {showMapPicker ? 'Ẩn bản đồ' : 'Chọn trên bản đồ'}
+                                </button>
+                            </div>
+
+                            {/* Map Picker */}
+                            {showMapPicker && (
+                                <MapLocationPicker
+                                    initialLat={formData.latitude || 10.7769}
+                                    initialLng={formData.longitude || 106.7009}
+                                    onLocationSelect={handleLocationSelect}
+                                />
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
@@ -297,26 +334,6 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         type="text"
                                         name="address"
                                         value={formData.address || ''}
-                                        onChange={handleInputChange}
-                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.district')}</label>
-                                    <Input
-                                        type="text"
-                                        name="district"
-                                        value={formData.district || ''}
-                                        onChange={handleInputChange}
-                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.province')}</label>
-                                    <Input
-                                        type="text"
-                                        name="province"
-                                        value={formData.province || ''}
                                         onChange={handleInputChange}
                                         className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
