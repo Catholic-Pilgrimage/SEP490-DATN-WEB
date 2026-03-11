@@ -15,10 +15,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/vietmap-api': {
+      '/vietmap': {
         target: 'https://maps.vietmap.vn/api',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/vietmap-api/, ''),
+        rewrite: (path) => path.replace(/^\/vietmap/, ''),
       },
     },
   },

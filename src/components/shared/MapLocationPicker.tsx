@@ -46,7 +46,7 @@ export default function MapLocationPicker({
         setLoading(true);
         setHint('Đang lấy thông tin địa chỉ...');
         try {
-            const url = `/vietmap-api/reverse/v4?apikey=${VIETMAP_CONFIG.API_KEY}&lat=${lat}&lng=${lng}`;
+            const url = `/vietmap/reverse/v4?apikey=${VIETMAP_CONFIG.API_KEY}&lat=${lat}&lng=${lng}`;
             const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();

@@ -10,8 +10,8 @@ export const VIETMAP_CONFIG = {
     // Style URL — dùng để hiển thị bản đồ
     STYLE_URL: `https://maps.vietmap.vn/api/maps/light/styles.json?apikey=${VIETMAP_TILEMAP_KEY}`,
 
-    // Tile URL — dùng cho raster tiles (fallback)
-    TILE_URL: `https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILEMAP_KEY}`,
+    // Tile URL — đi qua proxy để tránh CORS (dev: Vite proxy, prod: Vercel rewrite)
+    TILE_URL: `/vietmap/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILEMAP_KEY}`,
 
     // API Endpoints
     SEARCH_URL: 'https://maps.vietmap.vn/api/search/v4',
