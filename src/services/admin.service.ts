@@ -289,7 +289,7 @@ export class AdminService {
         if (params.limit && params.limit > 0) {
             queryParams.append('limit', params.limit.toString());
         }
-        if (params.status) {
+        if (params.status === 'pending' || params.status === 'approved' || params.status === 'rejected') {
             queryParams.append('status', params.status);
         }
 

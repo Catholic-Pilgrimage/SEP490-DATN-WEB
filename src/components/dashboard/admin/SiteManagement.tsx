@@ -9,8 +9,6 @@ import {
   Mountain,
   Home,
   HelpCircle,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
   RefreshCw,
   Eye,
@@ -30,6 +28,31 @@ import { SiteEditModal } from './SiteEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 import VietMapView from '../../../components/shared/VietMapView';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Pagination as ShadcnPagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export const SiteManagement: React.FC = () => {
   const { t } = useLanguage();
@@ -137,14 +160,14 @@ export const SiteManagement: React.FC = () => {
           <h1 className="text-2xl font-serif font-bold text-[#8a6d1c]">{t('sites.title')}</h1>
           <p className="text-gray-500 mt-1">{t('sites.subtitle')}</p>
         </div>
-        <button
+        <Button
           onClick={handleManualRefresh}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
+          className="flex items-center gap-2 h-[46px] px-6 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           {t('common.refresh')}
-        </button>
+        </Button>
       </div>
 
       {/* Filters & View Toggle */}
@@ -154,56 +177,67 @@ export const SiteManagement: React.FC = () => {
             <div className="flex-1 min-w-[250px]">
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
-                <input
+                <Input
                   type="text"
                   placeholder={t('sites.searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                  className="w-full h-11 pl-12 pr-4 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
-              <select
-                value={regionFilter}
-                onChange={(e) => { setRegionFilter(e.target.value as SiteRegion | ''); setCurrentPage(1); }}
-                className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
+              <Select
+                value={regionFilter || 'all'}
+                onValueChange={(value) => { setRegionFilter(value === 'all' ? '' : (value as SiteRegion)); setCurrentPage(1); }}
               >
-                <option value="">{t('sites.allRegions')}</option>
-                <option value="Bac">{t('region.bac')}</option>
-                <option value="Trung">{t('region.trung')}</option>
-                <option value="Nam">{t('region.nam')}</option>
-              </select>
+                <SelectTrigger className="w-[180px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                  <SelectValue placeholder={t('sites.allRegions')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('sites.allRegions')}</SelectItem>
+                  <SelectItem value="Bac">{t('region.bac')}</SelectItem>
+                  <SelectItem value="Trung">{t('region.trung')}</SelectItem>
+                  <SelectItem value="Nam">{t('region.nam')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <select
-              value={typeFilter}
-              onChange={(e) => { setTypeFilter(e.target.value as SiteType | ''); setCurrentPage(1); }}
-              className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
+            <Select
+              value={typeFilter || 'all'}
+              onValueChange={(value) => { setTypeFilter(value === 'all' ? '' : (value as SiteType)); setCurrentPage(1); }}
             >
-              <option value="">{t('sites.allTypes')}</option>
-              <option value="church">{t('type.church')}</option>
-              <option value="shrine">{t('type.shrine')}</option>
-              <option value="monastery">{t('type.monastery')}</option>
-              <option value="center">{t('type.center')}</option>
-              <option value="other">{t('type.other')}</option>
-            </select>
+              <SelectTrigger className="w-[190px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                <SelectValue placeholder={t('sites.allTypes')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('sites.allTypes')}</SelectItem>
+                <SelectItem value="church">{t('type.church')}</SelectItem>
+                <SelectItem value="shrine">{t('type.shrine')}</SelectItem>
+                <SelectItem value="monastery">{t('type.monastery')}</SelectItem>
+                <SelectItem value="center">{t('type.center')}</SelectItem>
+                <SelectItem value="other">{t('type.other')}</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <select
-              value={activeFilter === '' ? '' : activeFilter.toString()}
-              onChange={(e) => {
-                const val = e.target.value;
-                setActiveFilter(val === '' ? '' : val === 'true');
+            <Select
+              value={activeFilter === '' ? 'all' : activeFilter.toString()}
+              onValueChange={(value) => {
+                setActiveFilter(value === 'all' ? '' : value === 'true');
                 setCurrentPage(1);
               }}
-              className="px-4 py-3 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
             >
-              <option value="">{t('sites.allStatus')}</option>
-              <option value="true">{t('common.active')}</option>
-              <option value="false">{t('common.inactive')}</option>
-            </select>
+              <SelectTrigger className="w-[190px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                <SelectValue placeholder={t('sites.allStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('sites.allStatus')}</SelectItem>
+                <SelectItem value="true">{t('common.active')}</SelectItem>
+                <SelectItem value="false">{t('common.inactive')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* View Toggle */}
@@ -320,14 +354,18 @@ export const SiteManagement: React.FC = () => {
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <div className="flex gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => navigate(`/dashboard/sites/${site.id}`)}
-                          className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
+                          className="h-11 w-11 rounded-full bg-white border border-[#d4af37]/50 hover:scale-110 hover:bg-[#d4af37] transition-all group/btn shadow-none"
                           title={t('common.view')}
                         >
                           <Eye className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={async () => {
                             setEditLoading(true);
                             try {
@@ -342,7 +380,7 @@ export const SiteManagement: React.FC = () => {
                               setEditLoading(false);
                             }
                           }}
-                          className="p-3 bg-white border border-[#d4af37]/50 rounded-full shadow-lg hover:scale-110 hover:bg-[#d4af37] transition-all group/btn"
+                          className="h-11 w-11 rounded-full bg-white border border-[#d4af37]/50 hover:scale-110 hover:bg-[#d4af37] transition-all group/btn shadow-none"
                           title={t('common.edit')}
                           disabled={editLoading}
                         >
@@ -351,18 +389,22 @@ export const SiteManagement: React.FC = () => {
                           ) : (
                             <Edit className="w-5 h-5 text-[#8a6d1c] group-hover/btn:text-white" />
                           )}
-                        </button>
+                        </Button>
                         {site.is_active && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => { setSiteToDelete(site); setIsDeleteConfirmOpen(true); }}
-                            className="p-3 bg-white border border-red-300 rounded-full shadow-lg hover:scale-110 hover:bg-red-500 transition-all group/btn"
+                            className="h-11 w-11 rounded-full bg-white border border-red-300 hover:scale-110 hover:bg-red-500 transition-all group/btn shadow-none"
                             title={t('common.delete')}
                           >
                             <Trash2 className="w-5 h-5 text-red-500 group-hover/btn:text-white" />
-                          </button>
+                          </Button>
                         )}
                         {!site.is_active && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={async () => {
                               setRestoreLoading(site.id);
                               try {
@@ -382,7 +424,7 @@ export const SiteManagement: React.FC = () => {
                                 setRestoreLoading(null);
                               }
                             }}
-                            className="p-3 bg-white border border-emerald-300 rounded-full shadow-lg hover:scale-110 hover:bg-emerald-500 transition-all group/btn"
+                            className="h-11 w-11 rounded-full bg-white border border-emerald-300 hover:scale-110 hover:bg-emerald-500 transition-all group/btn shadow-none"
                             title={t('common.restore')}
                             disabled={restoreLoading === site.id}
                           >
@@ -391,7 +433,7 @@ export const SiteManagement: React.FC = () => {
                             ) : (
                               <RotateCcw className="w-5 h-5 text-emerald-500 group-hover/btn:text-white" />
                             )}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -435,43 +477,55 @@ export const SiteManagement: React.FC = () => {
               <div className="text-sm text-gray-500">
                 {t('sites.showing')} {((pagination.page - 1) * pagination.limit) + 1} {t('sites.to')} {Math.min(pagination.page * pagination.limit, pagination.total)} {t('sites.of')} {pagination.total} {t('sites.sites')}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-1">
+
+              <ShadcnPagination className="justify-end">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+
                   {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                     let pageNum: number;
-                    if (pagination.totalPages <= 5) pageNum = i + 1;
-                    else if (currentPage <= 3) pageNum = i + 1;
-                    else if (currentPage >= pagination.totalPages - 2) pageNum = pagination.totalPages - 4 + i;
-                    else pageNum = currentPage - 2 + i;
+                    if (pagination.totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= pagination.totalPages - 2) {
+                      pageNum = pagination.totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
                     return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
-                          ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md'
-                          : 'border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10'
-                          }`}
-                      >
-                        {pageNum}
-                      </button>
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(pageNum)}
+                          isActive={currentPage === pageNum}
+                          className={`cursor-pointer ${currentPage === pageNum ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white hover:text-white hover:brightness-110' : ''}`}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
                     );
                   })}
-                </div>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === pagination.totalPages}
-                  className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+
+                  {pagination.totalPages > 5 && currentPage < pagination.totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => currentPage < pagination.totalPages && handlePageChange(currentPage + 1)}
+                      className={currentPage === pagination.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </ShadcnPagination>
             </div>
           )}
         </>
@@ -486,85 +540,92 @@ export const SiteManagement: React.FC = () => {
       />
 
       {/* Delete Confirm Dialog */}
-      {isDeleteConfirmOpen && siteToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
-          />
-
-          {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
-              <div className="text-white">
-                <h2 className="text-lg font-semibold">{t('delete.title')}</h2>
-                <p className="text-sm opacity-80">{siteToDelete.code} - {siteToDelete.name}</p>
-              </div>
-              <button
-                onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-full bg-red-50 border border-red-200">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
+      <AlertDialog
+        open={isDeleteConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDeleteConfirmOpen(false);
+            setSiteToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="p-0 overflow-hidden border-[#d4af37]/20 rounded-2xl max-w-md">
+          {siteToDelete && (
+            <>
+              <AlertDialogHeader className="px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
+                <div className="flex items-center justify-between">
+                  <div className="text-white text-left">
+                    <AlertDialogTitle className="text-lg font-semibold">{t('delete.title')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-sm opacity-80 text-white/90">
+                      {siteToDelete.code} - {siteToDelete.name}
+                    </AlertDialogDescription>
+                  </div>
+                  <button
+                    onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
+                    className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <p className="text-gray-600">
-                  {t('delete.confirm')}
-                </p>
-              </div>
+              </AlertDialogHeader>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
-                <button
-                  onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
-                  disabled={deleteLoading}
-                  className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      setDeleteLoading(true);
-                      const response = await AdminService.deleteSite(siteToDelete.id);
-                      if (response.success) {
-                        showToast('success', t('toast.deleteSiteSuccess'), t('toast.deleteSiteSuccessMsg'));
-                        fetchSites();
-                      } else {
-                        showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
-                        setError(response.message || 'Failed to delete site');
+              <div className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-full bg-red-50 border border-red-200">
+                    <AlertTriangle className="w-6 h-6 text-red-500" />
+                  </div>
+                  <p className="text-gray-600">
+                    {t('delete.confirm')}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => { setIsDeleteConfirmOpen(false); setSiteToDelete(null); }}
+                    disabled={deleteLoading}
+                    className="flex-1 px-4 py-2.5 border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10"
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!siteToDelete) return;
+                      try {
+                        setDeleteLoading(true);
+                        const response = await AdminService.deleteSite(siteToDelete.id);
+                        if (response.success) {
+                          showToast('success', t('toast.deleteSiteSuccess'), t('toast.deleteSiteSuccessMsg'));
+                          fetchSites();
+                        } else {
+                          showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
+                          setError(response.message || 'Failed to delete site');
+                        }
+                      } catch (error) {
+                        const message = error instanceof Error ? error.message : t('toast.deleteSiteFailedMsg');
+                        showToast('error', t('toast.deleteSiteFailed'), message);
+                        setError(message);
+                      } finally {
+                        setDeleteLoading(false);
+                        setIsDeleteConfirmOpen(false);
+                        setSiteToDelete(null);
                       }
-                    } catch (error) {
-                      const message = error instanceof Error ? error.message : t('toast.deleteSiteFailedMsg');
-                      showToast('error', t('toast.deleteSiteFailed'), message);
-                      setError(message);
-                    } finally {
-                      setDeleteLoading(false);
-                      setIsDeleteConfirmOpen(false);
-                      setSiteToDelete(null);
-                    }
-                  }}
-                  disabled={deleteLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
-                >
-                  {deleteLoading ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> {t('delete.deleting')}</>
-                  ) : (
-                    <><Trash2 className="w-4 h-4" /> {t('delete.deleteSite')}</>
-                  )}
-                </button>
+                    }}
+                    disabled={deleteLoading}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 disabled:opacity-50"
+                  >
+                    {deleteLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> {t('delete.deleting')}</>
+                    ) : (
+                      <><Trash2 className="w-4 h-4" /> {t('delete.deleteSite')}</>
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

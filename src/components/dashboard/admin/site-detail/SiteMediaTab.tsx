@@ -1,8 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, X, Image, ChevronLeft, ChevronRight, AlertCircle, Filter, Play, Box } from 'lucide-react';
+import { Loader2, X, Image, AlertCircle, Filter, Play, Box } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteMedia, SiteMediaResponse, MediaStatus, MediaType } from '../../../../types/admin.types';
+import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Pagination as ShadcnPagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SiteMediaTabProps {
     siteId: string;
@@ -83,7 +106,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-48">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
             </div>
         );
     }
@@ -112,32 +135,41 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                     <Filter className="w-4 h-4 text-slate-400" />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value as MediaStatus | '');
+                    <Select
+                        value={statusFilter || 'all'}
+                        onValueChange={(value) => {
+                            setStatusFilter(value === 'all' ? '' : (value as MediaStatus));
                             setCurrentPage(1);
                         }}
-                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">{t('status.allStatus')}</option>
-                        <option value="pending">{t('status.pending')}</option>
-                        <option value="approved">{t('status.approved')}</option>
-                        <option value="rejected">{t('status.rejected')}</option>
-                    </select>
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => {
-                            setTypeFilter(e.target.value as MediaType | '');
+                        <SelectTrigger className="h-9 w-[170px] bg-white border border-slate-200 rounded-lg text-sm">
+                            <SelectValue placeholder={t('status.allStatus')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('status.allStatus')}</SelectItem>
+                            <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                            <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                            <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={typeFilter || 'all'}
+                        onValueChange={(value) => {
+                            setTypeFilter(value === 'all' ? '' : (value as MediaType));
                             setCurrentPage(1);
                         }}
-                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">{t('media.allTypes')}</option>
-                        <option value="image">{t('media.image')}</option>
-                        <option value="video">{t('media.video')}</option>
-                        <option value="model_3d">{t('media.model3d')}</option>
-                    </select>
+                        <SelectTrigger className="h-9 w-[170px] bg-white border border-slate-200 rounded-lg text-sm">
+                            <SelectValue placeholder={t('media.allTypes')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('media.allTypes')}</SelectItem>
+                            <SelectItem value="image">{t('media.image')}</SelectItem>
+                            <SelectItem value="video">{t('media.video')}</SelectItem>
+                            <SelectItem value="model_3d">{t('media.model3d')}</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -145,7 +177,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
             {mediaList.length === 0 ? (
                 <div className="text-center py-12">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Image className="w-6 h-6 text-blue-600" />
+                        <Image className="w-6 h-6 text-[#d4af37]" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
                         Chưa có media
@@ -233,56 +265,92 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                             <p className="text-sm text-slate-500">
                                 Trang {currentPage} / {totalPages}
                             </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
+                            <ShadcnPagination className="justify-end">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => currentPage > 1 && setCurrentPage(p => Math.max(1, p - 1))}
+                                            className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === 1 ? "pointer-events-none opacity-40" : ""}`}
+                                        />
+                                    </PaginationItem>
+
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        let pageNum: number;
+                                        if (totalPages <= 5) pageNum = i + 1;
+                                        else if (currentPage <= 3) pageNum = i + 1;
+                                        else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                                        else pageNum = currentPage - 2 + i;
+
+                                        return (
+                                            <PaginationItem key={pageNum}>
+                                                <PaginationLink
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    isActive={currentPage === pageNum}
+                                                    className={`cursor-pointer rounded-lg border border-[#d4af37]/30 text-sm px-3 py-2 ${currentPage === pageNum
+                                                        ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white hover:text-white hover:brightness-110'
+                                                        : 'text-[#8a6d1c] bg-white hover:bg-[#d4af37]/10'
+                                                        }`}
+                                                >
+                                                    {pageNum}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    })}
+
+                                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis className="text-[#8a6d1c]" />
+                                        </PaginationItem>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => currentPage < totalPages && setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}`}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </ShadcnPagination>
                         </div>
                     )}
                 </>
             )}
 
             {/* Preview Modal */}
-            {previewUrl && (
-                <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
-                    onClick={() => setPreviewUrl(null)}
-                >
-                    <button
-                        onClick={() => setPreviewUrl(null)}
-                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                    >
-                        <X className="w-6 h-6 text-white" />
-                    </button>
+            <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) setPreviewUrl(null); }}>
+                <DialogContent className="p-0 overflow-hidden bg-black/90 border-white/10 max-w-5xl [&>button]:hidden">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Preview</DialogTitle>
+                    </DialogHeader>
+                    <div className="relative w-full">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setPreviewUrl(null)}
+                            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white shadow-none"
+                        >
+                            <X className="w-5 h-5" />
+                        </Button>
 
-                    {isYouTubeUrl(previewUrl) ? (
-                        <iframe
-                            src={previewUrl.replace('watch?v=', 'embed/')}
-                            className="w-full max-w-4xl aspect-video rounded-lg"
-                            allowFullScreen
-                        />
-                    ) : (
-                        <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    )}
-                </div>
-            )}
+                        {previewUrl && (isYouTubeUrl(previewUrl) ? (
+                            <iframe
+                                src={previewUrl.replace('watch?v=', 'embed/')}
+                                className="w-full aspect-video"
+                                allowFullScreen
+                            />
+                        ) : (
+                            <div className="w-full max-h-[85vh] flex items-center justify-center p-4">
+                                <img
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

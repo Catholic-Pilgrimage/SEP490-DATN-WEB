@@ -1,8 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, Clock, Calendar, User, ChevronLeft, ChevronRight, AlertCircle, Filter } from 'lucide-react';
+import { Loader2, Clock, Calendar, User, AlertCircle, Filter } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteShiftSubmission, SiteShiftsResponse, ShiftSubmissionStatus } from '../../../../types/admin.types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Pagination as ShadcnPagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface SiteShiftsTabProps {
     siteId: string;
@@ -16,6 +32,11 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [limit] = useState(10);
     const [statusFilter, setStatusFilter] = useState<ShiftSubmissionStatus | ''>('');
+
+    const normalizeStatusFilter = useCallback((value: string): ShiftSubmissionStatus | '' => {
+        if (value === 'pending' || value === 'approved' || value === 'rejected') return value;
+        return '';
+    }, []);
 
     const fetchData = useCallback(async () => {
         try {
@@ -67,7 +88,7 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-48">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
             </div>
         );
     }
@@ -86,29 +107,34 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
     const submissions = data?.submissions || [];
     const pagination = data?.pagination;
     const totalPages = pagination?.totalPages || 1;
+    const currentCount = submissions.length;
 
     return (
         <div className="p-6 space-y-4">
             {/* Header with Filter */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-sm text-slate-500">
-                    {pagination?.total || 0} {t('shifts.shiftRegistrations')}
+                    {currentCount} {t('shifts.shiftRegistrations')}
                 </p>
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-slate-400" />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value as ShiftSubmissionStatus | '');
+                    <Select
+                        value={statusFilter || 'all'}
+                        onValueChange={(value) => {
+                            setStatusFilter(value === 'all' ? '' : normalizeStatusFilter(value));
                             setCurrentPage(1);
                         }}
-                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">{t('status.allStatus')}</option>
-                        <option value="pending">{t('status.pending')}</option>
-                        <option value="approved">{t('status.approved')}</option>
-                        <option value="rejected">{t('status.rejected')}</option>
-                    </select>
+                        <SelectTrigger className="h-9 w-[170px] bg-white border border-slate-200 rounded-lg text-sm">
+                            <SelectValue placeholder={t('status.allStatus')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('status.allStatus')}</SelectItem>
+                            <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                            <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                            <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -116,7 +142,7 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
             {submissions.length === 0 ? (
                 <div className="text-center py-12">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Clock className="w-6 h-6 text-blue-600" />
+                        <Clock className="w-6 h-6 text-[#d4af37]" />
                     </div>
                     <h3 className="font-medium text-slate-900 mb-1">
                         {t('shifts.noShifts')}
@@ -140,8 +166,8 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
                                     {/* Header */}
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                                                <User className="w-5 h-5 text-white" />
+                                            <div className="w-10 h-10 bg-[#d4af37] border border-[#d4af37]/30 rounded-full flex items-center justify-center">
+                                                <User className="w-5 h-5 text-white/90" />
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-slate-900">{submission.guide.full_name}</h4>
@@ -198,22 +224,52 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
                             <p className="text-sm text-slate-500">
                                 Trang {currentPage} / {totalPages}
                             </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
+                            <ShadcnPagination className="justify-end">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => currentPage > 1 && setCurrentPage(p => Math.max(1, p - 1))}
+                                            className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === 1 ? "pointer-events-none opacity-40" : ""}`}
+                                        />
+                                    </PaginationItem>
+
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        let pageNum: number;
+                                        if (totalPages <= 5) pageNum = i + 1;
+                                        else if (currentPage <= 3) pageNum = i + 1;
+                                        else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                                        else pageNum = currentPage - 2 + i;
+
+                                        return (
+                                            <PaginationItem key={pageNum}>
+                                                <PaginationLink
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    isActive={currentPage === pageNum}
+                                                    className={`cursor-pointer rounded-lg border border-[#d4af37]/30 text-sm px-3 py-2 ${currentPage === pageNum
+                                                        ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white hover:text-white hover:brightness-110'
+                                                        : 'text-[#8a6d1c] bg-white hover:bg-[#d4af37]/10'
+                                                        }`}
+                                                >
+                                                    {pageNum}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    })}
+
+                                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis className="text-[#8a6d1c]" />
+                                        </PaginationItem>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => currentPage < totalPages && setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}`}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </ShadcnPagination>
                         </div>
                     )}
                 </>

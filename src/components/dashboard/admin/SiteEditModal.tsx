@@ -14,6 +14,21 @@ import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SiteEditModalProps {
     site: SiteDetail | null;
@@ -99,6 +114,31 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
         e.preventDefault();
         if (!site) return;
 
+        // Simple client-side validation
+        const isValidLatitude = (lat?: number) =>
+            lat === undefined || (lat >= -90 && lat <= 90);
+        const isValidLongitude = (lng?: number) =>
+            lng === undefined || (lng >= -180 && lng <= 180);
+        const phone = contactInfo.phone?.trim();
+        const email = contactInfo.email?.trim();
+        const phoneRegex = /^\+?[0-9\s-]{6,20}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!isValidLatitude(formData.latitude) || !isValidLongitude(formData.longitude)) {
+            showToast('error', t('common.error'), 'Latitude/Longitude không hợp lệ.');
+            return;
+        }
+
+        if (phone && !phoneRegex.test(phone)) {
+            showToast('error', t('common.error'), 'Số điện thoại không hợp lệ.');
+            return;
+        }
+
+        if (email && !emailRegex.test(email)) {
+            showToast('error', t('common.error'), 'Email không hợp lệ.');
+            return;
+        }
+
         try {
             setSubmitting(true);
 
@@ -130,25 +170,21 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
-            {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 my-8 overflow-hidden border border-[#d4af37]/20 flex-shrink-0">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]">
-                    <div className="text-white">
-                        <h2 className="text-lg font-semibold">{t('modal.editSite')}</h2>
-                        <p className="text-sm opacity-80">{site.code} - {site.name}</p>
+        <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="p-0 overflow-hidden border-[#d4af37]/20 rounded-2xl max-w-3xl max-h-[90vh] flex flex-col gap-0 outline-none [&>button]:hidden">
+                <DialogHeader className="px-6 py-4 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] m-0">
+                    <div className="flex items-center justify-between w-full">
+                        <div className="text-white text-left">
+                            <DialogTitle className="text-lg font-semibold">{t('modal.editSite')}</DialogTitle>
+                            <p className="text-sm opacity-80 font-normal">{site.code} - {site.name}</p>
+                        </div>
+                        <button onClick={onClose} className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button onClick={onClose} className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </DialogHeader>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 max-h-[calc(90vh-8rem)] overflow-y-auto">
+                <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
 
                     <div className="space-y-6">
                         {/* Basic Info Section */}
@@ -161,57 +197,63 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
                                         {t('edit.name')} <span className="text-red-500">*</span>
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
                                         name="name"
                                         value={formData.name || ''}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
 
                                 {/* Type */}
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.type')}</label>
-                                    <select
-                                        name="type"
-                                        value={formData.type || 'church'}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <Select
+                                        value={(formData.type as string) || 'church'}
+                                        onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as UpdateSiteData['type'] }))}
                                     >
-                                        <option value="church">{t('type.church')}</option>
-                                        <option value="shrine">{t('type.shrine')}</option>
-                                        <option value="monastery">{t('type.monastery')}</option>
-                                        <option value="center">{t('type.center')}</option>
-                                        <option value="other">{t('type.other')}</option>
-                                    </select>
+                                        <SelectTrigger className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all">
+                                            <SelectValue placeholder={t('edit.type')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="church">{t('type.church')}</SelectItem>
+                                            <SelectItem value="shrine">{t('type.shrine')}</SelectItem>
+                                            <SelectItem value="monastery">{t('type.monastery')}</SelectItem>
+                                            <SelectItem value="center">{t('type.center')}</SelectItem>
+                                            <SelectItem value="other">{t('type.other')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 {/* Region */}
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.region')}</label>
-                                    <select
-                                        name="region"
-                                        value={formData.region || 'Nam'}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <Select
+                                        value={(formData.region as string) || 'Nam'}
+                                        onValueChange={(value) => setFormData(prev => ({ ...prev, region: value as UpdateSiteData['region'] }))}
                                     >
-                                        <option value="Bac">{t('region.bac')}</option>
-                                        <option value="Trung">{t('region.trung')}</option>
-                                        <option value="Nam">{t('region.nam')}</option>
-                                    </select>
+                                        <SelectTrigger className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all">
+                                            <SelectValue placeholder={t('edit.region')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Bac">{t('region.bac')}</SelectItem>
+                                            <SelectItem value="Trung">{t('region.trung')}</SelectItem>
+                                            <SelectItem value="Nam">{t('region.nam')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 {/* Patron Saint */}
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.patronSaint')}</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         name="patron_saint"
                                         value={formData.patron_saint || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                         placeholder="e.g., Đức Mẹ Vô Nhiễm Nguyên Tội"
                                     />
                                 </div>
@@ -224,7 +266,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         value={formData.description || ''}
                                         onChange={handleInputChange}
                                         rows={3}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        className="w-full px-4 py-2.5 border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all resize-none"
                                     />
                                 </div>
 
@@ -236,7 +278,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         value={formData.history || ''}
                                         onChange={handleInputChange}
                                         rows={3}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        className="w-full px-4 py-2.5 border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all resize-none"
                                     />
                                 </div>
                             </div>
@@ -251,54 +293,54 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.address')}</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         name="address"
                                         value={formData.address || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.district')}</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         name="district"
                                         value={formData.district || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.province')}</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         name="province"
                                         value={formData.province || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.latitude')}</label>
-                                    <input
+                                    <Input
                                         type="number"
                                         name="latitude"
                                         value={formData.latitude || ''}
                                         onChange={handleInputChange}
                                         step="any"
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('edit.longitude')}</label>
-                                    <input
+                                    <Input
                                         type="number"
                                         name="longitude"
                                         value={formData.longitude || ''}
                                         onChange={handleInputChange}
                                         step="any"
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                             </div>
@@ -328,25 +370,25 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+                                    <label className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
                                         <Phone className="w-3 h-3" /> {t('edit.phone')}
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
                                         value={contactInfo.phone || ''}
                                         onChange={(e) => handleContactChange('phone', e.target.value)}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+                                    <label className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
                                         <Mail className="w-3 h-3" /> {t('edit.email')}
                                     </label>
-                                    <input
+                                    <Input
                                         type="email"
                                         value={contactInfo.email || ''}
                                         onChange={(e) => handleContactChange('email', e.target.value)}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
                             </div>
@@ -362,12 +404,12 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                 {days.map(day => (
                                     <div key={day}>
                                         <label className="block text-xs font-medium text-slate-500 mb-1 capitalize">{t(`day.${day}`)}</label>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={(openingHours as Record<string, string>)[day] || ''}
                                             onChange={(e) => handleOpeningHoursChange(day, e.target.value)}
                                             placeholder="05:00-18:00"
-                                            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full h-10 bg-white border border-[#d4af37]/20 rounded-lg focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37]"
                                         />
                                     </div>
                                 ))}
@@ -391,28 +433,29 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#d4af37]/20">
-                        <button
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={onClose}
                             disabled={submitting}
-                            className="flex-1 px-4 py-2.5 border border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10 transition-colors disabled:opacity-50"
+                            className="flex-1 h-11 border-[#d4af37]/30 text-[#8a6d1c] rounded-xl hover:bg-[#d4af37]/10"
                         >
                             {t('common.cancel')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
                             disabled={submitting}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
+                            className="flex-1 h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-none"
                         >
                             {submitting ? (
                                 <><Loader2 className="w-4 h-4 animate-spin" /> {t('edit.saving')}</>
                             ) : (
                                 <><Save className="w-4 h-4" /> {t('common.save')}</>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };

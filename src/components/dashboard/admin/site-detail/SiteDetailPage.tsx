@@ -21,6 +21,7 @@ import {
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteDetail, SiteType, SiteRegion } from '../../../../types/admin.types';
+import { Button } from '@/components/ui/button';
 
 const SiteInfoTab = lazy(() => import('./SiteInfoTab').then(m => ({ default: m.SiteInfoTab })));
 const SiteLocalGuidesTab = lazy(() => import('./SiteLocalGuidesTab').then(m => ({ default: m.SiteLocalGuidesTab })));
@@ -134,21 +135,22 @@ export const SiteDetailPage: React.FC = () => {
                 <XCircle className="w-12 h-12 text-red-500 mb-4" />
                 <p className="text-red-600 text-center mb-4">{error || 'Site not found'}</p>
                 <div className="flex gap-3">
-                    <button
+                    <Button
+                        variant="outline"
                         onClick={() => navigate('/dashboard/sites')}
-                        className="px-4 py-2 border border-[#d4af37]/30 text-[#8a6d1c] rounded-lg hover:bg-[#d4af37]/10 transition-colors"
+                        className="border-[#d4af37]/30 text-[#8a6d1c] rounded-lg hover:bg-[#d4af37]/10"
                     >
                         <span className="flex items-center gap-2">
                             <ArrowLeft className="w-4 h-4" />
                             {t('common.back')}
                         </span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={fetchSiteDetail}
-                        className="px-4 py-2 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all"
+                        className="bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-lg hover:brightness-110 transition-all shadow-none"
                     >
                         {t('modal.retry')}
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -158,22 +160,24 @@ export const SiteDetailPage: React.FC = () => {
     const TypeIcon = typeInfo.icon;
     const regionInfo = getRegionInfo(site.region);
 
+    const resolvedSiteId = siteId || site?.id;
+
     const renderActiveTab = () => {
         switch (activeTab) {
             case 'info':
                 return <SiteInfoTab site={site} regionInfo={regionInfo} formatDate={formatDate} />;
             case 'local-guides':
-                return siteId ? <SiteLocalGuidesTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteLocalGuidesTab siteId={resolvedSiteId} /> : null;
             case 'shifts':
-                return siteId ? <SiteShiftsTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteShiftsTab siteId={resolvedSiteId} /> : null;
             case 'media':
-                return siteId ? <SiteMediaTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteMediaTab siteId={resolvedSiteId} /> : null;
             case 'schedules':
-                return siteId ? <SiteSchedulesTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteSchedulesTab siteId={resolvedSiteId} /> : null;
             case 'events':
-                return siteId ? <SiteEventsTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteEventsTab siteId={resolvedSiteId} /> : null;
             case 'nearby-places':
-                return siteId ? <SiteNearbyPlacesTab siteId={siteId} /> : null;
+                return resolvedSiteId ? <SiteNearbyPlacesTab siteId={resolvedSiteId} /> : null;
             default:
                 return null;
         }
@@ -183,16 +187,23 @@ export const SiteDetailPage: React.FC = () => {
         <div className="space-y-6">
             {/* Breadcrumb & Back */}
             <div className="flex items-center gap-3">
-                <button
+                <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => navigate('/dashboard/sites')}
-                    className="p-2 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 transition-colors"
+                    className="h-10 w-10 p-0 rounded-lg border border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#d4af37]/10 shadow-none"
                 >
                     <ArrowLeft className="w-5 h-5" />
-                </button>
+                </Button>
                 <nav className="flex items-center gap-2 text-sm">
-                    <button onClick={() => navigate('/dashboard/sites')} className="text-[#8a6d1c] hover:underline">
+                    <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => navigate('/dashboard/sites')}
+                        className="h-auto p-0 text-[#8a6d1c] hover:underline"
+                    >
                         {t('sites.title')}
-                    </button>
+                    </Button>
                     <span className="text-slate-400">/</span>
                     <span className="text-slate-600 font-medium truncate max-w-[300px]">{site.name}</span>
                 </nav>
@@ -239,17 +250,19 @@ export const SiteDetailPage: React.FC = () => {
                                 const Icon = tab.icon;
                                 const isActive = activeTab === tab.id;
                                 return (
-                                    <button
+                                    <Button
                                         key={tab.id}
+                                        type="button"
+                                        variant="ghost"
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                                        className={`w-full flex items-center justify-start text-left gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                                             ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-md shadow-[#d4af37]/20'
                                             : 'text-slate-600 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]'
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" />
                                         {tab.label}
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </nav>
@@ -263,17 +276,19 @@ export const SiteDetailPage: React.FC = () => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
                             return (
-                                <button
+                                <Button
                                     key={tab.id}
+                                    type="button"
+                                    variant="ghost"
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors ${isActive
+                                    className={`flex items-center gap-1.5 px-3 py-3 font-medium text-xs whitespace-nowrap border-b-2 transition-colors rounded-none ${isActive
                                         ? 'border-[#d4af37] text-[#8a6d1c]'
                                         : 'border-transparent text-slate-500 hover:text-[#8a6d1c] hover:border-[#d4af37]/50'
                                         }`}
                                 >
                                     <Icon className="w-3.5 h-3.5" />
                                     {tab.label}
-                                </button>
+                                </Button>
                             );
                         })}
                     </div>

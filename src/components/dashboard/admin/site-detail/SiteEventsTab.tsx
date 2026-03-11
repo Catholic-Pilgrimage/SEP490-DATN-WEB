@@ -1,8 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, MapPin, Clock, Calendar, User, ChevronLeft, ChevronRight, AlertCircle, Filter, Sparkles } from 'lucide-react';
+import { Loader2, MapPin, Clock, Calendar, User, AlertCircle, Filter, Sparkles } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteEvent, SiteEventsResponse, EventStatus } from '../../../../types/admin.types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Pagination as ShadcnPagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface SiteEventsTabProps {
     siteId: string;
@@ -67,7 +83,7 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-48">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
             </div>
         );
     }
@@ -96,19 +112,23 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
                 </p>
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-slate-400" />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value as EventStatus | '');
+                    <Select
+                        value={statusFilter || 'all'}
+                        onValueChange={(value) => {
+                            setStatusFilter(value === 'all' ? '' : (value as EventStatus));
                             setCurrentPage(1);
                         }}
-                        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">{t('status.allStatus')}</option>
-                        <option value="pending">{t('status.pending')}</option>
-                        <option value="approved">{t('status.approved')}</option>
-                        <option value="rejected">{t('status.rejected')}</option>
-                    </select>
+                        <SelectTrigger className="h-9 w-[170px] bg-white border border-slate-200 rounded-lg text-sm">
+                            <SelectValue placeholder={t('status.allStatus')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('status.allStatus')}</SelectItem>
+                            <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                            <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                            <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -219,22 +239,49 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
                             <p className="text-sm text-slate-500">
                                 Trang {currentPage} / {totalPages}
                             </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
+                            <ShadcnPagination className="justify-end">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => currentPage > 1 && setCurrentPage(p => Math.max(1, p - 1))}
+                                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        let pageNum: number;
+                                        if (totalPages <= 5) pageNum = i + 1;
+                                        else if (currentPage <= 3) pageNum = i + 1;
+                                        else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                                        else pageNum = currentPage - 2 + i;
+
+                                        return (
+                                            <PaginationItem key={pageNum}>
+                                                <PaginationLink
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    isActive={currentPage === pageNum}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {pageNum}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    })}
+
+                                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => currentPage < totalPages && setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </ShadcnPagination>
                         </div>
                     )}
                 </>
