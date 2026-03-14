@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     X,
     Save,
@@ -12,6 +12,7 @@ import {
     Map
 } from 'lucide-react';
 import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
+import { geocodeAddress } from '@/services/vietmap.service';
 import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -66,6 +67,41 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
             province: location.province || prev.province,
         }));
     };
+
+    const addressGeocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Geocode địa chỉ khi user nhập -> cập nhật bản đồ
+    useEffect(() => {
+        const address = (formData.address || '').trim();
+        if (!address || address.length < 3) return;
+
+        if (addressGeocodeTimerRef.current) {
+            clearTimeout(addressGeocodeTimerRef.current);
+        }
+
+        addressGeocodeTimerRef.current = setTimeout(async () => {
+            addressGeocodeTimerRef.current = null;
+            const focus = formData.latitude != null && formData.longitude != null
+                ? { lat: formData.latitude, lng: formData.longitude }
+                : undefined;
+            const result = await geocodeAddress(address, focus);
+            if (result) {
+                setFormData(prev => ({
+                    ...prev,
+                    latitude: result.latitude,
+                    longitude: result.longitude,
+                    district: result.district || prev.district,
+                    province: result.province || prev.province,
+                }));
+            }
+        }, 600);
+
+        return () => {
+            if (addressGeocodeTimerRef.current) {
+                clearTimeout(addressGeocodeTimerRef.current);
+            }
+        };
+    }, [formData.address]);
 
     // Khởi tạo form khi site thay đổi
     useEffect(() => {
@@ -346,6 +382,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         value={formData.latitude || ''}
                                         onChange={handleInputChange}
                                         step="any"
+                                        disabled
                                         className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>
@@ -357,6 +394,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                         value={formData.longitude || ''}
                                         onChange={handleInputChange}
                                         step="any"
+                                        disabled
                                         className="w-full h-11 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                     />
                                 </div>

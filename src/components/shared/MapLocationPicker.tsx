@@ -96,7 +96,7 @@ export default function MapLocationPicker({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function placeMarker(map: any, lat: number, lng: number) {
+    const placeMarker = useCallback((map: any, lat: number, lng: number) => {
         if (markerRef.current) {
             markerRef.current.remove();
         }
@@ -113,7 +113,7 @@ export default function MapLocationPicker({
                 reverseGeocode(lngLat.lat, lngLat.lng);
             }, 500);
         });
-    }
+    }, [reverseGeocode]);
 
     useEffect(() => {
         if (!mapContainer.current || typeof vietmapgl === 'undefined') return;
@@ -173,6 +173,29 @@ export default function MapLocationPicker({
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Cập nhật map và marker khi initialLat/initialLng thay đổi (vd: từ geocode địa chỉ)
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || typeof initialLat !== 'number' || typeof initialLng !== 'number') return;
+
+        const doUpdate = () => {
+            try {
+                map.flyTo({ center: [initialLng, initialLat], zoom: 14, duration: 800 });
+                placeMarker(map, initialLat, initialLng);
+            } catch {
+                // Map có thể chưa sẵn sàng
+            }
+        };
+
+        if (typeof map.isStyleLoaded === 'function' && map.isStyleLoaded()) {
+            doUpdate();
+        } else {
+            map.once?.('load', doUpdate);
+            const id = setTimeout(doUpdate, 300);
+            return () => clearTimeout(id);
+        }
+    }, [initialLat, initialLng, placeMarker]);
 
     return (
         <div className={`relative rounded-xl overflow-hidden border border-[#d4af37]/30 ${className}`}>

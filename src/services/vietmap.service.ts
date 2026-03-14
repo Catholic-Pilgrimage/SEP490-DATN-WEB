@@ -96,7 +96,65 @@ export const calculateArrivalTime = (
   };
 };
 
+export interface GeocodeResult {
+  latitude: number;
+  longitude: number;
+  address: string;
+  display: string;
+  district: string;
+  province: string;
+}
+
+/**
+ * Geocode address string to coordinates using Vietmap Search + Place API
+ * @param address Address text to search
+ * @param focus Optional center point {lat, lng} to bias results
+ * @returns Geocode result or null if not found
+ */
+export const geocodeAddress = async (
+  address: string,
+  focus?: { lat: number; lng: number },
+): Promise<GeocodeResult | null> => {
+  try {
+    const trimmed = address.trim();
+    if (!trimmed) return null;
+
+    const focusParam = focus ? `&focus=${focus.lat},${focus.lng}` : '';
+    const searchUrl = `/vietmap/search/v4?apikey=${VIETMAP_CONFIG.API_KEY}&text=${encodeURIComponent(trimmed)}&display_type=2${focusParam}`;
+    const searchRes = await fetch(searchUrl);
+    if (!searchRes.ok) throw new Error(`Search HTTP ${searchRes.status}`);
+    const searchData = await searchRes.json();
+
+    const items = Array.isArray(searchData) ? searchData : [];
+    const first = items[0];
+    if (!first?.ref_id) return null;
+
+    const refId = encodeURIComponent(first.ref_id);
+    const placeUrl = `/vietmap/place/v4?apikey=${VIETMAP_CONFIG.API_KEY}&refid=${refId}`;
+    const placeRes = await fetch(placeUrl);
+    if (!placeRes.ok) throw new Error(`Place HTTP ${placeRes.status}`);
+    const placeData = await placeRes.json();
+
+    const lat = placeData?.lat;
+    const lng = placeData?.lng;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+
+    return {
+      latitude: lat,
+      longitude: lng,
+      address: placeData.address ?? first.address ?? '',
+      display: placeData.display ?? first.display ?? trimmed,
+      district: placeData.district ?? first.boundaries?.find((b: { type: number }) => b.type === 1)?.full_name ?? '',
+      province: placeData.city ?? placeData.province ?? first.boundaries?.find((b: { type: number }) => b.type === 0)?.full_name ?? '',
+    };
+  } catch (error) {
+    console.error('[geocodeAddress] error:', error);
+    return null;
+  }
+};
+
 export default {
   calculateRoute,
   calculateArrivalTime,
+  geocodeAddress,
 };
