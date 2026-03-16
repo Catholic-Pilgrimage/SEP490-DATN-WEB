@@ -69,6 +69,15 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
     };
 
     const addressGeocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const coordsRef = useRef<{ lat?: number; lng?: number }>({});
+
+    // Cập nhật coordsRef khi formData.latitude/longitude thay đổi
+    useEffect(() => {
+        coordsRef.current = {
+            lat: formData.latitude,
+            lng: formData.longitude,
+        };
+    }, [formData.latitude, formData.longitude]);
 
     // Geocode địa chỉ khi user nhập -> cập nhật bản đồ
     useEffect(() => {
@@ -81,8 +90,8 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
         addressGeocodeTimerRef.current = setTimeout(async () => {
             addressGeocodeTimerRef.current = null;
-            const focus = formData.latitude != null && formData.longitude != null
-                ? { lat: formData.latitude, lng: formData.longitude }
+            const focus = coordsRef.current.lat != null && coordsRef.current.lng != null
+                ? { lat: coordsRef.current.lat, lng: coordsRef.current.lng }
                 : undefined;
             const result = await geocodeAddress(address, focus);
             if (result) {

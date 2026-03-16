@@ -35,6 +35,7 @@ export default function MapLocationPicker({
     const onLocationSelectRef = useRef(onLocationSelect);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [loading, setLoading] = useState(false);
+    const [mapLoading, setMapLoading] = useState(true);
     const [hint, setHint] = useState('Click vào bản đồ để chọn vị trí');
 
     // Keep ref up to date
@@ -141,6 +142,7 @@ export default function MapLocationPicker({
         mapRef.current = map;
 
         map.on('load', () => {
+            setMapLoading(false);
             map.addSource('vietmap-raster', {
                 type: 'raster',
                 tiles: [VIETMAP_CONFIG.TILE_URL],
@@ -199,6 +201,15 @@ export default function MapLocationPicker({
 
     return (
         <div className={`relative rounded-xl overflow-hidden border border-[#d4af37]/30 ${className}`}>
+            {/* Map loading overlay */}
+            {mapLoading && (
+                <div className="absolute inset-0 bg-slate-100 flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
+                        <span className="text-sm text-slate-500">Đang tải bản đồ...</span>
+                    </div>
+                </div>
+            )}
             <div ref={mapContainer} style={{ width: '100%', height: '300px' }} />
 
             {/* Hint bar */}

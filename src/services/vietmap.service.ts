@@ -19,6 +19,21 @@ export interface RouteResult {
 }
 
 /**
+ * Fetch with timeout
+ */
+const fetchWithTimeout = async (url: string, timeoutMs = 10000): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+/**
  * Calculate route between two points using Vietmap Routing API
  * @param from Starting point
  * @param to Destination point
@@ -31,7 +46,7 @@ export const calculateRoute = async (
   try {
     const url = `${VIETMAP_CONFIG.ROUTING_URL}?apikey=${VIETMAP_CONFIG.API_KEY}&point=${from.latitude},${from.longitude}&point=${to.latitude},${to.longitude}&vehicle=car&points_encoded=false`;
 
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     const data = await response.json();
 
     if (!response.ok || !data.paths || data.paths.length === 0) {
@@ -69,6 +84,9 @@ export const calculateRoute = async (
   } catch (error) {
     console.error('Calculate route error:', error);
     const message = error instanceof Error ? error.message : 'Không thể tính toán lộ trình';
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Yêu cầu bị hết thời gian chờ');
+    }
     throw new Error(message);
   }
 };
@@ -121,7 +139,7 @@ export const geocodeAddress = async (
 
     const focusParam = focus ? `&focus=${focus.lat},${focus.lng}` : '';
     const searchUrl = `/vietmap/search/v4?apikey=${VIETMAP_CONFIG.API_KEY}&text=${encodeURIComponent(trimmed)}&display_type=2${focusParam}`;
-    const searchRes = await fetch(searchUrl);
+    const searchRes = await fetchWithTimeout(searchUrl);
     if (!searchRes.ok) throw new Error(`Search HTTP ${searchRes.status}`);
     const searchData = await searchRes.json();
 
@@ -131,7 +149,7 @@ export const geocodeAddress = async (
 
     const refId = encodeURIComponent(first.ref_id);
     const placeUrl = `/vietmap/place/v4?apikey=${VIETMAP_CONFIG.API_KEY}&refid=${refId}`;
-    const placeRes = await fetch(placeUrl);
+    const placeRes = await fetchWithTimeout(placeUrl);
     if (!placeRes.ok) throw new Error(`Place HTTP ${placeRes.status}`);
     const placeData = await placeRes.json();
 
@@ -149,6 +167,9 @@ export const geocodeAddress = async (
     };
   } catch (error) {
     console.error('[geocodeAddress] error:', error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      return null;
+    }
     return null;
   }
 };
