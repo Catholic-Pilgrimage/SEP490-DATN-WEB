@@ -373,8 +373,12 @@ export const SiteManagement: React.FC = () => {
                     title: s.name,
                     color: s.is_active ? '#22c55e' : '#ef4444',
                     icon: s.is_active ? '⛪' : '⛔',
+                    coverImage: s.cover_image || undefined,
+                    address: s.address || '',
+                    type: s.type || '',
+                    isActive: s.is_active,
                   }))}
-                onMarkerClick={(m) => navigate(`/dashboard/sites/${m.id}`)}
+                onViewDetail={(id) => navigate(`/dashboard/sites/${id}`)}
                 className="w-full h-[560px] rounded-xl overflow-hidden"
               />
             </div>
