@@ -29,11 +29,178 @@ import {
     SiteNearbyPlacesResponse,
     AdminSOSListParams,
     AdminSOSListData,
-    AdminSOSStats
+    AdminSOSStats,
+    DashboardOverviewData,
+    DashboardOverviewParams,
+    UsersGrowthParams,
+    UsersGrowthData,
+    CheckinsAnalyticsParams,
+    CheckinsAnalyticsData,
+    PopularSitesParams,
+    PopularSiteData,
+    SOSBySiteParams,
+    SOSBySiteData
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
 export class AdminService {
+    /**
+     * Get dashboard overview statistics with time filter
+     * @param params - { period, from_date, to_date }
+     * period: 'today' | 'week' | 'month' | 'custom'
+     * from_date/to_date: Required when period='custom'
+     */
+    static async getDashboardOverview(
+        params: DashboardOverviewParams = {}
+    ): Promise<ApiResponse<DashboardOverviewData>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.DASHBOARD_OVERVIEW}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.DASHBOARD_OVERVIEW;
+
+        return ApiService.get<ApiResponse<DashboardOverviewData>>(endpoint);
+    }
+
+    /**
+     * Get user growth analytics - new users registered by date
+     * @param params - { period, from_date, to_date, days }
+     * period: 'today' | 'week' | 'month' | 'custom'
+     * days: fallback if no period (default 30)
+     */
+    static async getUsersGrowth(
+        params: UsersGrowthParams = {}
+    ): Promise<ApiResponse<UsersGrowthData[]>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+        if (params.days) {
+            queryParams.append('days', params.days.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_USERS_GROWTH}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_USERS_GROWTH;
+
+        return ApiService.get<ApiResponse<UsersGrowthData[]>>(endpoint);
+    }
+
+    /**
+     * Get check-ins analytics - check-ins count by date
+     * @param params - { period, from_date, to_date, days }
+     * period: 'today' | 'week' | 'month' | 'custom'
+     * days: fallback if no period (default 30)
+     */
+    static async getCheckinsAnalytics(
+        params: CheckinsAnalyticsParams = {}
+    ): Promise<ApiResponse<CheckinsAnalyticsData[]>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+        if (params.days) {
+            queryParams.append('days', params.days.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_CHECKINS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_CHECKINS;
+
+        return ApiService.get<ApiResponse<CheckinsAnalyticsData[]>>(endpoint);
+    }
+
+    /**
+     * Get popular sites analytics - sites with most visits
+     * @param params - { period, from_date, to_date, limit }
+     * period: 'today' | 'week' | 'month' | 'custom'
+     * limit: default 10
+     */
+    static async getPopularSites(
+        params: PopularSitesParams = {}
+    ): Promise<ApiResponse<PopularSiteData[]>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_POPULAR_SITES}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_POPULAR_SITES;
+
+        return ApiService.get<ApiResponse<PopularSiteData[]>>(endpoint);
+    }
+
+    /**
+     * Get SOS statistics by site - sites with most SOS requests
+     * @param params - { period, from_date, to_date, limit }
+     * period: 'today' | 'week' | 'month' | 'custom'
+     * limit: default 10
+     */
+    static async getSOSBySite(
+        params: SOSBySiteParams = {}
+    ): Promise<ApiResponse<SOSBySiteData[]>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+        if (params.limit && params.limit > 0) {
+            queryParams.append('limit', params.limit.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `${API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_SOS_BY_SITE}?${queryString}`
+            : API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_SOS_BY_SITE;
+
+        return ApiService.get<ApiResponse<SOSBySiteData[]>>(endpoint);
+    }
+
     /**
      * Get list of users with pagination and filters
      */

@@ -13,6 +13,11 @@ export const API_CONFIG = {
             RESET_PASSWORD: '/api/auth/reset-password',
         },
         ADMIN: {
+            DASHBOARD_OVERVIEW: '/api/admin/dashboard/overview',
+            ANALYTICS_USERS_GROWTH: '/api/admin/dashboard/analytics/users-growth',
+            ANALYTICS_CHECKINS: '/api/admin/dashboard/analytics/checkins',
+            ANALYTICS_POPULAR_SITES: '/api/admin/dashboard/analytics/popular-sites',
+            ANALYTICS_SOS_BY_SITE: '/api/admin/dashboard/analytics/sos-by-site',
             USERS: '/api/admin/users',
             USER_DETAIL: (id: string) => `/api/admin/users/${id}`,
             USER_STATUS: (id: string) => `/api/admin/users/${id}/status`,

@@ -574,3 +574,219 @@ export interface AdminSOSStats {
     by_site: AdminSOSSiteStat[];
     average_resolution_minutes: number;
 }
+
+// ============ DASHBOARD APIs ============
+
+export type DashboardPeriod = 'today' | 'week' | 'month' | 'custom';
+
+export interface DashboardFilterApplied {
+    period: DashboardPeriod | 'all';
+    from_date: string | null;
+    to_date: string | null;
+}
+
+export interface DashboardUsersStats {
+    total: number;
+    by_role: {
+        pilgrim: number;
+        local_guide: number;
+        manager: number;
+        admin: number;
+    };
+    new_this_month: number;
+    banned: number;
+}
+
+export interface DashboardSitesStats {
+    total: number;
+    active: number;
+    inactive: number;
+    by_region: {
+        Bac: number;
+        Trung: number;
+        Nam: number;
+    };
+    by_type: {
+        church: number;
+        shrine: number;
+        monastery: number;
+        center: number;
+        other: number;
+    };
+}
+
+export interface DashboardPlannersStats {
+    total: number;
+    planning: number;
+    ongoing: number;
+    completed: number;
+}
+
+export interface DashboardCheckinsStats {
+    total: number;
+    today: number;
+    this_week: number;
+    this_month: number;
+}
+
+export interface DashboardJournalsStats {
+    total: number;
+    public: number;
+    private: number;
+    this_month: number;
+}
+
+export interface DashboardPostsStats {
+    total: number;
+    this_month: number;
+    total_likes: number;
+    total_comments: number;
+}
+
+export interface DashboardSOSStats {
+    total: number;
+    by_status: {
+        pending: number;
+        accepted: number;
+        resolved: number;
+        cancelled: number;
+    };
+    by_region: {
+        Bac: number;
+        Trung: number;
+        Nam: number;
+        unknown: number;
+    };
+    avg_resolution_minutes: number;
+}
+
+export interface DashboardReportsStats {
+    total: number;
+    by_status: {
+        pending: number;
+        resolved: number;
+        dismissed: number;
+    };
+    by_reason: {
+        spam: number;
+        inappropriate: number;
+        harassment: number;
+        other: number;
+    };
+}
+
+export interface DashboardContentPending {
+    verification_requests: number;
+    media: number;
+    schedules: number;
+    events: number;
+    nearby_places: number;
+    shifts: number;
+}
+
+export interface DashboardOverviewData {
+    filter_applied: DashboardFilterApplied;
+    users: DashboardUsersStats;
+    sites: DashboardSitesStats;
+    planners: DashboardPlannersStats;
+    checkins: DashboardCheckinsStats;
+    journals: DashboardJournalsStats;
+    posts: DashboardPostsStats;
+    sos: DashboardSOSStats;
+    reports: DashboardReportsStats;
+    content_pending_review: DashboardContentPending;
+}
+
+export interface DashboardOverviewParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+}
+
+// ============ ANALYTICS API TYPES ============
+
+// GET /api/admin/dashboard/analytics/users-growth - Query Parameters
+export interface UsersGrowthParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+    days?: number;
+}
+
+// GET /api/admin/dashboard/analytics/users-growth - Response Data
+export interface UsersGrowthData {
+    date: string;
+    count: number;
+}
+
+// GET /api/admin/dashboard/analytics/checkins - Query Parameters
+export interface CheckinsAnalyticsParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+    days?: number;
+}
+
+// GET /api/admin/dashboard/analytics/checkins - Response Data
+export interface CheckinsAnalyticsData {
+    date: string;
+    count: number;
+}
+
+// ============ ANALYTICS POPULAR SITES TYPES ============
+
+// GET /api/admin/dashboard/analytics/popular-sites - Query Parameters
+export interface PopularSitesParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+    limit?: number;
+}
+
+// GET /api/admin/dashboard/analytics/popular-sites - Site Info
+export interface PopularSiteInfo {
+    id: string;
+    code: string;
+    name: string;
+    region: SiteRegion;
+    type: SiteType;
+    cover_image: string | null;
+}
+
+// GET /api/admin/dashboard/analytics/popular-sites - Response Data
+export interface PopularSiteData {
+    site: PopularSiteInfo;
+    visit_count: number;
+}
+
+// ============ ANALYTICS SOS BY SITE TYPES ============
+
+// GET /api/admin/dashboard/analytics/sos-by-site - Query Parameters
+export interface SOSBySiteParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+    limit?: number;
+}
+
+// GET /api/admin/dashboard/analytics/sos-by-site - Response Data
+export interface SOSBySiteData {
+    site: PopularSiteInfo;
+    sos_count: number;
+    resolved_count: number;
+    pending_count: number;
+}
+
+// GET /api/admin/dashboard/analytics/checkins - Query Parameters
+export interface CheckinsAnalyticsParams {
+    period?: DashboardPeriod;
+    from_date?: string;
+    to_date?: string;
+    days?: number;
+}
+
+// GET /api/admin/dashboard/analytics/checkins - Response Data
+export interface CheckinsAnalyticsData {
+    date: string;
+    count: number;
+}
