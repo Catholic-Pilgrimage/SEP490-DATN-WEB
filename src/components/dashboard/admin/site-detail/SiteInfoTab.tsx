@@ -75,6 +75,50 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
     const markerColor = site.is_active ? '#16a34a' : '#9ca3af';
     const markerIcon = site.is_active ? '⛪' : '⛔';
 
+    // Icon theo category cho nearby places
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case 'food': return '🍽️';
+            case 'lodging': return '🏨';
+            case 'medical': return '🏥';
+            default: return '📍';
+        }
+    };
+
+    // Icon color theo category
+    const getCategoryColor = (category: string) => {
+        switch (category) {
+            case 'food': return '#f97316';
+            case 'lodging': return '#8b5cf6';
+            case 'medical': return '#ef4444';
+            default: return '#6b7280';
+        }
+    };
+
+    // Tạo markers bao gồm cả site chính và nearby places
+    const allMarkers = [
+        {
+            id: site.id,
+            lat: Number(site.latitude),
+            lng: Number(site.longitude),
+            title: site.name,
+            address: fullAddress,
+            color: markerColor,
+            icon: markerIcon,
+            isActive: site.is_active,
+        },
+        ...nearbyPlaces.map((place) => ({
+            id: place.id,
+            lat: Number(place.latitude),
+            lng: Number(place.longitude),
+            title: place.name,
+            address: place.address || '',
+            color: getCategoryColor(place.category),
+            icon: getCategoryIcon(place.category),
+            isActive: place.is_active,
+        })),
+    ];
+
     return (
         <div className="p-6 space-y-6">
             {/* Location */}
@@ -154,14 +198,7 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
                                     latitude={Number(site.latitude)}
                                     longitude={Number(site.longitude)}
                                     zoom={15}
-                                    markers={[{
-                                        id: site.id,
-                                        lat: Number(site.latitude),
-                                        lng: Number(site.longitude),
-                                        title: site.name,
-                                        color: markerColor,
-                                        icon: markerIcon,
-                                    }]}
+                                    markers={allMarkers}
                                     className="w-full h-[360px] rounded-xl overflow-hidden border border-[#d4af37]/20 shadow-sm"
                                 />
 
@@ -193,7 +230,9 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
                                                 Địa điểm lân cận
                                             </p>
                                             <p className="text-[11px] text-slate-500">
-                                                3 địa điểm gần nhất quanh site
+                                                {nearbyPlaces.length > 0
+                                                    ? `${nearbyPlaces.length} địa điểm gần nhất quanh site`
+                                                    : 'Chưa có địa điểm lân cận'}
                                             </p>
                                         </div>
                                     </div>

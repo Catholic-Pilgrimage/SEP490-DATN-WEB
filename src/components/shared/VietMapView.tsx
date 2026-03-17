@@ -10,6 +10,7 @@ export interface VietMapMarker {
     lng: number;
     title: string;
     color?: string;
+    icon?: string;
     // Thông tin mở rộng cho popup
     coverImage?: string;
     address?: string;
@@ -88,7 +89,7 @@ export default function VietMapView({
                 align-items: center;
                 justify-content: center;
             `;
-            el.innerHTML = '📍';
+            el.innerHTML = m.icon || '📍';
 
             // Chuyển đổi type sang tiếng Việt
             const typeTranslations: Record<string, string> = {
