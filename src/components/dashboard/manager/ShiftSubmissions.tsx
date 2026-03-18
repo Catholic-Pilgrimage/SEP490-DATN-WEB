@@ -64,30 +64,8 @@ const isSameDay = (d1: Date, d2: Date): boolean => {
 };
 
 const getCalendarDays = (year: number, month: number): Date[] => {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    // Find the Monday of the first week
-    let startDate = getMonday(firstDay);
-    // If the Monday is after the 1st, go back a week
-    if (startDate.getDate() > 1 && startDate.getMonth() === month) {
-        startDate = addDays(startDate, -7);
-    }
-
-    const days: Date[] = [];
-    let current = new Date(startDate);
-
-    // Generate 6 weeks (42 days) to ensure we cover the whole month
-    for (let i = 0; i < 42; i++) {
-        days.push(new Date(current));
-        current = addDays(current, 1);
-        // Stop if we've passed the last day and we're in a new week
-        if (current > lastDay && current.getDay() === 1) {
-            break;
-        }
-    }
-
-    return days;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
 };
 
 const getWeekDays = (startDate: Date): Date[] => {
@@ -97,6 +75,11 @@ const getWeekDays = (startDate: Date): Date[] => {
         days.push(addDays(monday, i));
     }
     return days;
+};
+
+const getMondayBasedColumn = (date: Date): number => {
+    const day = date.getDay();
+    return day === 0 ? 7 : day; // Mon=1 ... Sun=7
 };
 
 /**
@@ -120,6 +103,7 @@ export const ShiftSubmissions: React.FC = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [isDayDetailOpen, setIsDayDetailOpen] = useState(false);
 
     // Modal state
     const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
@@ -142,6 +126,15 @@ export const ShiftSubmissions: React.FC = () => {
         }
         return getCalendarDays(currentDate.getFullYear(), currentDate.getMonth());
     }, [viewMode, currentDate]);
+
+    const leadingEmptyDays = useMemo(() => {
+        if (viewMode !== 'month' || calendarDays.length === 0) return 0;
+        return getMondayBasedColumn(calendarDays[0]) - 1;
+    }, [viewMode, calendarDays]);
+
+    const calendarRowCount = viewMode === 'week'
+        ? 1
+        : Math.ceil((leadingEmptyDays + calendarDays.length) / 7);
 
     // Map shifts to calendar dates
     const shiftsMap = useMemo(() => {
@@ -406,6 +399,13 @@ export const ShiftSubmissions: React.FC = () => {
                             >
                                 {t('common.today')}
                             </button>
+                            <button
+                                onClick={() => setIsDayDetailOpen(true)}
+                                disabled={!selectedDate || viewMode === 'year'}
+                                className="px-3 py-1 text-sm text-[#8a6d1c] border border-[#d4af37]/30 rounded-lg hover:bg-[#f5f3ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {t('common.details')}
+                            </button>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -483,11 +483,13 @@ export const ShiftSubmissions: React.FC = () => {
                             </div>
 
                             {/* Calendar Grid */}
-                            <div className={`flex-1 grid grid-cols-7 ${viewMode === 'week' ? 'grid-rows-1' : ''}`}>
+                            <div
+                                className="flex-1 min-h-0 grid grid-cols-7"
+                                style={{ gridTemplateRows: `repeat(${calendarRowCount}, minmax(0, 1fr))` }}
+                            >
                                 {calendarDays.map((date, index) => {
                                     const dateKey = date.toISOString().split('T')[0];
                                     const dayShifts = shiftsMap.get(dateKey);
-                                    const isCurrentMonth = date.getMonth() === currentDate.getMonth();
                                     const isToday = isSameDay(date, today);
                                     const isSelected = selectedDate && isSameDay(date, selectedDate);
 
@@ -495,11 +497,14 @@ export const ShiftSubmissions: React.FC = () => {
                                         <button
                                             key={index}
                                             onClick={() => setSelectedDate(date)}
+                                            style={viewMode === 'month' && index === 0
+                                                ? { gridColumnStart: getMondayBasedColumn(date) }
+                                                : undefined}
                                             className={`
                                                 p-2 border-b border-r border-slate-100 
                                                 text-left transition-colors relative
-                                                ${viewMode === 'week' ? 'min-h-[200px]' : 'min-h-[80px]'}
-                                                ${isCurrentMonth ? 'bg-white' : 'bg-slate-50'}
+                                                ${viewMode === 'week' ? 'min-h-[200px]' : 'h-full min-h-0'}
+                                                bg-white
                                                 ${isSelected ? 'ring-2 ring-[#d4af37] ring-inset z-10' : ''}
                                                 hover:bg-[#f5f3ee]
                                             `}
@@ -508,8 +513,7 @@ export const ShiftSubmissions: React.FC = () => {
                                             <div className={`
                                                 inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium
                                                 ${isToday ? 'bg-[#8a6d1c] text-white' : ''}
-                                                ${!isToday && isCurrentMonth ? 'text-slate-900' : ''}
-                                                ${!isToday && !isCurrentMonth ? 'text-slate-400' : ''}
+                                                ${!isToday ? 'text-slate-900' : ''}
                                             `}>
                                                 {date.getDate()}
                                             </div>
@@ -567,109 +571,111 @@ export const ShiftSubmissions: React.FC = () => {
                 </div>
 
                 {/* Right Panel - Day Detail */}
-                <div className="w-80 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
-                    {selectedDate ? (
-                        <>
-                            {/* Panel Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-slate-200">
-                                <div>
-                                    <h3 className="font-semibold text-slate-900">
-                                        {selectedDate.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
-                                            weekday: 'long',
-                                            day: 'numeric',
-                                            month: 'long'
-                                        })}
-                                    </h3>
-                                    <p className="text-sm text-slate-500">
-                                        {selectedDayShifts ? `${selectedDayShifts.shifts.length} ${t('shifts.shiftCount')}` : t('shifts.noShifts')}
-                                    </p>
+                {isDayDetailOpen && (
+                    <div className="w-80 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
+                        {selectedDate ? (
+                            <>
+                                {/* Panel Header */}
+                                <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                                    <div>
+                                        <h3 className="font-semibold text-slate-900">
+                                            {selectedDate.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
+                                                weekday: 'long',
+                                                day: 'numeric',
+                                                month: 'long'
+                                            })}
+                                        </h3>
+                                        <p className="text-sm text-slate-500">
+                                            {selectedDayShifts ? `${selectedDayShifts.shifts.length} ${t('shifts.shiftCount')}` : t('shifts.noShifts')}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsDayDetailOpen(false)}
+                                        className="p-1 hover:bg-slate-100 rounded-lg"
+                                    >
+                                        <X className="w-5 h-5 text-slate-400" />
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => setSelectedDate(null)}
-                                    className="p-1 hover:bg-slate-100 rounded-lg"
-                                >
-                                    <X className="w-5 h-5 text-slate-400" />
-                                </button>
-                            </div>
 
-                            {/* Panel Content */}
-                            <div className="flex-1 overflow-y-auto p-4">
-                                {selectedDayShifts && selectedDayShifts.shifts.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {selectedDayShifts.shifts.map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="bg-slate-50 rounded-xl p-3 hover:bg-slate-100 transition-colors"
-                                            >
-                                                {/* Guide Info */}
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
-                                                        {item.submission.guide.avatar_url ? (
-                                                            <img
-                                                                src={item.submission.guide.avatar_url}
-                                                                alt={item.submission.guide.full_name}
-                                                                className="w-10 h-10 rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <User className="w-5 h-5 text-white" />
-                                                        )}
+                                {/* Panel Content */}
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    {selectedDayShifts && selectedDayShifts.shifts.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {selectedDayShifts.shifts.map((item, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="bg-slate-50 rounded-xl p-3 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    {/* Guide Info */}
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+                                                            {item.submission.guide.avatar_url ? (
+                                                                <img
+                                                                    src={item.submission.guide.avatar_url}
+                                                                    alt={item.submission.guide.full_name}
+                                                                    className="w-10 h-10 rounded-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <User className="w-5 h-5 text-white" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-medium text-slate-900 truncate">
+                                                                {item.submission.guide.full_name}
+                                                            </p>
+                                                            <p className="text-xs text-slate-500 truncate">
+                                                                {item.submission.guide.email}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-slate-900 truncate">
-                                                            {item.submission.guide.full_name}
-                                                        </p>
-                                                        <p className="text-xs text-slate-500 truncate">
-                                                            {item.submission.guide.email}
-                                                        </p>
+
+                                                    {/* Shift Time */}
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Clock className="w-4 h-4 text-slate-400" />
+                                                        <span className="text-sm text-slate-600">
+                                                            {formatTime(item.shift.start_time)} - {formatTime(item.shift.end_time)}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Status & Action */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.submission.status)}`}>
+                                                            {item.submission.status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                                                            {item.submission.status === 'pending' && <Clock className="w-3 h-3" />}
+                                                            {item.submission.status === 'rejected' && <XCircle className="w-3 h-3" />}
+                                                            {getStatusLabel(item.submission.status)}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => setSelectedSubmissionId(item.submission.id)}
+                                                            className="flex items-center gap-1 text-xs text-[#8a6d1c] hover:text-[#d4af37]"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            {t('common.details')}
+                                                        </button>
                                                     </div>
                                                 </div>
-
-                                                {/* Shift Time */}
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <Clock className="w-4 h-4 text-slate-400" />
-                                                    <span className="text-sm text-slate-600">
-                                                        {formatTime(item.shift.start_time)} - {formatTime(item.shift.end_time)}
-                                                    </span>
-                                                </div>
-
-                                                {/* Status & Action */}
-                                                <div className="flex items-center justify-between">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.submission.status)}`}>
-                                                        {item.submission.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                                                        {item.submission.status === 'pending' && <Clock className="w-3 h-3" />}
-                                                        {item.submission.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                                                        {getStatusLabel(item.submission.status)}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => setSelectedSubmissionId(item.submission.id)}
-                                                        className="flex items-center gap-1 text-xs text-[#8a6d1c] hover:text-[#d4af37]"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                        {t('common.details')}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                                        <Calendar className="w-12 h-12 text-slate-300 mb-3" />
-                                        <p className="text-slate-500">{t('shifts.noShifts')}</p>
-                                        <p className="text-sm text-slate-400">{t('shifts.noShiftsDay')}</p>
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                                            <Calendar className="w-12 h-12 text-slate-300 mb-3" />
+                                            <p className="text-slate-500">{t('shifts.noShifts')}</p>
+                                            <p className="text-sm text-slate-400">{t('shifts.noShiftsDay')}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                                <Calendar className="w-16 h-16 text-slate-300 mb-4" />
+                                <h3 className="font-medium text-slate-700 mb-1">{t('shifts.selectDay')}</h3>
+                                <p className="text-sm text-slate-500">
+                                    {t('shifts.selectDayDesc')}
+                                </p>
                             </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-                            <Calendar className="w-16 h-16 text-slate-300 mb-4" />
-                            <h3 className="font-medium text-slate-700 mb-1">{t('shifts.selectDay')}</h3>
-                            <p className="text-sm text-slate-500">
-                                {t('shifts.selectDayDesc')}
-                            </p>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Detail Modal */}

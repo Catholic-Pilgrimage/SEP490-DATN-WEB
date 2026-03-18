@@ -8,7 +8,6 @@ import {
   UserCheck,
   User as UserIcon,
   FileText,
-  BarChart3,
   ChevronLeft,
   ClipboardCheck,
   Calendar
@@ -44,7 +43,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'shifts', path: '/dashboard/shifts', label: t('menu.shifts'), icon: Calendar },
     { id: 'content', path: '/dashboard/content', label: t('menu.content'), icon: FileText },
     { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
-    { id: 'analytics', path: '/dashboard/analytics', label: t('menu.analytics'), icon: BarChart3 },
   ];
 
   const menuItems = user.role === 'admin' ? adminMenuItems : managerMenuItems;

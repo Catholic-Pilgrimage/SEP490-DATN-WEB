@@ -1,8 +1,5 @@
 import React from 'react';
 import { TodayShifts } from './TodayShifts';
-import { PendingContent } from './PendingContent';
-import { ManagerSOSPanel } from './ManagerSOSPanel';
-import { QuickStats } from './QuickStats';
 
 export const ManagerDashboard: React.FC = () => {
   return (
@@ -17,22 +14,7 @@ export const ManagerDashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* SOS Alert Panel - Always visible at top */}
-      <ManagerSOSPanel />
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column - Today's Operations */}
-        <div className="space-y-6">
-          <TodayShifts />
-          <QuickStats />
-        </div>
-
-        {/* Right Column - Content & Actions */}
-        <div>
-          <PendingContent />
-        </div>
-      </div>
+      <TodayShifts />
     </div>
   );
 };
