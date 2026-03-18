@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     X,
     Loader2,
@@ -12,8 +12,11 @@ import {
     Clock,
     Phone,
     Mail,
-    Save
+    Save,
+    Map
 } from 'lucide-react';
+import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
+import { geocodeAddress } from '@/services/vietmap.service';
 import { ManagerService } from '../../../services/manager.service';
 import { ManagerSite, CreateManagerSiteData, UpdateManagerSiteData } from '../../../types/manager.types';
 import { SiteType, SiteRegion, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
@@ -78,6 +81,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     const [patronSaint, setPatronSaint] = useState('');
     const [coverImage, setCoverImage] = useState<File | null>(null);
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
 
     // Opening hours
     const [openingHours, setOpeningHours] = useState<Record<string, string>>({});
@@ -85,6 +89,8 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     // Contact info
     const [contactPhone, setContactPhone] = useState('');
     const [contactEmail, setContactEmail] = useState('');
+    const addressGeocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const coordsRef = useRef<{ lat?: number; lng?: number }>({});
 
     // Populate form when editing
     useEffect(() => {
@@ -101,6 +107,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
             setType(existingSite.type);
             setPatronSaint(existingSite.patron_saint || '');
             setCoverImagePreview(existingSite.cover_image || null);
+            setShowMapPicker(false);
 
             if (existingSite.opening_hours) {
                 setOpeningHours(existingSite.opening_hours as Record<string, string>);
@@ -128,6 +135,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
         setPatronSaint('');
         setCoverImage(null);
         setCoverImagePreview(null);
+        setShowMapPicker(false);
         setOpeningHours({});
         setContactPhone('');
         setContactEmail('');
@@ -141,6 +149,64 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
             setCoverImagePreview(URL.createObjectURL(file));
         }
     };
+
+    const handleLocationSelect = (location: LocationResult) => {
+        setLatitude(location.latitude.toString());
+        setLongitude(location.longitude.toString());
+        if (location.address) {
+            setAddress(location.address);
+        }
+        if (location.district) {
+            setDistrict(location.district);
+        }
+        if (location.province) {
+            setProvince(location.province);
+        }
+    };
+
+    useEffect(() => {
+        const lat = parseFloat(latitude);
+        const lng = parseFloat(longitude);
+        coordsRef.current = {
+            lat: Number.isNaN(lat) ? undefined : lat,
+            lng: Number.isNaN(lng) ? undefined : lng,
+        };
+    }, [latitude, longitude]);
+
+    // Geocode when user types address to sync map coordinates
+    useEffect(() => {
+        const trimmedAddress = address.trim();
+        if (!trimmedAddress || trimmedAddress.length < 3) return;
+
+        if (addressGeocodeTimerRef.current) {
+            clearTimeout(addressGeocodeTimerRef.current);
+        }
+
+        addressGeocodeTimerRef.current = setTimeout(async () => {
+            addressGeocodeTimerRef.current = null;
+            const focus = coordsRef.current.lat != null && coordsRef.current.lng != null
+                ? { lat: coordsRef.current.lat, lng: coordsRef.current.lng }
+                : undefined;
+
+            const result = await geocodeAddress(trimmedAddress, focus);
+            if (result) {
+                setLatitude(result.latitude.toString());
+                setLongitude(result.longitude.toString());
+                if (result.district) {
+                    setDistrict(result.district);
+                }
+                if (result.province) {
+                    setProvince(result.province);
+                }
+            }
+        }, 600);
+
+        return () => {
+            if (addressGeocodeTimerRef.current) {
+                clearTimeout(addressGeocodeTimerRef.current);
+            }
+        };
+    }, [address]);
 
     const handleOpeningHourChange = (day: string, value: string) => {
         setOpeningHours(prev => ({
@@ -375,14 +441,36 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                     </div>
 
                     {/* Location */}
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wider flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> {t('siteForm.location')}
-                        </h3>
+                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                <MapPin className="w-4 h-4" /> {t('siteForm.location')}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowMapPicker(prev => !prev)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all"
+                                style={showMapPicker
+                                    ? { background: 'linear-gradient(to right, #8a6d1c, #d4af37)', color: 'white', borderColor: 'transparent' }
+                                    : { background: 'transparent', color: '#8a6d1c', borderColor: '#d4af37' }
+                                }
+                            >
+                                <Map className="w-3.5 h-3.5" />
+                                {showMapPicker ? 'Ẩn bản đồ' : 'Chọn trên bản đồ'}
+                            </button>
+                        </div>
+
+                        {showMapPicker && (
+                            <MapLocationPicker
+                                initialLat={Number.isNaN(parseFloat(latitude)) ? 10.7769 : parseFloat(latitude)}
+                                initialLng={Number.isNaN(parseFloat(longitude)) ? 106.7009 : parseFloat(longitude)}
+                                onLocationSelect={handleLocationSelect}
+                            />
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
                                     {t('siteForm.address')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -390,12 +478,12 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="01 Công xã Paris, Bến Nghé"
-                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !address.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                                    className={`w-full h-11 px-4 bg-white border rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all ${submitted && !address.trim() ? 'border-red-400 bg-red-50 hover:border-red-400' : 'border-[#d4af37]/30'}`}
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <div className="hidden">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
                                     {t('siteForm.province')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -403,44 +491,46 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     value={province}
                                     onChange={(e) => setProvince(e.target.value)}
                                     placeholder="Hồ Chí Minh"
-                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !province.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                                    className={`w-full h-11 px-4 bg-white border rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all ${submitted && !province.trim() ? 'border-red-400 bg-red-50 hover:border-red-400' : 'border-[#d4af37]/30'}`}
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.district')}</label>
+                            <div className="hidden">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('siteForm.district')}</label>
                                 <input
                                     type="text"
                                     value={district}
                                     onChange={(e) => setDistrict(e.target.value)}
                                     placeholder="Quận 1"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                                    className="w-full h-11 px-4 bg-white border border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
                                     {t('siteForm.latitude')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={latitude}
                                     onChange={(e) => setLatitude(e.target.value)}
-                                    placeholder="10.779733"
-                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !latitude.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                                    step="any"
+                                    disabled
+                                    className={`w-full h-11 px-4 bg-white border rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed disabled:hover:border-[#d4af37]/30 ${submitted && !latitude.trim() ? 'border-red-400 bg-red-50 hover:border-red-400' : 'border-[#d4af37]/30'}`}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
                                     {t('siteForm.longitude')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={longitude}
                                     onChange={(e) => setLongitude(e.target.value)}
-                                    placeholder="106.699092"
-                                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent ${submitted && !longitude.trim() ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                                    step="any"
+                                    disabled
+                                    className={`w-full h-11 px-4 bg-white border rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed disabled:hover:border-[#d4af37]/30 ${submitted && !longitude.trim() ? 'border-red-400 bg-red-50 hover:border-red-400' : 'border-[#d4af37]/30'}`}
                                 />
                             </div>
                         </div>
@@ -452,30 +542,41 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                             <Upload className="w-4 h-4" /> {t('siteForm.coverImage')}
                         </h3>
 
-                        <div className="flex items-center gap-4">
-                            {coverImagePreview ? (
-                                <div className="relative w-32 h-32 rounded-xl overflow-hidden">
-                                    <img src={coverImagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => { setCoverImage(null); setCoverImagePreview(null); }}
-                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-[#d4af37]/50 rounded-xl cursor-pointer hover:border-[#d4af37] transition-colors">
-                                    <Upload className="w-6 h-6 text-[#d4af37]" />
-                                    <span className="text-xs text-gray-500 mt-1">{t('siteForm.selectImage')}</span>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                    />
+                        <div className="space-y-3">
+                            <input
+                                id="cover-image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="hidden"
+                            />
+
+                            <div className="flex items-stretch gap-4">
+                                <label
+                                    htmlFor="cover-image-upload"
+                                    className="relative w-40 h-28 rounded-xl overflow-hidden border border-[#d4af37]/30 bg-[#f5f3ee] cursor-pointer group"
+                                >
+                                    {coverImagePreview ? (
+                                        <img src={coverImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 gap-1">
+                                            <Upload className="w-5 h-5 text-[#d4af37]" />
+                                            <span className="text-xs">{t('siteForm.selectImage')}</span>
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                                 </label>
-                            )}
+
+                                <label
+                                    htmlFor="cover-image-upload"
+                                    className="flex-1 h-28 rounded-2xl border-2 border-dashed border-[#d4af37]/40 bg-[#fcfbf8] hover:bg-[#f8f4ea] hover:border-[#d4af37]/70 transition-colors cursor-pointer flex flex-col items-center justify-center text-[#8a6d1c]"
+                                >
+                                    <Upload className="w-8 h-8 mb-2" />
+                                    <span className="text-sm font-medium">
+                                        {t('edit.uploadImage')}
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
