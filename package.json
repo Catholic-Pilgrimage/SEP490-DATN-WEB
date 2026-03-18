@@ -13,6 +13,7 @@
     "ci:check": "echo \"Running CI checks locally...\" && npm run lint --if-present && npm run typecheck --if-present && npm test --if-present && echo \"All checks passed!\""
   },
   "dependencies": {
+    "@google/model-viewer": "^4.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",

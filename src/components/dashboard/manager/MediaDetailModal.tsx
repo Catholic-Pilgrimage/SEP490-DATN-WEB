@@ -22,6 +22,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Model3DViewer } from '../../shared/Model3DViewer';
 
 interface MediaDetailModalProps {
     isOpen: boolean;
@@ -235,10 +236,11 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                                 className="w-full max-h-80 object-contain bg-black/20"
                             />
                         ) : currentMedia.type === 'model_3d' ? (
-                            <div className="aspect-video flex flex-col items-center justify-center bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc]">
-                                <Box className="w-16 h-16 text-[#d4af37] mb-4" />
-                                <span className="text-[#8a6d1c] font-medium">3D Model</span>
-                            </div>
+                            <Model3DViewer
+                                src={currentMedia.url}
+                                alt={currentMedia.caption || '3D Model'}
+                                className="w-full h-[300px] sm:h-[400px] bg-black/40"
+                            />
                         ) : (
                             <div className="aspect-video flex items-center justify-center">
                                 <Video className="w-16 h-16 text-white/30" />
