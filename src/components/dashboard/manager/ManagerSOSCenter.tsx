@@ -15,6 +15,15 @@ import { useToast } from '../../../contexts/ToastContext';
 import { ManagerService } from '../../../services/manager.service';
 import { AdminSOSRequest, SOSStatus } from '../../../types/admin.types';
 import { ManagerSOSStats } from '../../../types/manager.types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export const ManagerSOSCenter: React.FC = () => {
     const { t } = useLanguage();
@@ -110,6 +119,30 @@ export const ManagerSOSCenter: React.FC = () => {
         }
     };
 
+    const getSeverityBadgeClass = (severity: string) => {
+        switch (severity) {
+            case 'high':
+                return 'bg-red-500/10 text-red-700 border-red-200';
+            case 'medium':
+                return 'bg-amber-500/10 text-amber-700 border-amber-200';
+            default:
+                return 'bg-[#d4af37]/10 text-[#8a6d1c] border-[#d4af37]/30';
+        }
+    };
+
+    const getStatusBadgeClass = (color: string) => {
+        switch (color) {
+            case 'red':
+                return 'bg-red-50 text-red-700 border-red-200';
+            case 'amber':
+                return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'green':
+                return 'bg-green-50 text-green-700 border-green-200';
+            default:
+                return 'bg-gray-50 text-gray-700 border-gray-200';
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header and Filters */}
@@ -150,41 +183,43 @@ export const ManagerSOSCenter: React.FC = () => {
                         </div>
 
                         {/* Status Dropdown */}
-                        <div className="relative">
-                            <select
-                                className="appearance-none pr-8 py-2 pl-3 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 border border-slate-200 cursor-pointer min-w-[150px]"
-                                style={{
-                                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23334155' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                                    backgroundPosition: 'right 0.5rem center',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundSize: '1.25em 1.25em',
-                                }}
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as SOSStatus | '')}
+                        <div className="w-[170px] flex-none">
+                            <Select
+                                value={statusFilter || 'all'}
+                                onValueChange={(value) => setStatusFilter(value === 'all' ? '' : value as SOSStatus)}
                             >
-                                <option value="">{t('sos.allStatuses')}</option>
-                                <option value="pending">{t('sos.statusPending')}</option>
-                                <option value="accepted">{t('sos.statusAccepted')}</option>
-                                <option value="resolved">{t('sos.statusResolved')}</option>
-                                <option value="cancelled">{t('sos.statusCancelled')}</option>
-                            </select>
+                                <SelectTrigger className="h-10 w-full rounded-xl border-slate-200 bg-[#f8fafc] font-medium text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37]">
+                                    <SelectValue placeholder={t('sos.allStatuses')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('sos.allStatuses')}</SelectItem>
+                                    <SelectItem value="pending">{t('sos.statusPending')}</SelectItem>
+                                    <SelectItem value="accepted">{t('sos.statusAccepted')}</SelectItem>
+                                    <SelectItem value="resolved">{t('sos.statusResolved')}</SelectItem>
+                                    <SelectItem value="cancelled">{t('sos.statusCancelled')}</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 pt-3 lg:pt-0 lg:border-l border-slate-100 lg:pl-4">
-                        <div className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-2 rounded-xl border border-red-100 flex-1 lg:flex-none justify-center">
+                        <Badge
+                            variant="outline"
+                            className="flex-1 lg:flex-none justify-center gap-2 rounded-xl border-red-100 bg-red-50 px-3 py-2 text-sm font-bold text-red-700"
+                        >
                             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                            <span className="text-sm font-bold">{stats?.pending || 0} <span className="font-medium text-red-600/80">{t('sos.activeAlerts')}</span></span>
-                        </div>
+                            <span>{stats?.pending || 0} <span className="font-medium text-red-600/80">{t('sos.activeAlerts')}</span></span>
+                        </Badge>
 
-                        <button
+                        <Button
+                            type="button"
                             onClick={handleManualRefresh}
                             disabled={isLoading || refreshing}
-                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-md shadow-[#d4af37]/20"
+                            className="flex-1 lg:flex-none rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-md shadow-[#d4af37]/20"
                         >
                             <RefreshCw className={`w-4 h-4 ${isLoading || refreshing ? 'animate-spin' : ''}`} />
                             <span className="hidden sm:inline">{t('common.refresh')}</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -270,25 +305,21 @@ export const ManagerSOSCenter: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
-                                        <span className={`
-                                        inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider
-                                        ${severity === 'high' ? 'bg-red-500/10 text-red-700 border border-red-200' :
-                                                severity === 'medium' ? 'bg-amber-500/10 text-amber-700 border border-amber-200' :
-                                                    'bg-[#d4af37]/10 text-[#8a6d1c] border border-[#d4af37]/30'}
-                                    `}>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge
+                                            variant="outline"
+                                            className={`gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${getSeverityBadgeClass(severity)}`}
+                                        >
                                             {severity === 'high' ? t('sos.severityHigh') : severity === 'medium' ? t('sos.severityMedium') : t('sos.severityLow')}
-                                        </span>
+                                        </Badge>
 
-                                        <span className={`
-                                        inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border
-                                        ${statusInfo.color === 'red' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                statusInfo.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                                    statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}
-                                    `}>
+                                        <Badge
+                                            variant="outline"
+                                            className={`gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${getStatusBadgeClass(statusInfo.color)}`}
+                                        >
                                             <StatusIcon className="w-3.5 h-3.5" />
                                             {statusInfo.label}
-                                        </span>
+                                        </Badge>
                                     </div>
                                 </div>
 
@@ -338,36 +369,54 @@ export const ManagerSOSCenter: React.FC = () => {
                                     {alert.status === 'pending' && (
                                         <>
                                             {alert.contact_phone && (
-                                                <a href={`tel:${alert.contact_phone}`} className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20 active:scale-95 transition-all font-medium text-sm">
-                                                    <Phone className="w-4 h-4" />
-                                                    {t('sos.callPilgrim')}
-                                                </a>
+                                                <Button
+                                                    asChild
+                                                    className="h-auto rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20"
+                                                >
+                                                    <a href={`tel:${alert.contact_phone}`}>
+                                                        <Phone className="w-4 h-4" />
+                                                        {t('sos.callPilgrim')}
+                                                    </a>
+                                                </Button>
                                             )}
 
-                                            <button className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20 active:scale-95 transition-all font-medium text-sm">
+                                            <Button
+                                                type="button"
+                                                className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
+                                            >
                                                 <User className="w-4 h-4" />
                                                 {t('sos.assignGuide')}
-                                            </button>
+                                            </Button>
 
-                                            <a
-                                                href={`https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#d4af37]/40 text-[#8a6d1c] rounded-xl hover:bg-[#fbfaf6] hover:border-[#d4af37] active:scale-95 transition-all font-medium text-sm shadow-sm"
+                                            <Button
+                                                asChild
+                                                variant="outline"
+                                                className="h-auto rounded-xl border-[#d4af37]/40 bg-white px-5 py-2.5 text-sm font-medium text-[#8a6d1c] shadow-sm hover:bg-[#fbfaf6] hover:border-[#d4af37] hover:text-[#8a6d1c]"
                                             >
-                                                <Navigation className="w-4 h-4" />
-                                                {t('sos.mapView')}
-                                            </a>
+                                                <a
+                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <Navigation className="w-4 h-4" />
+                                                    {t('sos.mapView')}
+                                                </a>
+                                            </Button>
                                         </>
                                     )}
 
                                     {alert.status === 'accepted' && (
                                         <>
                                             {alert.assignedGuide?.phone && (
-                                                <a href={`tel:${alert.assignedGuide.phone}`} className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20 active:scale-95 transition-all font-medium text-sm">
-                                                    <Phone className="w-4 h-4" />
-                                                    {t('sos.contactGuide')}
-                                                </a>
+                                                <Button
+                                                    asChild
+                                                    className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
+                                                >
+                                                    <a href={`tel:${alert.assignedGuide.phone}`}>
+                                                        <Phone className="w-4 h-4" />
+                                                        {t('sos.contactGuide')}
+                                                    </a>
+                                                </Button>
                                             )}
                                         </>
                                     )}

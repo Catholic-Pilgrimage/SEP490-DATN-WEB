@@ -25,6 +25,15 @@ import {
 import { ShiftSubmissionDetailModal } from './ShiftSubmissionDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 // ============ TYPES ============
 type ViewMode = 'month' | 'week' | 'year';
@@ -286,6 +295,12 @@ export const ShiftSubmissions: React.FC = () => {
         }
     };
 
+    const getViewModeButtonClass = (mode: ViewMode) => (
+        viewMode === mode
+            ? 'bg-white text-slate-900 shadow-sm hover:bg-white'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-transparent'
+    );
+
     const renderHeaderTitle = () => {
         const locale = language === 'vi' ? 'vi-VN' : 'en-US';
         if (viewMode === 'year') {
@@ -312,66 +327,70 @@ export const ShiftSubmissions: React.FC = () => {
     return (
         <div className="h-full flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-4 mb-6 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">{t('shifts.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('shifts.subtitle')}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     {/* View Mode Toggle */}
                     <div className="flex items-center bg-slate-100 rounded-xl p-1">
-                        <button
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={() => setViewMode('year')}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${viewMode === 'year'
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                            className={`rounded-lg ${getViewModeButtonClass('year')}`}
                         >
                             <Calendar className="w-4 h-4" />
                             {t('common.year')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={() => setViewMode('month')}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${viewMode === 'month'
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                            className={`rounded-lg ${getViewModeButtonClass('month')}`}
                         >
                             <CalendarDays className="w-4 h-4" />
                             {t('common.month')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
                             onClick={() => setViewMode('week')}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${viewMode === 'week'
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                            className={`rounded-lg ${getViewModeButtonClass('week')}`}
                         >
                             <CalendarRange className="w-4 h-4" />
                             {t('common.week')}
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Guide Filter */}
-                    <select
-                        value={guideFilter}
-                        onChange={(e) => setGuideFilter(e.target.value)}
-                        className="px-4 py-2.5 border border-[#d4af37]/20 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-transparent"
+                    <Select
+                        value={guideFilter || 'all'}
+                        onValueChange={(value) => setGuideFilter(value === 'all' ? '' : value)}
                     >
-                        <option value="">{t('shifts.allGuides')}</option>
-                        {guides.map(guide => (
-                            <option key={guide.id} value={guide.id}>{guide.full_name}</option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="w-[220px] h-10 rounded-xl border-[#d4af37]/30 bg-white focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37]">
+                            <SelectValue placeholder={t('shifts.allGuides')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('shifts.allGuides')}</SelectItem>
+                            {guides.map((guide) => (
+                                <SelectItem key={guide.id} value={guide.id}>
+                                    {guide.full_name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                    <button
+                    <Button
+                        type="button"
                         onClick={handleManualRefresh}
                         disabled={loading || refreshing}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
+                        className="rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-lg shadow-[#d4af37]/20"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -388,38 +407,48 @@ export const ShiftSubmissions: React.FC = () => {
                 {/* Calendar */}
                 <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
                     {/* Calendar Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200">
-                        <div className="flex items-center gap-4">
+                    <div className="flex flex-col gap-4 p-4 border-b border-slate-200 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-wrap items-center gap-3">
                             <h2 className="text-lg font-semibold text-slate-900">
                                 {renderHeaderTitle()}
                             </h2>
-                            <button
+                            <Button
+                                type="button"
+                                variant="outline"
                                 onClick={goToToday}
-                                className="px-3 py-1 text-sm text-[#8a6d1c] border border-[#d4af37]/30 rounded-lg hover:bg-[#f5f3ee] transition-colors"
+                                className="h-8 rounded-lg border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
                             >
                                 {t('common.today')}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
                                 onClick={() => setIsDayDetailOpen(true)}
                                 disabled={!selectedDate || viewMode === 'year'}
-                                className="px-3 py-1 text-sm text-[#8a6d1c] border border-[#d4af37]/30 rounded-lg hover:bg-[#f5f3ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="h-8 rounded-lg border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
                             >
                                 {t('common.details')}
-                            </button>
+                            </Button>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
                                 onClick={navigatePrev}
-                                className="p-2 hover:bg-[#f5f3ee] rounded-lg transition-colors"
+                                className="rounded-lg text-slate-600 hover:bg-[#f5f3ee] hover:text-slate-900"
                             >
                                 <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
                                 onClick={navigateNext}
-                                className="p-2 hover:bg-[#f5f3ee] rounded-lg transition-colors"
+                                className="rounded-lg text-slate-600 hover:bg-[#f5f3ee] hover:text-slate-900"
                             >
                                 <ChevronRight className="w-5 h-5" />
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
@@ -589,12 +618,15 @@ export const ShiftSubmissions: React.FC = () => {
                                             {selectedDayShifts ? `${selectedDayShifts.shifts.length} ${t('shifts.shiftCount')}` : t('shifts.noShifts')}
                                         </p>
                                     </div>
-                                    <button
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => setIsDayDetailOpen(false)}
-                                        className="p-1 hover:bg-slate-100 rounded-lg"
+                                        className="rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                                     >
-                                        <X className="w-5 h-5 text-slate-400" />
-                                    </button>
+                                        <X className="w-5 h-5" />
+                                    </Button>
                                 </div>
 
                                 {/* Panel Content */}
@@ -639,19 +671,25 @@ export const ShiftSubmissions: React.FC = () => {
 
                                                     {/* Status & Action */}
                                                     <div className="flex items-center justify-between">
-                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.submission.status)}`}>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`gap-1 rounded-full px-2 py-1 text-xs ${getStatusColor(item.submission.status)}`}
+                                                        >
                                                             {item.submission.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                                                             {item.submission.status === 'pending' && <Clock className="w-3 h-3" />}
                                                             {item.submission.status === 'rejected' && <XCircle className="w-3 h-3" />}
                                                             {getStatusLabel(item.submission.status)}
-                                                        </span>
-                                                        <button
+                                                        </Badge>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
                                                             onClick={() => setSelectedSubmissionId(item.submission.id)}
-                                                            className="flex items-center gap-1 text-xs text-[#8a6d1c] hover:text-[#d4af37]"
+                                                            className="h-8 px-2 text-xs text-[#8a6d1c] hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
                                                         >
                                                             <Eye className="w-3.5 h-3.5" />
                                                             {t('common.details')}
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             ))}
