@@ -528,3 +528,98 @@ export interface ManagerSOSStats {
     average_resolution_minutes: number;
 }
 
+// =====================================================================
+// MANAGER DASHBOARD TYPES
+// =====================================================================
+
+export type ManagerDashboardPeriod = 'today' | 'week' | 'month' | 'custom';
+
+export interface ManagerDashboardParams {
+    period?: ManagerDashboardPeriod;
+    from_date?: string; // YYYY-MM-DD, only when period=custom
+    to_date?: string;   // YYYY-MM-DD, only when period=custom
+}
+
+export interface ManagerDashboardFilterApplied {
+    period: ManagerDashboardPeriod | 'all';
+    from_date: string | null;
+    to_date: string | null;
+}
+
+export interface ManagerDashboardSiteInfo {
+    id: string;
+    code: string;
+    name: string;
+    region: string;
+    type: string;
+    cover_image: string | null;
+}
+
+export interface ManagerDashboardLocalGuides {
+    total: number;
+}
+
+export interface ManagerDashboardCheckins {
+    total: number;
+    today: number;
+    this_week: number;
+    this_month: number;
+}
+
+export interface ManagerDashboardSOS {
+    total: number;
+    by_status: {
+        pending: number;
+        accepted: number;
+        resolved: number;
+        cancelled: number;
+    };
+}
+
+export interface ManagerDashboardContentItem {
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+}
+
+export interface ManagerDashboardContentStats {
+    media: ManagerDashboardContentItem;
+    schedules: ManagerDashboardContentItem;
+    events: ManagerDashboardContentItem;
+    nearby_places: ManagerDashboardContentItem;
+    shifts: ManagerDashboardContentItem;
+}
+
+export interface ManagerDashboardPendingTasks {
+    total: number;
+}
+
+export interface ManagerDashboardOverviewData {
+    filter_applied: ManagerDashboardFilterApplied;
+    site: ManagerDashboardSiteInfo;
+    local_guides: ManagerDashboardLocalGuides;
+    checkins: ManagerDashboardCheckins;
+    sos: ManagerDashboardSOS;
+    content_stats: ManagerDashboardContentStats;
+    pending_tasks: ManagerDashboardPendingTasks;
+}
+
+// =====================================================================
+// MANAGER ANALYTICS TYPES
+// =====================================================================
+
+// GET /api/manager/dashboard/analytics/checkins - Query params
+export interface ManagerCheckinsAnalyticsParams {
+    period?: ManagerDashboardPeriod;
+    from_date?: string;  // YYYY-MM-DD (only when period=custom)
+    to_date?: string;    // YYYY-MM-DD (only when period=custom)
+    days?: number;       // Fallback if no period, default 30
+}
+
+// GET /api/manager/dashboard/analytics/checkins - Response item
+export interface ManagerCheckinsAnalyticsData {
+    date: string;  // YYYY-MM-DD
+    count: number;
+}
+

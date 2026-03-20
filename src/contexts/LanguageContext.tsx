@@ -750,6 +750,59 @@ const translations: Record<Language, Record<string, string>> = {
         'chart.totalAlerts': 'Tổng cảnh báo',
         'chart.noSOSData': 'Không ghi nhận cảnh báo SOS nào',
         'chart.pending': 'đang chờ',
+
+        // Manager Dashboard KPI Cards
+        'managerDash.checkinsToday': 'Check-in hôm nay',
+        'managerDash.checkinsWeek': 'Tuần',
+        'managerDash.checkinsMonth': 'Tháng',
+        'managerDash.checkinsTotal': 'tổng check-in',
+        'managerDash.localGuides': 'Local Guides',
+        'managerDash.localGuidesDesc': 'Hướng dẫn viên tại site',
+        'managerDash.sosPending': 'SOS đang chờ',
+        'managerDash.sosAlert': 'Cần xử lý ngay!',
+        'managerDash.sosOk': 'Không có SOS mới',
+        'managerDash.sosResolved': 'xử lý xong',
+        'managerDash.sosCancelled': 'huỷ',
+        'managerDash.pendingTasks': 'Nhiệm vụ chờ duyệt',
+        'managerDash.pendingTasksDesc': 'Nội dung cần xem xét',
+
+        // Manager Dashboard Content Stats
+        'managerDash.contentStats': 'Thống kê nội dung',
+        'managerDash.contentStatsDesc': 'Trạng thái theo từng danh mục',
+        'managerDash.contentPending': 'Chờ duyệt',
+        'managerDash.contentApproved': 'Đã duyệt',
+        'managerDash.contentRejected': 'Từ chối',
+        'managerDash.media': 'Hình ảnh / Video / 3D',
+        'managerDash.schedules': 'Lịch lễ',
+        'managerDash.events': 'Sự kiện',
+        'managerDash.nearbyPlaces': 'Địa điểm lân cận',
+        'managerDash.shifts': 'Đăng ký ca làm việc',
+
+        // Manager Dashboard SOS Summary
+        'managerDash.sosOverview': 'Tổng quan SOS',
+        'managerDash.sosOverviewDesc': 'Trạng thái theo yêu cầu khẩn cấp',
+        'managerDash.sosStatusPending': 'Đang chờ',
+        'managerDash.sosStatusAccepted': 'Đang xử lý',
+        'managerDash.sosStatusResolved': 'Đã giải quyết',
+        'managerDash.sosStatusCancelled': 'Đã huỷ',
+        'managerDash.sosTotal': 'Tổng SOS',
+
+        // Manager Dashboard Charts
+        'managerDash.chartTitle': 'Check-in theo ngày',
+        'managerDash.chartDesc': 'Lượt check-in tại site của bạn',
+        'managerDash.chartTotal': 'Tổng check-in',
+        'managerDash.chartAvg': 'Trung bình / ngày',
+        'managerDash.chartPeak': 'Cao nhất',
+        'managerDash.chartEmpty': 'Chưa có dữ liệu check-in trong khoảng thời gian này',
+        'managerDash.chartAvgPerDay': 'TB {avg}/ngày',
+
+        // Manager Dashboard Today Shifts
+        'managerDash.todayShifts': 'Ca trực hôm nay',
+        'managerDash.shiftActive': 'Đang hoạt động',
+        'managerDash.shiftNoData': 'Không có ca trực nào',
+        'managerDash.shiftNoDataDesc': 'Hôm nay không có Local Guide nào đăng ký',
+        'managerDash.shiftLoadError': 'Không thể tải dữ liệu',
+        'managerDash.shiftRetry': 'Thử lại',
     },
     en: {
         // Sidebar
@@ -1489,6 +1542,59 @@ const translations: Record<Language, Record<string, string>> = {
         'sos.severityMedium': 'medium',
         'sos.severityLow': 'low',
         'sos.unknown': 'Unknown',
+
+        // Manager Dashboard KPI Cards
+        'managerDash.checkinsToday': 'Check-ins Today',
+        'managerDash.checkinsWeek': 'Week',
+        'managerDash.checkinsMonth': 'Month',
+        'managerDash.checkinsTotal': 'total check-ins',
+        'managerDash.localGuides': 'Local Guides',
+        'managerDash.localGuidesDesc': 'Guides at this site',
+        'managerDash.sosPending': 'SOS Pending',
+        'managerDash.sosAlert': 'Requires immediate attention!',
+        'managerDash.sosOk': 'No new SOS',
+        'managerDash.sosResolved': 'resolved',
+        'managerDash.sosCancelled': 'cancelled',
+        'managerDash.pendingTasks': 'Pending Tasks',
+        'managerDash.pendingTasksDesc': 'Content awaiting review',
+
+        // Manager Dashboard Content Stats
+        'managerDash.contentStats': 'Content Statistics',
+        'managerDash.contentStatsDesc': 'Status by category',
+        'managerDash.contentPending': 'Pending',
+        'managerDash.contentApproved': 'Approved',
+        'managerDash.contentRejected': 'Rejected',
+        'managerDash.media': 'Photos / Videos / 3D',
+        'managerDash.schedules': 'Mass Schedules',
+        'managerDash.events': 'Events',
+        'managerDash.nearbyPlaces': 'Nearby Places',
+        'managerDash.shifts': 'Shift Registrations',
+
+        // Manager Dashboard SOS Summary
+        'managerDash.sosOverview': 'SOS Overview',
+        'managerDash.sosOverviewDesc': 'Status by emergency request',
+        'managerDash.sosStatusPending': 'Pending',
+        'managerDash.sosStatusAccepted': 'In Progress',
+        'managerDash.sosStatusResolved': 'Resolved',
+        'managerDash.sosStatusCancelled': 'Cancelled',
+        'managerDash.sosTotal': 'Total SOS',
+
+        // Manager Dashboard Charts
+        'managerDash.chartTitle': 'Daily Check-ins',
+        'managerDash.chartDesc': 'Check-in counts at your site',
+        'managerDash.chartTotal': 'Total Check-ins',
+        'managerDash.chartAvg': 'Daily Average',
+        'managerDash.chartPeak': 'Peak',
+        'managerDash.chartEmpty': 'No check-in data for this period',
+        'managerDash.chartAvgPerDay': '~{avg}/day avg',
+
+        // Manager Dashboard Today Shifts
+        'managerDash.todayShifts': "Today's Shifts",
+        'managerDash.shiftActive': 'Active',
+        'managerDash.shiftNoData': 'No shifts today',
+        'managerDash.shiftNoDataDesc': 'No Local Guides have registered shifts for today',
+        'managerDash.shiftLoadError': 'Failed to load data',
+        'managerDash.shiftRetry': 'Retry',
     }
 };
 

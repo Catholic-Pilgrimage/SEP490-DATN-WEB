@@ -36,6 +36,8 @@ export const API_CONFIG = {
             SOS_STATS: '/api/sos/admin/stats',
         },
         MANAGER: {
+            DASHBOARD_OVERVIEW: '/api/manager/dashboard/overview',
+            ANALYTICS_CHECKINS: '/api/manager/dashboard/analytics/checkins',
             SITES: '/api/manager/sites', // GET my site, POST create, PUT update
             LOCAL_GUIDES: '/api/manager/local-guides', // GET list, POST create
             LOCAL_GUIDE_STATUS: (id: string) => `/api/manager/local-guides/${id}/status`, // PATCH status

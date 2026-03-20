@@ -41,7 +41,11 @@ import {
     UpdateNearbyPlaceStatusResponse,
     ToggleNearbyPlaceActiveData,
     ToggleNearbyPlaceActiveResponse,
-    ManagerSOSStats
+    ManagerSOSStats,
+    ManagerDashboardParams,
+    ManagerDashboardOverviewData,
+    ManagerCheckinsAnalyticsParams,
+    ManagerCheckinsAnalyticsData,
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -49,6 +53,65 @@ import { ApiService } from './api.service';
  * Manager Service - APIs for Manager role
  */
 export class ManagerService {
+    // ============ DASHBOARD METHODS ============
+
+    /**
+     * Get dashboard overview for manager's site
+     * @param params - { period, from_date, to_date }
+     */
+    static async getDashboardOverview(
+        params?: ManagerDashboardParams
+    ): Promise<ApiResponse<ManagerDashboardOverviewData>> {
+        const queryParams = new URLSearchParams();
+
+        if (params?.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params?.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params?.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.DASHBOARD_OVERVIEW}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.DASHBOARD_OVERVIEW;
+
+        return ApiService.get<ApiResponse<ManagerDashboardOverviewData>>(url);
+    }
+
+    /**
+     * Get checkins analytics data by day for manager's site
+     * @param params - { period, from_date, to_date, days }
+     */
+    static async getCheckinsAnalytics(
+        params?: ManagerCheckinsAnalyticsParams
+    ): Promise<ApiResponse<ManagerCheckinsAnalyticsData[]>> {
+        const queryParams = new URLSearchParams();
+
+        if (params?.period) {
+            queryParams.append('period', params.period);
+        }
+        if (params?.from_date) {
+            queryParams.append('from_date', params.from_date);
+        }
+        if (params?.to_date) {
+            queryParams.append('to_date', params.to_date);
+        }
+        if (params?.days !== undefined) {
+            queryParams.append('days', params.days.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.ANALYTICS_CHECKINS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.ANALYTICS_CHECKINS;
+
+        return ApiService.get<ApiResponse<ManagerCheckinsAnalyticsData[]>>(url);
+    }
+
     // ============ SITE METHODS ============
 
     /**
