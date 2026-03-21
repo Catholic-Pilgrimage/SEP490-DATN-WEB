@@ -10,7 +10,8 @@ import {
   FileText,
   ChevronLeft,
   ClipboardCheck,
-  Calendar
+  Calendar,
+  Wallet,
 } from 'lucide-react';
 import { User } from '../../../App';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const adminMenuItems = [
     { id: 'dashboard', path: '/dashboard', label: t('menu.dashboard'), icon: LayoutDashboard, exact: true },
+    { id: 'finance', path: '/dashboard/finance', label: t('menu.finance'), icon: Wallet },
     { id: 'sites', path: '/dashboard/sites', label: t('menu.sites'), icon: MapPin },
     { id: 'users', path: '/dashboard/users', label: t('menu.users'), icon: Users },
     { id: 'verifications', path: '/dashboard/verifications', label: t('menu.verifications'), icon: ClipboardCheck },

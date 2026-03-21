@@ -790,3 +790,116 @@ export interface CheckinsAnalyticsData {
     date: string;
     count: number;
 }
+
+// ============ FINANCE TYPES ============
+
+// GET /api/admin/dashboard/finance - Response Data
+export interface FinanceOverviewData {
+    total_escrow_locked: number;
+    total_pending_payouts: number;
+    total_withdrawn_today: number;
+    total_transactions_today: number;
+    failed_payouts_today: number;
+    total_wallet_balance: number;
+    total_withdraw_failed: number;
+    active_escrow_planners: number;
+}
+
+// ============ WALLET TRANSACTION TYPES ============
+
+export type TransactionType = 'escrow_lock' | 'escrow_refund' | 'withdraw' | 'penalty_applied' | 'penalty_received' | 'penalty_refunded' | 'deposit' | 'topup';
+export type TransactionStatus = 'completed' | 'pending' | 'failed';
+export type TransactionReferenceType = 'planner_deposit' | 'planner' | 'planner_penalty' | 'payos_payout' | 'payos_topup' | 'wallet';
+
+export interface WalletTransactionUser {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url: string | null;
+}
+
+export interface WalletInfo {
+    id: string;
+    user_id: string;
+    balance: string;
+    locked_balance: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    user: WalletTransactionUser;
+}
+
+export interface WalletTransaction {
+    id: string;
+    wallet_id: string;
+    amount: string;
+    type: TransactionType;
+    status: TransactionStatus;
+    reference_type: TransactionReferenceType;
+    reference_id: string;
+    description: string;
+    bank_info: string | null;
+    code: string;
+    created_at: string;
+    updated_at: string;
+    wallet: WalletInfo;
+}
+
+// GET /api/admin/wallet/transactions - Query Parameters
+export interface WalletTransactionParams {
+    type?: TransactionType | '';
+    status?: TransactionStatus | '';
+    reference_type?: TransactionReferenceType | '';
+    planner_id?: string;
+    date_from?: string;
+    date_to?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+
+// GET /api/admin/wallet/transactions - Response Data
+export interface WalletTransactionListData {
+    transactions: WalletTransaction[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+}
+
+// ============ WITHDRAWAL TYPES ============
+
+export interface BankInfo {
+    account_number: string;
+    account_name: string;
+    bank_code: string;
+}
+
+export interface Withdrawal {
+    id: string;
+    amount: string;
+    status: TransactionStatus;
+    reference_id: string;
+    description: string;
+    bank_info: BankInfo | null;
+    error_message: string | null;
+    created_at: string;
+    updated_at: string;
+    user: WalletTransactionUser;
+}
+
+// GET /api/admin/wallet/withdrawals - Query Parameters
+export interface WithdrawalParams {
+    status?: TransactionStatus | '';
+    date_from?: string;
+    date_to?: string;
+    page?: number;
+    limit?: number;
+}
+
+// GET /api/admin/wallet/withdrawals - Response Data
+export interface WithdrawalListData {
+    withdrawals: Withdrawal[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+}

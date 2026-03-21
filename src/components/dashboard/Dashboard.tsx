@@ -13,6 +13,7 @@ import { LocalGuides } from './manager/LocalGuides';
 import { ShiftSubmissions } from './manager/ShiftSubmissions';
 import { ContentManagement } from './manager/ContentManagement';
 import { AdminSOSCenter } from './admin/AdminSOSCenter';
+import { AdminFinance } from './admin/AdminFinance';
 import { ManagerSOSCenter } from './manager/ManagerSOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
@@ -67,6 +68,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <Route path="users" element={<UserManagement />} />
                 <Route path="verifications" element={<VerificationRequests />} />
                 <Route path="sos" element={<AdminSOSCenter />} />
+                <Route path="finance" element={<AdminFinance />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

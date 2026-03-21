@@ -230,8 +230,8 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-xl">
-              <Users className="w-5 h-5 text-[#8a6d1c]" />
+            <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-xl">
+              <Users className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.userGrowth')}</h3>
@@ -253,8 +253,8 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-xl">
-              <TrendingUp className="w-5 h-5 text-[#8a6d1c]" />
+            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+              <TrendingUp className="w-5 h-5 text-amber-600" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.dailyCheckins')}</h3>
@@ -276,8 +276,8 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-xl">
-              <MapPin className="w-5 h-5 text-[#8a6d1c]" />
+            <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <MapPin className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.popularSites')}</h3>

@@ -36,9 +36,10 @@ export const TopBar: React.FC<TopBarProps> = ({
       analytics: t('menu.analytics'),
       profile: t('menu.profile'),
       settings: t('menu.settings'),
-      shifts: t('menu.shifts')
+      shifts: t('menu.shifts'),
+      finance: t('menu.finance')
     };
-    return titles[activeView] || t('menu.dashboard');
+    return titles[activeView] || activeView.charAt(0).toUpperCase() + activeView.slice(1);
   };
 
   const getBreadcrumbs = () => {

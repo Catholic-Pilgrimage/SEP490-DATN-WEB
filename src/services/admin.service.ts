@@ -39,7 +39,12 @@ import {
     PopularSitesParams,
     PopularSiteData,
     SOSBySiteParams,
-    SOSBySiteData
+    SOSBySiteData,
+    FinanceOverviewData,
+    WalletTransactionParams,
+    WalletTransactionListData,
+    WithdrawalParams,
+    WithdrawalListData,
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -199,6 +204,54 @@ export class AdminService {
             : API_CONFIG.ENDPOINTS.ADMIN.ANALYTICS_SOS_BY_SITE;
 
         return ApiService.get<ApiResponse<SOSBySiteData[]>>(endpoint);
+    }
+
+    /**
+     * Get finance overview for admin dashboard
+     * GET /api/admin/dashboard/finance
+     */
+    static async getFinanceOverview(): Promise<ApiResponse<FinanceOverviewData>> {
+        return ApiService.get<ApiResponse<FinanceOverviewData>>(
+            API_CONFIG.ENDPOINTS.ADMIN.DASHBOARD_FINANCE
+        );
+    }
+
+    /**
+     * Get wallet transactions list
+     * GET /api/admin/wallet/transactions
+     */
+    static async getWalletTransactions(params: WalletTransactionParams = {}): Promise<ApiResponse<WalletTransactionListData>> {
+        const queryParams = new URLSearchParams();
+        if (params.type) queryParams.append('type', params.type);
+        if (params.status) queryParams.append('status', params.status);
+        if (params.reference_type) queryParams.append('reference_type', params.reference_type);
+        if (params.planner_id) queryParams.append('planner_id', params.planner_id);
+        if (params.date_from) queryParams.append('date_from', params.date_from);
+        if (params.date_to) queryParams.append('date_to', params.date_to);
+        if (params.search) queryParams.append('search', params.search);
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+
+        const queryString = queryParams.toString();
+        const url = `${API_CONFIG.ENDPOINTS.ADMIN.WALLET_TRANSACTIONS}${queryString ? `?${queryString}` : ''}`;
+        return ApiService.get<ApiResponse<WalletTransactionListData>>(url);
+    }
+
+    /**
+     * Get wallet withdrawals list
+     * GET /api/admin/wallet/withdrawals
+     */
+    static async getWalletWithdrawals(params: WithdrawalParams = {}): Promise<ApiResponse<WithdrawalListData>> {
+        const queryParams = new URLSearchParams();
+        if (params.status) queryParams.append('status', params.status);
+        if (params.date_from) queryParams.append('date_from', params.date_from);
+        if (params.date_to) queryParams.append('date_to', params.date_to);
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+
+        const queryString = queryParams.toString();
+        const url = `${API_CONFIG.ENDPOINTS.ADMIN.WALLET_WITHDRAWALS}${queryString ? `?${queryString}` : ''}`;
+        return ApiService.get<ApiResponse<WithdrawalListData>>(url);
     }
 
     /**

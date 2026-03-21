@@ -95,6 +95,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: 'from-emerald-500 to-teal-600',
       bgGradient: 'from-emerald-50 to-teal-50',
       iconBg: 'bg-emerald-100',
+      iconBorder: 'border-emerald-200',
       iconColor: 'text-emerald-600',
       stats: [
         { label: t('common.inactive'), value: inactiveSites, color: 'text-slate-500' }
@@ -108,6 +109,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: 'from-blue-500 to-indigo-600',
       bgGradient: 'from-blue-50 to-indigo-50',
       iconBg: 'bg-blue-100',
+      iconBorder: 'border-blue-200',
       iconColor: 'text-blue-600',
       stats: [
         { label: t('kpi.pilgrims'), value: activePilgrims, color: 'text-blue-600' },
@@ -122,6 +124,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: 'from-violet-500 to-purple-600',
       bgGradient: 'from-violet-50 to-purple-50',
       iconBg: 'bg-violet-100',
+      iconBorder: 'border-violet-200',
       iconColor: 'text-violet-600',
       stats: [
         { label: t('kpi.certified'), value: activeGuides, color: 'text-violet-600' }
@@ -135,6 +138,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: pendingSOS > 0 ? 'from-rose-500 to-red-600' : 'from-slate-500 to-slate-600',
       bgGradient: pendingSOS > 0 ? 'from-rose-50 to-red-50' : 'from-slate-50 to-slate-100',
       iconBg: pendingSOS > 0 ? 'bg-rose-100' : 'bg-slate-100',
+      iconBorder: pendingSOS > 0 ? 'border-rose-200' : 'border-slate-200',
       iconColor: pendingSOS > 0 ? 'text-rose-600' : 'text-slate-600',
       alert: pendingSOS > 0,
       stats: [
@@ -150,6 +154,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: 'from-amber-500 to-orange-600',
       bgGradient: 'from-amber-50 to-orange-50',
       iconBg: 'bg-amber-100',
+      iconBorder: 'border-amber-200',
       iconColor: 'text-amber-600',
       stats: [
         { label: t('kpi.thisWeek'), value: weekCheckins, color: 'text-amber-600' }
@@ -166,6 +171,8 @@ export const KPICards: React.FC<KPICardsProps> = ({
         avgResponseTime < 60 ? 'from-amber-50 to-orange-50' : 'from-rose-50 to-red-50',
       iconBg: avgResponseTime < 30 ? 'bg-emerald-100' :
         avgResponseTime < 60 ? 'bg-amber-100' : 'bg-rose-100',
+      iconBorder: avgResponseTime < 30 ? 'border-emerald-200' :
+        avgResponseTime < 60 ? 'border-amber-200' : 'border-rose-200',
       iconColor: avgResponseTime < 30 ? 'text-emerald-600' :
         avgResponseTime < 60 ? 'text-amber-600' : 'text-rose-600',
       suffix: avgResponseTime > 0 ? 'm' : '',
@@ -181,6 +188,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: pendingContent > 0 ? 'from-orange-500 to-amber-600' : 'from-slate-500 to-slate-600',
       bgGradient: pendingContent > 0 ? 'from-orange-50 to-amber-50' : 'from-slate-50 to-slate-100',
       iconBg: pendingContent > 0 ? 'bg-orange-100' : 'bg-slate-100',
+      iconBorder: pendingContent > 0 ? 'border-orange-200' : 'border-slate-200',
       iconColor: pendingContent > 0 ? 'text-orange-600' : 'text-slate-600',
       stats: [
         { label: t('menu.verifications'), value: stats.content_pending_review.verification_requests, color: 'text-orange-600' },
@@ -195,6 +203,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
       gradient: 'from-cyan-500 to-blue-600',
       bgGradient: 'from-cyan-50 to-blue-50',
       iconBg: 'bg-cyan-100',
+      iconBorder: 'border-cyan-200',
       iconColor: 'text-cyan-600',
       stats: [
         { label: t('kpi.likes'), value: totalLikes, color: 'text-rose-500' },
@@ -308,8 +317,8 @@ export const KPICards: React.FC<KPICardsProps> = ({
               >
                 {/* Icon & Trend */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`p-2.5 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 ${kpi.alert ? 'animate-pulse bg-rose-50 border-rose-200' : ''}`}>
-                    <Icon className={`w-5 h-5 ${kpi.alert ? 'text-rose-600' : 'text-[#8a6d1c]'}`} />
+                  <div className={`p-2.5 rounded-xl border ${kpi.alert ? 'animate-pulse bg-rose-50 border-rose-200' : `${kpi.iconBg} ${kpi.iconBorder}`}`}>
+                    <Icon className={`w-5 h-5 ${kpi.alert ? 'text-rose-600' : kpi.iconColor}`} />
                   </div>
 
                   {kpi.alert && (
