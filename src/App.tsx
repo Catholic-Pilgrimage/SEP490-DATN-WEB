@@ -107,6 +107,13 @@ function AppContent() {
     showToast('success', texts.logoutSuccess, texts.logoutMessage);
   };
 
+  /** Đồng bộ TopBar / Sidebar sau khi cập nhật hồ sơ (ProfilePage). */
+  const handleUserProfileUpdated = (profile: UserProfile) => {
+    const userData = mapProfileToUser(profile);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+    setUser(userData);
+  };
+
   // Show loading while checking auth
   if (loading) {
     return (
@@ -126,7 +133,13 @@ function AppContent() {
       {/* Protected Dashboard Routes */}
       <Route
         path="/dashboard/*"
-        element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />}
+        element={
+          user ? (
+            <Dashboard user={user} onLogout={handleLogout} onUserProfileUpdated={handleUserProfileUpdated} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
 
       {/* Public Invite Redirect Page - Không cần đăng nhập */}

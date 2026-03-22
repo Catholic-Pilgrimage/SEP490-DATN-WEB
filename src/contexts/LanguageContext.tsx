@@ -649,6 +649,11 @@ const translations: Record<Language, Record<string, string>> = {
         'profile.dateOfBirth': 'Ngày sinh',
         'profile.notProvided': 'Chưa cập nhật',
         'profile.accountCreated': 'Tài khoản được tạo',
+        'profile.summaryTitle': 'Tóm tắt tài khoản',
+        'profile.summaryBadge': 'Thông tin nhanh',
+        'profile.lastUpdated': 'Cập nhật lần cuối',
+        'profile.emailVerified': 'Email đã xác minh',
+        'profile.emailUnverified': 'Email chưa xác minh',
         'profile.editProfile': 'Chỉnh sửa hồ sơ',
 
         // Settings Page
@@ -668,6 +673,9 @@ const translations: Record<Language, Record<string, string>> = {
         'settings.errorMismatch': 'Mật khẩu mới không khớp',
         'settings.errorLength': 'Mật khẩu phải có ít nhất 6 ký tự',
         'settings.errorFailed': 'Đổi mật khẩu thất bại',
+        'settings.tipsTitle': 'Gợi ý bảo mật',
+        'settings.tipsBadge': 'Thực hành tốt',
+        'settings.passwordTips': 'Nên dùng mật khẩu dài, khác với các trang khác và không chia sẻ cho ai. Đổi mật khẩu định kỳ giúp tài khoản an toàn hơn.',
         'settings.languageTitle': 'Ngôn ngữ',
         'settings.languageDesc': 'Chọn ngôn ngữ giao diện hiển thị',
 
@@ -835,6 +843,7 @@ const translations: Record<Language, Record<string, string>> = {
         // Transactions
         'txn.title': 'Danh sách Giao dịch',
         'txn.subtitle': 'Tất cả giao dịch toàn hệ thống',
+        'txn.totalSuffix': 'giao dịch',
         'txn.filter': 'Bộ lọc',
         'txn.searchPlaceholder': 'Tìm theo tên hoặc email...',
         'txn.allTypes': 'Tất cả loại',
@@ -876,6 +885,7 @@ const translations: Record<Language, Record<string, string>> = {
         // Withdrawals
         'wd.title': 'Lịch sử Rút tiền',
         'wd.subtitle': 'Tất cả lệnh rút tiền toàn hệ thống',
+        'wd.totalSuffix': 'lệnh rút',
         'wd.noData': 'Không có lệnh rút tiền nào',
         'wd.loadError': 'Không thể tải lịch sử rút tiền',
         'wd.col.user': 'Người dùng',
@@ -912,6 +922,10 @@ const translations: Record<Language, Record<string, string>> = {
         'rpt.reason.misinformation': 'Thông tin sai lệch',
         'rpt.reason.other': 'Khác',
         'rpt.col.actions': 'Hành động',
+        'rpt.action.view': 'Xem chi tiết',
+        'rpt.detail.title': 'Chi tiết báo cáo',
+        'rpt.detail.targetId': 'ID nội dung',
+        'rpt.detail.updatedAt': 'Cập nhật lúc',
         'rpt.action.resolve': 'Xử lý',
         'rpt.modal.title': 'Xử lý báo cáo',
         'rpt.modal.action': 'Hành động',
@@ -1518,6 +1532,11 @@ const translations: Record<Language, Record<string, string>> = {
         'profile.dateOfBirth': 'Date of Birth',
         'profile.notProvided': 'Not provided',
         'profile.accountCreated': 'Account Created',
+        'profile.summaryTitle': 'Account summary',
+        'profile.summaryBadge': 'At a glance',
+        'profile.lastUpdated': 'Last updated',
+        'profile.emailVerified': 'Email verified',
+        'profile.emailUnverified': 'Email not verified',
         'profile.editProfile': 'Edit Profile',
 
         // Settings Page
@@ -1537,6 +1556,9 @@ const translations: Record<Language, Record<string, string>> = {
         'settings.errorMismatch': 'New passwords do not match',
         'settings.errorLength': 'Password must be at least 6 characters',
         'settings.errorFailed': 'Failed to change password',
+        'settings.tipsTitle': 'Security tips',
+        'settings.tipsBadge': 'Best practices',
+        'settings.passwordTips': 'Use a long, unique password and never share it. Changing your password periodically helps keep your account secure.',
         'settings.languageTitle': 'Language',
         'settings.languageDesc': 'Choose your preferred language',
 
@@ -1747,6 +1769,7 @@ const translations: Record<Language, Record<string, string>> = {
         // Transactions
         'txn.title': 'Transactions',
         'txn.subtitle': 'All system-wide transactions',
+        'txn.totalSuffix': 'transactions',
         'txn.filter': 'Filter',
         'txn.searchPlaceholder': 'Search by name or email...',
         'txn.allTypes': 'All types',
@@ -1788,6 +1811,7 @@ const translations: Record<Language, Record<string, string>> = {
         // Withdrawals
         'wd.title': 'Withdrawals',
         'wd.subtitle': 'All system-wide withdrawals',
+        'wd.totalSuffix': 'withdrawals',
         'wd.noData': 'No withdrawals found',
         'wd.loadError': 'Failed to load withdrawals',
         'wd.col.user': 'User',
@@ -1824,6 +1848,10 @@ const translations: Record<Language, Record<string, string>> = {
         'rpt.reason.misinformation': 'Misinformation',
         'rpt.reason.other': 'Other',
         'rpt.col.actions': 'Actions',
+        'rpt.action.view': 'View details',
+        'rpt.detail.title': 'Report details',
+        'rpt.detail.targetId': 'Content ID',
+        'rpt.detail.updatedAt': 'Updated at',
         'rpt.action.resolve': 'Resolve',
         'rpt.modal.title': 'Resolve Report',
         'rpt.modal.action': 'Action',

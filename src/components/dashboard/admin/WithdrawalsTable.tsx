@@ -8,22 +8,32 @@ import {
   Clock,
   XCircle,
   ArrowUpCircle,
-  Calendar,
+  Calendar as CalendarIcon,
   Landmark,
   AlertTriangle,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { vi, enUS } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AdminService } from '../../../services/admin.service';
 import {
   Withdrawal,
-  WithdrawalParams,
   TransactionStatus,
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const WithdrawalsTable: React.FC = () => {
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -32,31 +42,21 @@ export const WithdrawalsTable: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | ''>('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
   const limit = 10;
 
-  const buildParams = useCallback((page: number): WithdrawalParams => ({
-    page,
-    limit,
-    status: statusFilter || undefined,
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
-  }), [statusFilter, dateFrom, dateTo]);
-
-  const fetchWithdrawals = useCallback(async (params: WithdrawalParams = {}) => {
+  const fetchWithdrawals = useCallback(async () => {
     setLoading(true);
     try {
       const response = await AdminService.getWalletWithdrawals({
-        page: params.page || 1,
+        page: currentPage,
         limit,
-        status: params.status || undefined,
-        date_from: params.date_from || undefined,
-        date_to: params.date_to || undefined,
+        status: statusFilter || undefined,
+        date_from: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
+        date_to: toDate ? format(toDate, 'yyyy-MM-dd') : undefined,
       });
       if (response.success && response.data) {
         setWithdrawals(response.data.withdrawals);
@@ -72,25 +72,16 @@ export const WithdrawalsTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, currentPage, limit, statusFilter, fromDate, toDate]);
 
   useEffect(() => {
-    fetchWithdrawals({ page: 1 });
+    fetchWithdrawals();
   }, [fetchWithdrawals]);
 
   const handlePageChange = (page: number) => {
-    fetchWithdrawals(buildParams(page));
-  };
-
-  const handleFilterApply = () => {
-    fetchWithdrawals(buildParams(1));
-  };
-
-  const handleReset = () => {
-    setStatusFilter('');
-    setDateFrom('');
-    setDateTo('');
-    fetchWithdrawals({ page: 1 });
+    if (page >= 1) {
+      setCurrentPage(page);
+    }
   };
 
   const formatCurrency = (amount: string) => {
@@ -129,98 +120,122 @@ export const WithdrawalsTable: React.FC = () => {
     return labels[status] || status;
   };
 
-  const activeFilterCount = [statusFilter, dateFrom, dateTo].filter(Boolean).length;
-
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
-      {/* Header */}
-      <div className="p-6 border-b border-[#d4af37]/10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">{t('wd.title')}</h2>
-            <p className="text-sm text-slate-500">{t('wd.subtitle')} ({total})</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
-                showFilters ? 'bg-[#d4af37]/10 text-[#8a6d1c] border-[#d4af37]/30' : 'text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              {t('txn.filter')}
-              {activeFilterCount > 0 && (
-                <span className="ml-1 w-5 h-5 flex items-center justify-center text-xs font-bold rounded-full bg-[#d4af37] text-white">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => fetchWithdrawals(buildParams(currentPage))}
-              disabled={loading}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-lg hover:bg-[#d4af37]/20 transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('wd.title')}</h1>
+          <p className="text-slate-600 mt-1">{t('wd.subtitle')}</p>
         </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="mt-4 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Status */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | '')}
-                className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-              >
-                <option value="">{t('txn.allStatuses')}</option>
-                <option value="completed">{t('txn.status.completed')}</option>
-                <option value="pending">{t('txn.status.pending')}</option>
-                <option value="failed">{t('txn.status.failed')}</option>
-              </select>
-
-              {/* Date From */}
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                />
-              </div>
-
-              {/* Date To */}
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleFilterApply}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] rounded-lg hover:brightness-110 transition-all"
-              >
-                {t('txn.apply')}
-              </button>
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
-              >
-                {t('txn.reset')}
-              </button>
-            </div>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => fetchWithdrawals()}
+          disabled={loading}
+          className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          {t('common.refresh')}
+        </button>
       </div>
 
+      {/* Filters — aligned with Site Management */}
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row gap-4 justify-between lg:items-end">
+          <div className="flex flex-wrap items-end gap-4 flex-1">
+            <div className="space-y-1">
+              <p className="text-xs text-gray-500 font-medium">{t('wd.col.status')}</p>
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-[#8a6d1c]/50 shrink-0" />
+                <Select
+                  value={statusFilter || 'all'}
+                  onValueChange={(value) => {
+                    setStatusFilter(value === 'all' ? '' : (value as TransactionStatus));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[200px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                    <SelectValue placeholder={t('txn.allStatuses')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('txn.allStatuses')}</SelectItem>
+                    <SelectItem value="completed">{t('txn.status.completed')}</SelectItem>
+                    <SelectItem value="pending">{t('txn.status.pending')}</SelectItem>
+                    <SelectItem value="failed">{t('txn.status.failed')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 p-1 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-xl">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                      fromDate
+                        ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                        : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                    }`}
+                  >
+                    <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
+                    {fromDate ? format(fromDate, 'dd/MM/yyyy') : t('dashboard.fromDate')}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-[#d4af37]/20 rounded-xl overflow-hidden" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={(d) => {
+                      setFromDate(d);
+                      setCurrentPage(1);
+                    }}
+                    initialFocus
+                    locale={language === 'vi' ? vi : enUS}
+                    className="bg-white"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <span className="text-slate-400">-</span>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                      toDate
+                        ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                        : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                    }`}
+                  >
+                    <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
+                    {toDate ? format(toDate, 'dd/MM/yyyy') : t('dashboard.toDate')}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-[#d4af37]/20 rounded-xl overflow-hidden" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={(d) => {
+                      setToDate(d);
+                      setCurrentPage(1);
+                    }}
+                    initialFocus
+                    locale={language === 'vi' ? vi : enUS}
+                    className="bg-white"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-500 lg:text-right shrink-0 pb-0.5">
+            {total} {t('wd.totalSuffix')}
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -362,6 +377,7 @@ export const WithdrawalsTable: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

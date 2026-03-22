@@ -19,17 +19,19 @@ import { ManagerSOSCenter } from './manager/ManagerSOSCenter';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
+import { UserProfile } from '../../types/auth.types';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { NotificationProvider } from '../../contexts/NotificationContext';
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
+  onUserProfileUpdated?: (profile: UserProfile) => void;
 }
 
 export type ActiveView = 'dashboard' | 'sites' | 'mysite' | 'users' | 'verifications' | 'sos' | 'guides' | 'shifts' | 'content' | 'analytics' | 'profile' | 'settings';
 
-const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
+const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout, onUserProfileUpdated }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
@@ -71,7 +73,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <Route path="sos" element={<AdminSOSCenter />} />
                 <Route path="finance" element={<AdminFinance />} />
                 <Route path="reports" element={<ReportsManagement />} />
-                <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile" element={<ProfilePage onProfileUpdated={onUserProfileUpdated} />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </>
@@ -83,7 +85,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <Route path="shifts" element={<ShiftSubmissions />} />
                 <Route path="content" element={<ContentManagement />} />
                 <Route path="sos" element={<ManagerSOSCenter />} />
-                <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile" element={<ProfilePage onProfileUpdated={onUserProfileUpdated} />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </>

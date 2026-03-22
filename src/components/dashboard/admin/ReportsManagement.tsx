@@ -16,12 +16,18 @@ import {
 import { AdminService } from '../../../services/admin.service';
 import {
   Report,
-  ReportParams,
   ReportStatus,
   ReportTargetType,
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const ReportsManagement: React.FC = () => {
   const { showToast } = useToast();
@@ -34,58 +40,24 @@ export const ReportsManagement: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState<ReportStatus | ''>('');
   const [targetTypeFilter, setTargetTypeFilter] = useState<ReportTargetType | ''>('');
   const limit = 10;
 
-  // Resolve Modal State
   const [resolvingReport, setResolvingReport] = useState<Report | null>(null);
   const [resolveAction, setResolveAction] = useState<'resolved' | 'dismissed'>('resolved');
   const [resolveNote, setResolveNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const buildParams = useCallback((page: number): ReportParams => ({
-    page,
-    limit,
-    status: statusFilter || undefined,
-    target_type: targetTypeFilter || undefined,
-  }), [statusFilter, targetTypeFilter]);
-
-  const handleResolveSubmit = async () => {
-    if (!resolvingReport) return;
-    setSubmitting(true);
-    try {
-      const response = await AdminService.resolveReport(resolvingReport.id, {
-        action: resolveAction,
-        note: resolveNote.trim() || undefined,
-      });
-      if (response.success) {
-        showToast('success', tRef.current('rpt.title'), tRef.current('rpt.resolveSuccess'));
-        setResolvingReport(null);
-        setResolveNote('');
-        fetchReports(buildParams(currentPage));
-      } else {
-        showToast('error', tRef.current('rpt.title'), response.message || tRef.current('rpt.resolveError'));
-      }
-    } catch (err) {
-      console.error('Error resolving report:', err);
-      showToast('error', tRef.current('rpt.title'), tRef.current('rpt.resolveError'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const fetchReports = useCallback(async (params: ReportParams = {}) => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
       const response = await AdminService.getReports({
-        page: params.page || 1,
+        page: currentPage,
         limit,
-        status: params.status || undefined,
-        target_type: params.target_type || undefined,
+        status: statusFilter || undefined,
+        target_type: targetTypeFilter || undefined,
       });
       if (response.success && response.data) {
         setReports(response.data.reports);
@@ -101,24 +73,40 @@ export const ReportsManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, currentPage, limit, statusFilter, targetTypeFilter]);
 
   useEffect(() => {
-    fetchReports({ page: 1 });
+    fetchReports();
   }, [fetchReports]);
 
   const handlePageChange = (page: number) => {
-    fetchReports(buildParams(page));
+    if (page >= 1) {
+      setCurrentPage(page);
+    }
   };
 
-  const handleFilterApply = () => {
-    fetchReports(buildParams(1));
-  };
-
-  const handleReset = () => {
-    setStatusFilter('');
-    setTargetTypeFilter('');
-    fetchReports({ page: 1 });
+  const handleResolveSubmit = async () => {
+    if (!resolvingReport) return;
+    setSubmitting(true);
+    try {
+      const response = await AdminService.resolveReport(resolvingReport.id, {
+        action: resolveAction,
+        note: resolveNote.trim() || undefined,
+      });
+      if (response.success) {
+        showToast('success', tRef.current('rpt.title'), tRef.current('rpt.resolveSuccess'));
+        setResolvingReport(null);
+        setResolveNote('');
+        fetchReports();
+      } else {
+        showToast('error', tRef.current('rpt.title'), response.message || tRef.current('rpt.resolveError'));
+      }
+    } catch (err) {
+      console.error('Error resolving report:', err);
+      showToast('error', tRef.current('rpt.title'), tRef.current('rpt.resolveError'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -189,8 +177,6 @@ export const ReportsManagement: React.FC = () => {
     return labels[reason] || reason;
   };
 
-  const activeFilterCount = [statusFilter, targetTypeFilter].filter(Boolean).length;
-
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -202,7 +188,7 @@ export const ReportsManagement: React.FC = () => {
           <p className="text-slate-600 mt-1">{t('rpt.subtitle')}</p>
         </div>
         <button
-          onClick={() => fetchReports(buildParams(currentPage))}
+          onClick={() => fetchReports()}
           disabled={loading}
           className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
         >
@@ -211,75 +197,58 @@ export const ReportsManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Table Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
-        {/* Filter bar */}
-        <div className="p-6 border-b border-[#d4af37]/10">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
-                showFilters ? 'bg-[#d4af37]/10 text-[#8a6d1c] border-[#d4af37]/30' : 'text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
+      {/* Filters — aligned with Site Management */}
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row gap-4 justify-between lg:items-center">
+          <div className="flex flex-wrap items-center gap-4 flex-1">
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
+              <Select
+                value={statusFilter || 'all'}
+                onValueChange={(value) => {
+                  setStatusFilter(value === 'all' ? '' : (value as ReportStatus));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[200px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                  <SelectValue placeholder={t('rpt.allStatuses')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('rpt.allStatuses')}</SelectItem>
+                  <SelectItem value="pending">{t('rpt.status.pending')}</SelectItem>
+                  <SelectItem value="resolved">{t('rpt.status.resolved')}</SelectItem>
+                  <SelectItem value="dismissed">{t('rpt.status.dismissed')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Select
+              value={targetTypeFilter || 'all'}
+              onValueChange={(value) => {
+                setTargetTypeFilter(value === 'all' ? '' : (value as ReportTargetType));
+                setCurrentPage(1);
+              }}
             >
-              <Filter className="w-4 h-4" />
-              {t('txn.filter')}
-              {activeFilterCount > 0 && (
-                <span className="ml-1 w-5 h-5 flex items-center justify-center text-xs font-bold rounded-full bg-[#d4af37] text-white">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            <span className="text-sm text-slate-500 ml-2">
-              {totalItems} {t('rpt.totalReports')}
-            </span>
+              <SelectTrigger className="w-[200px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                <SelectValue placeholder={t('rpt.allTargetTypes')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('rpt.allTargetTypes')}</SelectItem>
+                <SelectItem value="post">{t('rpt.targetType.post')}</SelectItem>
+                <SelectItem value="comment">{t('rpt.targetType.comment')}</SelectItem>
+                <SelectItem value="journal">{t('rpt.targetType.journal')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {showFilters && (
-            <div className="mt-4 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Status */}
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as ReportStatus | '')}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                >
-                  <option value="">{t('rpt.allStatuses')}</option>
-                  <option value="pending">{t('rpt.status.pending')}</option>
-                  <option value="resolved">{t('rpt.status.resolved')}</option>
-                  <option value="dismissed">{t('rpt.status.dismissed')}</option>
-                </select>
-
-                {/* Target Type */}
-                <select
-                  value={targetTypeFilter}
-                  onChange={(e) => setTargetTypeFilter(e.target.value as ReportTargetType | '')}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                >
-                  <option value="">{t('rpt.allTargetTypes')}</option>
-                  <option value="post">{t('rpt.targetType.post')}</option>
-                  <option value="comment">{t('rpt.targetType.comment')}</option>
-                  <option value="journal">{t('rpt.targetType.journal')}</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleFilterApply}
-                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] rounded-lg hover:brightness-110 transition-all"
-                >
-                  {t('txn.apply')}
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
-                >
-                  {t('txn.reset')}
-                </button>
-              </div>
-            </div>
-          )}
+          <p className="text-sm text-gray-500 lg:text-right shrink-0">
+            {totalItems} {t('rpt.totalReports')}
+          </p>
         </div>
+      </div>
 
+      {/* Table Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">

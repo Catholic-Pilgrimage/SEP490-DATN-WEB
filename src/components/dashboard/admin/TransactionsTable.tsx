@@ -15,12 +15,23 @@ import {
   Clock,
   CreditCard,
   RotateCcw,
-  Calendar,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { vi, enUS } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { AdminService } from '../../../services/admin.service';
 import {
   WalletTransaction,
-  WalletTransactionParams,
   TransactionType,
   TransactionStatus,
   TransactionReferenceType,
@@ -30,7 +41,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const TransactionsTable: React.FC = () => {
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -39,40 +50,36 @@ export const TransactionsTable: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Filters
   const [search, setSearch] = useState('');
+  const [searchDebounce, setSearchDebounce] = useState('');
   const [typeFilter, setTypeFilter] = useState<TransactionType | ''>('');
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | ''>('');
   const [refTypeFilter, setRefTypeFilter] = useState<TransactionReferenceType | ''>('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
   const limit = 10;
 
-  const buildParams = useCallback((page: number): WalletTransactionParams => ({
-    page,
-    limit,
-    type: typeFilter || undefined,
-    status: statusFilter || undefined,
-    reference_type: refTypeFilter || undefined,
-    search: search || undefined,
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
-  }), [typeFilter, statusFilter, refTypeFilter, search, dateFrom, dateTo]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounce(search.trim());
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const fetchTransactions = useCallback(async (params: WalletTransactionParams = {}) => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
       const response = await AdminService.getWalletTransactions({
-        page: params.page || 1,
+        page: currentPage,
         limit,
-        type: params.type || undefined,
-        status: params.status || undefined,
-        reference_type: params.reference_type || undefined,
-        search: params.search || undefined,
-        date_from: params.date_from || undefined,
-        date_to: params.date_to || undefined,
+        type: typeFilter || undefined,
+        status: statusFilter || undefined,
+        reference_type: refTypeFilter || undefined,
+        search: searchDebounce || undefined,
+        date_from: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
+        date_to: toDate ? format(toDate, 'yyyy-MM-dd') : undefined,
       });
       if (response.success && response.data) {
         setTransactions(response.data.transactions);
@@ -88,32 +95,16 @@ export const TransactionsTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, currentPage, limit, typeFilter, statusFilter, refTypeFilter, searchDebounce, fromDate, toDate]);
 
   useEffect(() => {
-    fetchTransactions({ page: 1 });
+    fetchTransactions();
   }, [fetchTransactions]);
 
-  const handleSearch = () => {
-    fetchTransactions(buildParams(1));
-  };
-
   const handlePageChange = (page: number) => {
-    fetchTransactions(buildParams(page));
-  };
-
-  const handleFilterApply = () => {
-    fetchTransactions(buildParams(1));
-  };
-
-  const handleReset = () => {
-    setSearch('');
-    setTypeFilter('');
-    setStatusFilter('');
-    setRefTypeFilter('');
-    setDateFrom('');
-    setDateTo('');
-    fetchTransactions({ page: 1 });
+    if (page >= 1) {
+      setCurrentPage(page);
+    }
   };
 
   const formatCurrency = (amount: string) => {
@@ -192,151 +183,175 @@ export const TransactionsTable: React.FC = () => {
     return labels[status] || status;
   };
 
-  // Count active filters
-  const activeFilterCount = [typeFilter, statusFilter, refTypeFilter, dateFrom, dateTo, search].filter(Boolean).length;
-
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
-      {/* Header */}
-      <div className="p-6 border-b border-[#d4af37]/10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">{t('txn.title')}</h2>
-            <p className="text-sm text-slate-500">{t('txn.subtitle')} ({total})</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
-                showFilters ? 'bg-[#d4af37]/10 text-[#8a6d1c] border-[#d4af37]/30' : 'text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              {t('txn.filter')}
-              {activeFilterCount > 0 && (
-                <span className="ml-1 w-5 h-5 flex items-center justify-center text-xs font-bold rounded-full bg-[#d4af37] text-white">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => fetchTransactions(buildParams(currentPage))}
-              disabled={loading}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-lg hover:bg-[#d4af37]/20 transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('txn.title')}</h1>
+          <p className="text-slate-600 mt-1">{t('txn.subtitle')}</p>
         </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="mt-4 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10 space-y-3">
-            {/* Row 1: Search + Type + Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder={t('txn.searchPlaceholder')}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                />
-              </div>
-
-              {/* Type filter */}
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as TransactionType | '')}
-                className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-              >
-                <option value="">{t('txn.allTypes')}</option>
-                <option value="escrow_lock">{t('txn.type.escrowLock')}</option>
-                <option value="escrow_refund">{t('txn.type.escrowRefund')}</option>
-                <option value="withdraw">{t('txn.type.withdraw')}</option>
-                <option value="deposit">{t('txn.type.deposit')}</option>
-                <option value="topup">{t('txn.type.topup')}</option>
-                <option value="penalty_applied">{t('txn.type.penaltyApplied')}</option>
-                <option value="penalty_received">{t('txn.type.penaltyReceived')}</option>
-                <option value="penalty_refunded">{t('txn.type.penaltyRefunded')}</option>
-              </select>
-
-              {/* Status filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | '')}
-                className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-              >
-                <option value="">{t('txn.allStatuses')}</option>
-                <option value="completed">{t('txn.status.completed')}</option>
-                <option value="pending">{t('txn.status.pending')}</option>
-                <option value="failed">{t('txn.status.failed')}</option>
-              </select>
-            </div>
-
-            {/* Row 2: Reference Type + Date From + Date To */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Reference Type */}
-              <select
-                value={refTypeFilter}
-                onChange={(e) => setRefTypeFilter(e.target.value as TransactionReferenceType | '')}
-                className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-              >
-                <option value="">{t('txn.allRefTypes')}</option>
-                <option value="planner">{t('txn.refType.planner')}</option>
-                <option value="planner_deposit">{t('txn.refType.plannerDeposit')}</option>
-                <option value="planner_penalty">{t('txn.refType.plannerPenalty')}</option>
-                <option value="payos_payout">{t('txn.refType.payosPayout')}</option>
-                <option value="payos_topup">{t('txn.refType.payosTopup')}</option>
-                <option value="wallet">{t('txn.refType.wallet')}</option>
-              </select>
-
-              {/* Date From */}
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  placeholder={t('txn.dateFrom')}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                />
-              </div>
-
-              {/* Date To */}
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  placeholder={t('txn.dateTo')}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 focus:border-[#d4af37] bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleFilterApply}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] rounded-lg hover:brightness-110 transition-all"
-              >
-                {t('txn.apply')}
-              </button>
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
-              >
-                {t('txn.reset')}
-              </button>
-            </div>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => fetchTransactions()}
+          disabled={loading}
+          className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          {t('common.refresh')}
+        </button>
       </div>
 
+      <div className="bg-white rounded-2xl border border-[#d4af37]/20 p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:flex-wrap gap-4 lg:items-end lg:justify-between">
+            <div className="flex flex-wrap items-end gap-4 flex-1">
+              <div className="flex-1 min-w-[250px]">
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#8a6d1c] transition-colors" />
+                  <Input
+                    type="text"
+                    placeholder={t('txn.searchPlaceholder')}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full h-11 pl-12 pr-4 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-[#8a6d1c]/50 shrink-0" />
+                <Select
+                  value={typeFilter || 'all'}
+                  onValueChange={(value) => {
+                    setTypeFilter(value === 'all' ? '' : (value as TransactionType));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[220px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                    <SelectValue placeholder={t('txn.allTypes')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('txn.allTypes')}</SelectItem>
+                    <SelectItem value="escrow_lock">{t('txn.type.escrowLock')}</SelectItem>
+                    <SelectItem value="escrow_refund">{t('txn.type.escrowRefund')}</SelectItem>
+                    <SelectItem value="withdraw">{t('txn.type.withdraw')}</SelectItem>
+                    <SelectItem value="deposit">{t('txn.type.deposit')}</SelectItem>
+                    <SelectItem value="topup">{t('txn.type.topup')}</SelectItem>
+                    <SelectItem value="penalty_applied">{t('txn.type.penaltyApplied')}</SelectItem>
+                    <SelectItem value="penalty_received">{t('txn.type.penaltyReceived')}</SelectItem>
+                    <SelectItem value="penalty_refunded">{t('txn.type.penaltyRefunded')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Select
+                value={statusFilter || 'all'}
+                onValueChange={(value) => {
+                  setStatusFilter(value === 'all' ? '' : (value as TransactionStatus));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[200px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                  <SelectValue placeholder={t('txn.allStatuses')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('txn.allStatuses')}</SelectItem>
+                  <SelectItem value="completed">{t('txn.status.completed')}</SelectItem>
+                  <SelectItem value="pending">{t('txn.status.pending')}</SelectItem>
+                  <SelectItem value="failed">{t('txn.status.failed')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={refTypeFilter || 'all'}
+                onValueChange={(value) => {
+                  setRefTypeFilter(value === 'all' ? '' : (value as TransactionReferenceType));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[220px] h-11 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-gray-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer">
+                  <SelectValue placeholder={t('txn.allRefTypes')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('txn.allRefTypes')}</SelectItem>
+                  <SelectItem value="planner">{t('txn.refType.planner')}</SelectItem>
+                  <SelectItem value="planner_deposit">{t('txn.refType.plannerDeposit')}</SelectItem>
+                  <SelectItem value="planner_penalty">{t('txn.refType.plannerPenalty')}</SelectItem>
+                  <SelectItem value="payos_payout">{t('txn.refType.payosPayout')}</SelectItem>
+                  <SelectItem value="payos_topup">{t('txn.refType.payosTopup')}</SelectItem>
+                  <SelectItem value="wallet">{t('txn.refType.wallet')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-xl">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                        fromDate
+                          ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                          : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                      }`}
+                    >
+                      <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
+                      {fromDate ? format(fromDate, 'dd/MM/yyyy') : t('dashboard.fromDate')}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-[#d4af37]/20 rounded-xl overflow-hidden" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fromDate}
+                      onSelect={(d) => {
+                        setFromDate(d);
+                        setCurrentPage(1);
+                      }}
+                      initialFocus
+                      locale={language === 'vi' ? vi : enUS}
+                      className="bg-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <span className="text-slate-400">-</span>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
+                        toDate
+                          ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                          : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                      }`}
+                    >
+                      <CalendarIcon className="w-4 h-4 text-[#d4af37]" />
+                      {toDate ? format(toDate, 'dd/MM/yyyy') : t('dashboard.toDate')}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-[#d4af37]/20 rounded-xl overflow-hidden" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={toDate}
+                      onSelect={(d) => {
+                        setToDate(d);
+                        setCurrentPage(1);
+                      }}
+                      initialFocus
+                      locale={language === 'vi' ? vi : enUS}
+                      className="bg-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-500 lg:text-right shrink-0 pb-0.5">
+              {total} {t('txn.totalSuffix')}
+            </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -468,6 +483,7 @@ export const TransactionsTable: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
