@@ -7,6 +7,8 @@ import { UserProfile } from './types/auth.types';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import InviteRedirectPage from './components/shared/InviteRedirectPage';
+import PaymentSuccessPage from './components/shared/PaymentSuccessPage';
+import PaymentCancelPage from './components/shared/PaymentCancelPage';
 export type UserRole = 'admin' | 'manager';
 
 export interface User {
@@ -142,11 +144,10 @@ function AppContent() {
         }
       />
 
-      {/* Public Invite Redirect Page - Không cần đăng nhập */}
-      <Route
-        path="/planners/invite/:token"
-        element={<InviteRedirectPage />}
-      />
+      {/* Public Routes - Không cần đăng nhập */}
+      <Route path="/planners/invite/:token" element={<InviteRedirectPage />} />
+      <Route path="/payment/success" element={<PaymentSuccessPage />} />
+      <Route path="/payment/cancel" element={<PaymentCancelPage />} />
 
       {/* Root redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
