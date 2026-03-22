@@ -45,6 +45,8 @@ import {
     WalletTransactionListData,
     WithdrawalParams,
     WithdrawalListData,
+    WalletEscrowParams,
+    WalletEscrowListData,
     ReportParams,
     ReportListData,
     ResolveReportBody,
@@ -238,6 +240,20 @@ export class AdminService {
         const queryString = queryParams.toString();
         const url = `${API_CONFIG.ENDPOINTS.ADMIN.WALLET_TRANSACTIONS}${queryString ? `?${queryString}` : ''}`;
         return ApiService.get<ApiResponse<WalletTransactionListData>>(url);
+    }
+
+    /**
+     * Get planners holding escrow (admin)
+     * GET /api/admin/wallet/escrow
+     */
+    static async getWalletEscrow(params: WalletEscrowParams = {}): Promise<ApiResponse<WalletEscrowListData>> {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+
+        const queryString = queryParams.toString();
+        const url = `${API_CONFIG.ENDPOINTS.ADMIN.WALLET_ESCROW}${queryString ? `?${queryString}` : ''}`;
+        return ApiService.get<ApiResponse<WalletEscrowListData>>(url);
     }
 
     /**

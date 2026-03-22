@@ -19,8 +19,9 @@ import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { TransactionsTable } from './TransactionsTable';
 import { WithdrawalsTable } from './WithdrawalsTable';
+import { EscrowTable } from './EscrowTable';
 
-type FinanceTab = 'overview' | 'transactions' | 'withdrawals';
+type FinanceTab = 'overview' | 'transactions' | 'escrow' | 'withdrawals';
 
 export const AdminFinance: React.FC = () => {
   const { showToast } = useToast();
@@ -33,13 +34,16 @@ export const AdminFinance: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFinance = useCallback(async () => {
+  const fetchFinance = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
     setError(null);
     try {
       const response = await AdminService.getFinanceOverview();
       if (response.success && response.data) {
         setData(response.data);
+        if (showSuccessToast) {
+          showToast('success', tRef.current('toast.refreshSuccess'), tRef.current('toast.refreshSuccessMsg'));
+        }
       } else {
         const msg = response.message || tRef.current('finance.loadError');
         setError(msg);
@@ -65,6 +69,7 @@ export const AdminFinance: React.FC = () => {
   const tabs: { id: FinanceTab; label: string; icon: React.ElementType }[] = [
     { id: 'overview', label: t('finance.tab.overview'), icon: BarChart3 },
     { id: 'transactions', label: t('finance.tab.transactions'), icon: CreditCard },
+    { id: 'escrow', label: t('finance.tab.escrow'), icon: Lock },
     { id: 'withdrawals', label: t('finance.tab.withdrawals'), icon: ArrowDownToLine },
   ];
 
@@ -167,7 +172,7 @@ export const AdminFinance: React.FC = () => {
 
         {activeTab === 'overview' && (
           <button
-            onClick={fetchFinance}
+            onClick={() => fetchFinance(true)}
             disabled={loading}
             className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
           >
@@ -215,7 +220,7 @@ export const AdminFinance: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={fetchFinance}
+                onClick={() => fetchFinance(true)}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-lg hover:bg-[#d4af37]/20 transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -283,6 +288,8 @@ export const AdminFinance: React.FC = () => {
       )}
 
       {activeTab === 'transactions' && <TransactionsTable />}
+
+      {activeTab === 'escrow' && <EscrowTable />}
 
       {activeTab === 'withdrawals' && <WithdrawalsTable />}
     </div>

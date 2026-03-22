@@ -68,7 +68,7 @@ export const TransactionsTable: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
     try {
       const response = await AdminService.getWalletTransactions({
@@ -86,6 +86,9 @@ export const TransactionsTable: React.FC = () => {
         setTotal(response.data.total);
         setTotalPages(response.data.totalPages);
         setCurrentPage(response.data.currentPage);
+        if (showSuccessToast) {
+          showToast('success', tRef.current('toast.refreshSuccess'), tRef.current('toast.refreshSuccessMsg'));
+        }
       } else {
         showToast('error', tRef.current('txn.title'), response.message || tRef.current('txn.loadError'));
       }
@@ -192,7 +195,7 @@ export const TransactionsTable: React.FC = () => {
         </div>
         <button
           type="button"
-          onClick={() => fetchTransactions()}
+          onClick={() => fetchTransactions(true)}
           disabled={loading}
           className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
         >

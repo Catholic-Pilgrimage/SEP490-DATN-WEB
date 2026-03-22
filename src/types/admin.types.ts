@@ -904,6 +904,43 @@ export interface WithdrawalListData {
     currentPage: number;
 }
 
+// ============ WALLET ESCROW TYPES ============
+
+export interface WalletEscrowPlannerOwner {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url?: string | null;
+}
+
+export interface WalletEscrowPlannerItem {
+    planner_id: string;
+    planner_name: string;
+    status: string;
+    start_date: string;
+    end_date: string;
+    owner: WalletEscrowPlannerOwner;
+    deposit_amount: string | number;
+    member_count: number;
+    total_locked: number;
+    net_locked: number;
+    penalty_pending: number;
+}
+
+// GET /api/admin/wallet/escrow - Query Parameters
+export interface WalletEscrowParams {
+    page?: number;
+    limit?: number;
+}
+
+// GET /api/admin/wallet/escrow - Response Data
+export interface WalletEscrowListData {
+    escrow: WalletEscrowPlannerItem[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+}
+
 // ============ REPORT TYPES ============
 
 export type ReportStatus = 'pending' | 'resolved' | 'dismissed';

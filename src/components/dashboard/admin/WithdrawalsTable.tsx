@@ -48,7 +48,7 @@ export const WithdrawalsTable: React.FC = () => {
   const [toDate, setToDate] = useState<Date | undefined>();
   const limit = 10;
 
-  const fetchWithdrawals = useCallback(async () => {
+  const fetchWithdrawals = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
     try {
       const response = await AdminService.getWalletWithdrawals({
@@ -63,6 +63,9 @@ export const WithdrawalsTable: React.FC = () => {
         setTotal(response.data.total);
         setTotalPages(response.data.totalPages);
         setCurrentPage(response.data.currentPage);
+        if (showSuccessToast) {
+          showToast('success', tRef.current('toast.refreshSuccess'), tRef.current('toast.refreshSuccessMsg'));
+        }
       } else {
         showToast('error', tRef.current('wd.title'), response.message || tRef.current('wd.loadError'));
       }
@@ -129,7 +132,7 @@ export const WithdrawalsTable: React.FC = () => {
         </div>
         <button
           type="button"
-          onClick={() => fetchWithdrawals()}
+          onClick={() => fetchWithdrawals(true)}
           disabled={loading}
           className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
         >
