@@ -903,3 +903,62 @@ export interface WithdrawalListData {
     totalPages: number;
     currentPage: number;
 }
+
+// ============ REPORT TYPES ============
+
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed';
+export type ReportTargetType = 'post' | 'comment' | 'journal';
+export type ReportReason = 'spam' | 'inappropriate' | 'harassment' | 'misinformation' | 'other';
+
+export interface Reporter {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url: string | null;
+}
+
+export interface Resolver {
+    id: string;
+    full_name: string;
+    email: string;
+}
+
+export interface Report {
+    id: string;
+    reporter_id: string;
+    target_type: ReportTargetType;
+    target_id: string;
+    reason: ReportReason;
+    description: string | null;
+    status: ReportStatus;
+    resolved_by: string | null;
+    created_at: string;
+    updated_at: string;
+    reporter: Reporter;
+    resolver: Resolver | null;
+}
+
+// GET /api/reports - Query Parameters
+export interface ReportParams {
+    status?: ReportStatus | '';
+    target_type?: ReportTargetType | '';
+    page?: number;
+    limit?: number;
+}
+
+// GET /api/reports - Response Data
+export interface ReportListData {
+    reports: Report[];
+    pagination: {
+        current_page: number;
+        total_pages: number;
+        total_items: number;
+        limit: number;
+    };
+}
+
+// PATCH /api/reports/:id/resolve - Request Body
+export interface ResolveReportBody {
+    action: 'resolved' | 'dismissed';
+    note?: string;
+}

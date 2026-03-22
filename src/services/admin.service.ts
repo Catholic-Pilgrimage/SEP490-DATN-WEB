@@ -45,6 +45,9 @@ import {
     WalletTransactionListData,
     WithdrawalParams,
     WithdrawalListData,
+    ReportParams,
+    ReportListData,
+    ResolveReportBody,
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -252,6 +255,33 @@ export class AdminService {
         const queryString = queryParams.toString();
         const url = `${API_CONFIG.ENDPOINTS.ADMIN.WALLET_WITHDRAWALS}${queryString ? `?${queryString}` : ''}`;
         return ApiService.get<ApiResponse<WithdrawalListData>>(url);
+    }
+
+    /**
+     * Get reports list (Admin only)
+     * GET /api/reports
+     */
+    static async getReports(params: ReportParams = {}): Promise<ApiResponse<ReportListData>> {
+        const queryParams = new URLSearchParams();
+        if (params.status) queryParams.append('status', params.status);
+        if (params.target_type) queryParams.append('target_type', params.target_type);
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+
+        const queryString = queryParams.toString();
+        const url = `${API_CONFIG.ENDPOINTS.ADMIN.REPORTS}${queryString ? `?${queryString}` : ''}`;
+        return ApiService.get<ApiResponse<ReportListData>>(url);
+    }
+
+    /**
+     * Resolve/dismiss a report
+     * PATCH /api/reports/:id/resolve
+     */
+    static async resolveReport(id: string, body: ResolveReportBody): Promise<ApiResponse<Report>> {
+        return ApiService.patch<ApiResponse<Report>>(
+            API_CONFIG.ENDPOINTS.ADMIN.REPORT_RESOLVE(id),
+            body
+        );
     }
 
     /**

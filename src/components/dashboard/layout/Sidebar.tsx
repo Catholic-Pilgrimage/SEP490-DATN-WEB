@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   Calendar,
   Wallet,
+  Flag,
 } from 'lucide-react';
 import { User } from '../../../App';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -36,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'users', path: '/dashboard/users', label: t('menu.users'), icon: Users },
     { id: 'verifications', path: '/dashboard/verifications', label: t('menu.verifications'), icon: ClipboardCheck },
     { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
+    { id: 'reports', path: '/dashboard/reports', label: t('menu.reports'), icon: Flag },
   ];
 
   const managerMenuItems = [

@@ -37,7 +37,8 @@ export const TopBar: React.FC<TopBarProps> = ({
       profile: t('menu.profile'),
       settings: t('menu.settings'),
       shifts: t('menu.shifts'),
-      finance: t('menu.finance')
+      finance: t('menu.finance'),
+      reports: t('menu.reports')
     };
     return titles[activeView] || activeView.charAt(0).toUpperCase() + activeView.slice(1);
   };

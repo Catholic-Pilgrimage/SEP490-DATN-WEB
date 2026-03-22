@@ -37,6 +37,8 @@ export const API_CONFIG = {
             VERIFICATION_REQUEST_DETAIL: (id: string) => `/api/admin/verification-requests/${id}`,
             SOS_LIST: '/api/sos/admin/list',
             SOS_STATS: '/api/sos/admin/stats',
+            REPORTS: '/api/reports',
+            REPORT_RESOLVE: (id: string) => `/api/reports/${id}/resolve`,
         },
         MANAGER: {
             DASHBOARD_OVERVIEW: '/api/manager/dashboard/overview',
