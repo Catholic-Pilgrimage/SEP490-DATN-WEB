@@ -39,6 +39,7 @@ export const API_CONFIG = {
             SOS_LIST: '/api/sos/admin/list',
             SOS_STATS: '/api/sos/admin/stats',
             REPORTS: '/api/reports',
+            REPORT_DETAIL: (id: string) => `/api/reports/${id}`,
             REPORT_RESOLVE: (id: string) => `/api/reports/${id}/resolve`,
         },
         MANAGER: {
@@ -56,6 +57,8 @@ export const API_CONFIG = {
                 MEDIA: '/api/manager/content/media', // GET list
                 MEDIA_STATUS: (id: string) => `/api/manager/content/media/${id}/status`, // PATCH approve/reject
                 MEDIA_ACTIVE: (id: string) => `/api/manager/content/media/${id}/is-active`, // PATCH soft delete/restore
+                MEDIA_NARRATIVE_STATUS: (id: string) =>
+                    `/api/manager/content/media/${id}/narrative-status`, // PATCH approve/reject 3D narration
                 UPLOAD_3D: '/api/manager/content/media/3d-model', // POST upload 3D model
                 SCHEDULES: '/api/manager/content/schedules', // GET list
                 SCHEDULES_STATUS: (id: string) => `/api/manager/content/schedules/${id}/status`,

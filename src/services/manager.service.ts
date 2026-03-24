@@ -23,6 +23,8 @@ import {
     ToggleMediaActiveResponse,
     Upload3DModelData,
     Upload3DModelResponse,
+    UpdateMediaNarrativeStatusData,
+    UpdateMediaNarrativeStatusResponse,
     ScheduleListParams,
     ScheduleListResponse,
     UpdateScheduleStatusData,
@@ -382,10 +384,10 @@ export class ManagerService {
      * 
      * Giải thích:
      * - Lấy danh sách media (hình ảnh, video, 3d model) của site
-     * - Hỗ trợ filter theo: type, status, is_active
+     * - Hỗ trợ filter theo: type, status, narrative_status, is_active
      * - Có pagination
      * 
-     * @param params - { page, limit, type, status, is_active }
+     * @param params - { page, limit, type, status, narrative_status, is_active }
      */
     static async getMediaList(
         params?: MediaListParams
@@ -403,6 +405,9 @@ export class ManagerService {
         }
         if (params?.status) {
             queryParams.append('status', params.status);
+        }
+        if (params?.narrative_status) {
+            queryParams.append('narrative_status', params.narrative_status);
         }
         if (params?.is_active !== undefined) {
             queryParams.append('is_active', params.is_active.toString());
@@ -472,6 +477,20 @@ export class ManagerService {
         return ApiService.postFormData<ApiResponse<Upload3DModelResponse>>(
             API_CONFIG.ENDPOINTS.MANAGER.CONTENT.UPLOAD_3D,
             formData
+        );
+    }
+
+    /**
+     * Approve or reject 3D model narration (audio) from Local Guide.
+     * Only when narrative_status is pending, type is model_3d, and audio_url is set.
+     */
+    static async updateMediaNarrativeStatus(
+        id: string,
+        data: UpdateMediaNarrativeStatusData
+    ): Promise<ApiResponse<UpdateMediaNarrativeStatusResponse>> {
+        return ApiService.patch<ApiResponse<UpdateMediaNarrativeStatusResponse>>(
+            API_CONFIG.ENDPOINTS.MANAGER.CONTENT.MEDIA_NARRATIVE_STATUS(id),
+            data
         );
     }
 

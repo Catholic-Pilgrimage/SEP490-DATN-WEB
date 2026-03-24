@@ -47,8 +47,10 @@ import {
     WithdrawalListData,
     WalletEscrowParams,
     WalletEscrowListData,
+    Report,
     ReportParams,
     ReportListData,
+    ReportDetail,
     ResolveReportBody,
 } from '../types/admin.types';
 import { ApiService } from './api.service';
@@ -287,6 +289,14 @@ export class AdminService {
         const queryString = queryParams.toString();
         const url = `${API_CONFIG.ENDPOINTS.ADMIN.REPORTS}${queryString ? `?${queryString}` : ''}`;
         return ApiService.get<ApiResponse<ReportListData>>(url);
+    }
+
+    /**
+     * Get single report detail (Admin)
+     * GET /api/reports/:id
+     */
+    static async getReportById(id: string): Promise<ApiResponse<ReportDetail>> {
+        return ApiService.get<ApiResponse<ReportDetail>>(API_CONFIG.ENDPOINTS.ADMIN.REPORT_DETAIL(id));
     }
 
     /**

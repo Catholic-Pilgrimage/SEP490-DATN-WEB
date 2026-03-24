@@ -274,6 +274,11 @@ export interface Media {
     created_at: string;
     updated_at: string;
     creator: ContentCreator;        // Thông tin người tạo
+    /** Chỉ model_3d: thuyết minh âm thanh do Local Guide gửi */
+    narrative_status?: ContentStatus | null;
+    audio_url?: string | null;
+    narration_text?: string | null;
+    narrative_rejection_reason?: string | null;
 }
 
 // GET /api/manager/content/media - Query params
@@ -281,7 +286,8 @@ export interface MediaListParams {
     page?: number;
     limit?: number;
     type?: MediaType | '';          // Lọc theo loại media
-    status?: ContentStatus | '';    // Lọc theo trạng thái duyệt
+    status?: ContentStatus | '';    // Lọc theo trạng thái duyệt media
+    narrative_status?: ContentStatus | ''; // Lọc theo trạng thái duyệt thuyết minh (3D)
     is_active?: boolean;            // Lọc theo active (true = đang hoạt động, false = đã xóa)
 }
 
@@ -325,6 +331,21 @@ export interface Upload3DModelData {
 
 // POST /api/manager/content/media/3d-model - Response
 export type Upload3DModelResponse = Media;
+
+// PATCH /api/manager/content/media/{id}/narrative-status - Request
+export interface UpdateMediaNarrativeStatusData {
+    status: 'approved' | 'rejected';
+    rejection_reason?: string;
+}
+
+// PATCH /api/manager/content/media/{id}/narrative-status - Response data
+export interface UpdateMediaNarrativeStatusResponse {
+    id: string;
+    narrative_status: ContentStatus;
+    audio_url: string;
+    narration_text: string;
+    narrative_rejection_reason: string | null;
+}
 
 // =====================================================================
 // SCHEDULE MANAGEMENT TYPES

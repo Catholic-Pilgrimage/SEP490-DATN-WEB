@@ -16,7 +16,8 @@ import {
     ExternalLink,
     Box,
     Upload,
-    AlertCircle
+    AlertCircle,
+    Mic
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
@@ -51,6 +52,7 @@ export const MediaContent: React.FC = () => {
     // Filters
     const [typeFilter, setTypeFilter] = useState<MediaType | ''>('');
     const [statusFilter, setStatusFilter] = useState<ContentStatus | ''>('');
+    const [narrativeStatusFilter, setNarrativeStatusFilter] = useState<ContentStatus | ''>('');
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
 
     // Selected media for detail modal
@@ -74,6 +76,7 @@ export const MediaContent: React.FC = () => {
                 limit,
                 type: typeFilter || undefined,
                 status: statusFilter || undefined,
+                narrative_status: narrativeStatusFilter || undefined,
                 is_active: activeFilter
             });
 
@@ -90,7 +93,7 @@ export const MediaContent: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, typeFilter, statusFilter, activeFilter]);
+    }, [currentPage, limit, typeFilter, statusFilter, narrativeStatusFilter, activeFilter]);
 
     useEffect(() => {
         fetchMediaList();
@@ -209,6 +212,22 @@ export const MediaContent: React.FC = () => {
                         </select>
                     </div>
 
+                    <div className="flex items-center gap-2">
+                        <select
+                            value={narrativeStatusFilter}
+                            onChange={(e) => {
+                                setNarrativeStatusFilter(e.target.value as ContentStatus | '');
+                                setCurrentPage(1);
+                            }}
+                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer min-w-[11rem]"
+                        >
+                            <option value="">{t('media.filterNarrativeStatus')}</option>
+                            <option value="pending">{t('status.pending')}</option>
+                            <option value="approved">{t('status.approved')}</option>
+                            <option value="rejected">{t('status.rejected')}</option>
+                        </select>
+                    </div>
+
                     {/* Active Filter */}
                     <div className="flex items-center gap-2">
                         <select
@@ -259,7 +278,7 @@ export const MediaContent: React.FC = () => {
                         </div>
                     ) : (
                         /* Grid Layout */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
                             {mediaList.map((media) => {
                                 const statusInfo = getStatusInfo(media.status);
                                 const typeInfo = getTypeInfo(media.type);
@@ -275,11 +294,11 @@ export const MediaContent: React.FC = () => {
                                 return (
                                     <div
                                         key={media.id}
-                                        className={`bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300 group ${!media.is_active ? 'opacity-60 border-red-200' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
+                                        className={`flex flex-col h-full min-h-0 bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300 group ${!media.is_active ? 'opacity-60 border-red-200' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
                                             }`}
                                     >
                                         {/* Media Preview */}
-                                        <div className="relative aspect-video bg-slate-100">
+                                        <div className="relative aspect-video bg-slate-100 flex-shrink-0">
                                             {media.type === 'image' ? (
                                                 <img
                                                     src={media.url}
@@ -304,15 +323,24 @@ export const MediaContent: React.FC = () => {
                                             )}
 
                                             {/* Type Badge */}
-                                            <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg flex items-center gap-1 text-xs font-medium">
-                                                <TypeIcon className={`w-3.5 h-3.5 ${typeInfo.color}`} />
+                                            <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg flex items-center gap-1 text-xs font-medium leading-none min-h-[1.75rem]">
+                                                <TypeIcon className={`w-3.5 h-3.5 flex-shrink-0 ${typeInfo.color}`} />
                                                 {typeInfo.label}
                                             </div>
 
+                                            {media.type === 'model_3d' &&
+                                                media.narrative_status === 'pending' &&
+                                                media.audio_url && (
+                                                    <div className="absolute bottom-2 left-2 right-2 px-2 py-1.5 bg-amber-500/95 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 shadow-md">
+                                                        <Mic className="w-3.5 h-3.5 flex-shrink-0" />
+                                                        <span className="truncate">{t('media.narrativePendingBadge')}</span>
+                                                    </div>
+                                                )}
+
                                             {/* Deleted Badge */}
                                             {!media.is_active && (
-                                                <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-lg flex items-center gap-1 text-xs font-medium">
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-lg flex items-center gap-1 text-xs font-medium leading-none min-h-[1.75rem]">
+                                                    <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
                                                     Đã xóa
                                                 </div>
                                             )}
@@ -327,38 +355,45 @@ export const MediaContent: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Content */}
-                                        <div className="p-4">
-                                            {/* Caption */}
-                                            <p className="text-sm text-slate-700 line-clamp-2 mb-3" title={media.caption}>
-                                                {media.caption}
+                                        {/* Content — flex-1 + mt-auto on actions so buttons align across the row */}
+                                        <div className="p-4 flex flex-1 flex-col min-h-0">
+                                            {/* Caption: fixed block height (2 lines) so cards stay even */}
+                                            <p
+                                                className="text-sm text-slate-700 line-clamp-2 mb-3 min-h-[2.75rem] leading-snug"
+                                                title={media.caption || undefined}
+                                            >
+                                                {media.caption?.trim() ? media.caption : '\u00a0'}
                                             </p>
 
                                             {/* Status */}
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                                                    <StatusIcon className="w-3 h-3" />
-                                                    {statusInfo.label}
+                                            <div className="flex items-center justify-between gap-2 mb-3 min-h-[1.75rem]">
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border flex-shrink-0 max-w-[58%] ${statusInfo.color}`}>
+                                                    <StatusIcon className="w-3 h-3 flex-shrink-0" />
+                                                    <span className="truncate">{statusInfo.label}</span>
                                                 </span>
-                                                <span className="text-xs text-slate-400 font-mono">{media.code}</span>
+                                                <span className="text-xs text-slate-400 font-mono tabular-nums text-right truncate min-w-0 shrink">
+                                                    {media.code}
+                                                </span>
                                             </div>
 
-                                            {/* Creator */}
-                                            {media.creator && (
-                                                <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
-                                                    <User className="w-3.5 h-3.5" />
-                                                    <span className="truncate">{media.creator.full_name}</span>
-                                                </div>
-                                            )}
+                                            {/* Creator — always one row height */}
+                                            <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 min-h-[1.25rem]">
+                                                <User className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                                                <span className="truncate">
+                                                    {media.creator?.full_name?.trim()
+                                                        ? media.creator.full_name
+                                                        : '\u00a0'}
+                                                </span>
+                                            </div>
 
                                             {/* Date */}
-                                            <div className="flex items-center gap-2 text-xs text-slate-400">
-                                                <Clock className="w-3.5 h-3.5" />
+                                            <div className="flex items-center gap-2 text-xs text-slate-400 mb-0 min-h-[1.25rem]">
+                                                <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                                                 <span>{formatDate(media.created_at)}</span>
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                                            <div className="flex items-center gap-2 mt-auto pt-3 border-t border-slate-100">
                                                 <button
                                                     onClick={() => setViewerMedia(media)}
                                                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium border border-[#d4af37]/20 text-slate-600 rounded-lg hover:bg-[#f5f3ee] hover:text-[#8a6d1c] hover:border-[#d4af37]/40 transition-colors"

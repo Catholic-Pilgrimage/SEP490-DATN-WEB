@@ -5,18 +5,16 @@ import {
   RefreshCw,
   Filter,
   CheckCircle,
-  Clock,
   XCircle,
   Flag,
-  FileText,
-  MessageSquare,
-  BookOpen,
   Shield,
+  Eye,
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import {
   Report,
-  ReportStatus,
+  ReportDetail,
+  ReportQueryStatus,
   ReportTargetType,
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
@@ -28,6 +26,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  getReportReasonLabel,
+  getReportStatusIcon,
+  getReportStatusLabel,
+  getReportStatusStyle,
+  getReportTargetTypeIcon,
+  getReportTargetTypeLabel,
+  getReportTargetTypeStyle,
+  ReportDetailDialog,
+} from './ReportDetailDialog';
 
 export const ReportsManagement: React.FC = () => {
   const { showToast } = useToast();
@@ -41,7 +49,7 @@ export const ReportsManagement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [statusFilter, setStatusFilter] = useState<ReportStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<ReportQueryStatus | ''>('');
   const [targetTypeFilter, setTargetTypeFilter] = useState<ReportTargetType | ''>('');
   const limit = 10;
 
@@ -50,7 +58,12 @@ export const ReportsManagement: React.FC = () => {
   const [resolveNote, setResolveNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchReports = useCallback(async () => {
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [reportDetail, setReportDetail] = useState<ReportDetail | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchReports = useCallback(async (): Promise<boolean> => {
     setLoading(true);
     try {
       const response = await AdminService.getReports({
@@ -64,20 +77,35 @@ export const ReportsManagement: React.FC = () => {
         setTotalItems(response.data.pagination.total_items);
         setTotalPages(response.data.pagination.total_pages);
         setCurrentPage(response.data.pagination.current_page);
-      } else {
-        showToast('error', tRef.current('rpt.title'), response.message || tRef.current('rpt.loadError'));
+        return true;
       }
+      showToast('error', tRef.current('rpt.title'), response.message || tRef.current('rpt.loadError'));
+      return false;
     } catch (err) {
       console.error('Error fetching reports:', err);
       showToast('error', tRef.current('rpt.title'), tRef.current('rpt.loadError'));
+      return false;
     } finally {
       setLoading(false);
     }
   }, [showToast, currentPage, limit, statusFilter, targetTypeFilter]);
 
   useEffect(() => {
-    fetchReports();
+    void fetchReports();
   }, [fetchReports]);
+
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    const ok = await fetchReports();
+    setRefreshing(false);
+    if (ok) {
+      showToast(
+        'success',
+        tRef.current('toast.refreshSuccess'),
+        tRef.current('toast.refreshSuccessMsg')
+      );
+    }
+  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1) {
@@ -97,7 +125,7 @@ export const ReportsManagement: React.FC = () => {
         showToast('success', tRef.current('rpt.title'), tRef.current('rpt.resolveSuccess'));
         setResolvingReport(null);
         setResolveNote('');
-        fetchReports();
+        void fetchReports();
       } else {
         showToast('error', tRef.current('rpt.title'), response.message || tRef.current('rpt.resolveError'));
       }
@@ -109,72 +137,24 @@ export const ReportsManagement: React.FC = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-  };
-
-  const getStatusIcon = (status: ReportStatus) => {
-    switch (status) {
-      case 'pending': return <Clock className="w-3.5 h-3.5" />;
-      case 'resolved': return <CheckCircle className="w-3.5 h-3.5" />;
-      case 'dismissed': return <XCircle className="w-3.5 h-3.5" />;
+  const openReportDetail = async (id: string) => {
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setReportDetail(null);
+    try {
+      const response = await AdminService.getReportById(id);
+      if (response.success && response.data) {
+        setReportDetail(response.data);
+      } else {
+        showToast('error', tRef.current('rpt.detail.title'), response.message || tRef.current('rpt.detail.loadError'));
+        setDetailOpen(false);
+      }
+    } catch {
+      showToast('error', tRef.current('rpt.detail.title'), tRef.current('rpt.detail.loadError'));
+      setDetailOpen(false);
+    } finally {
+      setDetailLoading(false);
     }
-  };
-
-  const getStatusStyle = (status: ReportStatus) => {
-    switch (status) {
-      case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'dismissed': return 'bg-slate-50 text-slate-600 border-slate-200';
-    }
-  };
-
-  const getStatusLabel = (status: ReportStatus) => {
-    const labels: Record<string, string> = {
-      pending: t('rpt.status.pending'),
-      resolved: t('rpt.status.resolved'),
-      dismissed: t('rpt.status.dismissed'),
-    };
-    return labels[status] || status;
-  };
-
-  const getTargetTypeIcon = (type: ReportTargetType) => {
-    switch (type) {
-      case 'post': return <FileText className="w-3.5 h-3.5" />;
-      case 'comment': return <MessageSquare className="w-3.5 h-3.5" />;
-      case 'journal': return <BookOpen className="w-3.5 h-3.5" />;
-    }
-  };
-
-  const getTargetTypeStyle = (type: ReportTargetType) => {
-    switch (type) {
-      case 'post': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'comment': return 'bg-violet-50 text-violet-700 border-violet-200';
-      case 'journal': return 'bg-orange-50 text-orange-700 border-orange-200';
-    }
-  };
-
-  const getTargetTypeLabel = (type: ReportTargetType) => {
-    const labels: Record<string, string> = {
-      post: t('rpt.targetType.post'),
-      comment: t('rpt.targetType.comment'),
-      journal: t('rpt.targetType.journal'),
-    };
-    return labels[type] || type;
-  };
-
-  const getReasonLabel = (reason: string) => {
-    const labels: Record<string, string> = {
-      spam: t('rpt.reason.spam'),
-      inappropriate: t('rpt.reason.inappropriate'),
-      harassment: t('rpt.reason.harassment'),
-      misinformation: t('rpt.reason.misinformation'),
-      other: t('rpt.reason.other'),
-    };
-    return labels[reason] || reason;
   };
 
   return (
@@ -188,11 +168,12 @@ export const ReportsManagement: React.FC = () => {
           <p className="text-slate-600 mt-1">{t('rpt.subtitle')}</p>
         </div>
         <button
-          onClick={() => fetchReports()}
-          disabled={loading}
+          type="button"
+          onClick={() => void handleManualRefresh()}
+          disabled={loading || refreshing}
           className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
           {t('common.refresh')}
         </button>
       </div>
@@ -206,7 +187,7 @@ export const ReportsManagement: React.FC = () => {
               <Select
                 value={statusFilter || 'all'}
                 onValueChange={(value) => {
-                  setStatusFilter(value === 'all' ? '' : (value as ReportStatus));
+                  setStatusFilter(value === 'all' ? '' : (value as ReportQueryStatus));
                   setCurrentPage(1);
                 }}
               >
@@ -217,7 +198,7 @@ export const ReportsManagement: React.FC = () => {
                   <SelectItem value="all">{t('rpt.allStatuses')}</SelectItem>
                   <SelectItem value="pending">{t('rpt.status.pending')}</SelectItem>
                   <SelectItem value="resolved">{t('rpt.status.resolved')}</SelectItem>
-                  <SelectItem value="dismissed">{t('rpt.status.dismissed')}</SelectItem>
+                  <SelectItem value="reject">{t('rpt.status.reject')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -237,6 +218,8 @@ export const ReportsManagement: React.FC = () => {
                 <SelectItem value="post">{t('rpt.targetType.post')}</SelectItem>
                 <SelectItem value="comment">{t('rpt.targetType.comment')}</SelectItem>
                 <SelectItem value="journal">{t('rpt.targetType.journal')}</SelectItem>
+                <SelectItem value="site_review">{t('rpt.targetType.site_review')}</SelectItem>
+                <SelectItem value="nearby_place_review">{t('rpt.targetType.nearby_place_review')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -260,7 +243,6 @@ export const ReportsManagement: React.FC = () => {
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.description')}</th>
                 <th className="text-center px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.status')}</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.resolver')}</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.date')}</th>
                 <th className="text-center px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.actions')}</th>
               </tr>
             </thead>
@@ -268,7 +250,7 @@ export const ReportsManagement: React.FC = () => {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
-                    {[...Array(8)].map((__, j) => (
+                    {[...Array(7)].map((__, j) => (
                       <td key={j} className="px-6 py-4">
                         <div className="h-4 bg-slate-100 rounded animate-pulse" style={{ width: `${50 + Math.random() * 50}%` }} />
                       </td>
@@ -277,7 +259,7 @@ export const ReportsManagement: React.FC = () => {
                 ))
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <Flag className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                     <p className="text-sm font-medium text-slate-500">{t('rpt.noData')}</p>
                   </td>
@@ -303,16 +285,16 @@ export const ReportsManagement: React.FC = () => {
                     </td>
                     {/* Target Type */}
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${getTargetTypeStyle(rpt.target_type)}`}>
-                        {getTargetTypeIcon(rpt.target_type)}
-                        {getTargetTypeLabel(rpt.target_type)}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${getReportTargetTypeStyle(rpt.target_type)}`}>
+                        {getReportTargetTypeIcon(rpt.target_type)}
+                        {getReportTargetTypeLabel(rpt.target_type, t)}
                       </span>
                     </td>
                     {/* Reason */}
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 rounded-full">
                         <Flag className="w-3 h-3" />
-                        {getReasonLabel(rpt.reason)}
+                        {getReportReasonLabel(rpt.reason, t)}
                       </span>
                     </td>
                     {/* Description */}
@@ -323,44 +305,52 @@ export const ReportsManagement: React.FC = () => {
                     </td>
                     {/* Status */}
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusStyle(rpt.status)}`}>
-                        {getStatusIcon(rpt.status)}
-                        {getStatusLabel(rpt.status)}
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border ${getReportStatusStyle(rpt.status)}`}>
+                        {getReportStatusIcon(rpt.status)}
+                        {getReportStatusLabel(rpt.status, t)}
                       </span>
                     </td>
                     {/* Resolver */}
                     <td className="px-6 py-4">
                       {rpt.resolver ? (
-                        <div className="flex items-center gap-1.5">
-                          <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium text-slate-700 truncate max-w-[100px]">{rpt.resolver.full_name}</p>
-                          </div>
+                        <div className="flex min-w-[10rem] items-start gap-2">
+                          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                          <p
+                            className="break-words text-sm font-medium leading-snug text-slate-900"
+                            title={rpt.resolver.full_name}
+                          >
+                            {rpt.resolver.full_name}
+                          </p>
                         </div>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
-                    {/* Date */}
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-slate-500">{formatDate(rpt.created_at)}</span>
-                    </td>
                     {/* Actions */}
                     <td className="px-6 py-4 text-center">
-                      {rpt.status === 'pending' ? (
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                         <button
-                          onClick={() => {
-                            setResolvingReport(rpt);
-                            setResolveAction('resolved');
-                            setResolveNote('');
-                          }}
-                          className="px-3 py-1.5 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-lg hover:bg-[#d4af37]/20 transition-all whitespace-nowrap"
+                          type="button"
+                          onClick={() => openReportDetail(rpt.id)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all whitespace-nowrap"
                         >
-                          {t('rpt.action.resolve')}
+                          <Eye className="w-3.5 h-3.5" />
+                          {t('rpt.action.view')}
                         </button>
-                      ) : (
-                        <span className="text-xs text-slate-400">—</span>
-                      )}
+                        {rpt.status === 'pending' ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setResolvingReport(rpt);
+                              setResolveAction('resolved');
+                              setResolveNote('');
+                            }}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-lg hover:bg-[#d4af37]/20 transition-all whitespace-nowrap"
+                          >
+                            {t('rpt.action.resolve')}
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -413,6 +403,16 @@ export const ReportsManagement: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ReportDetailDialog
+        open={detailOpen}
+        onOpenChange={(open: boolean) => {
+          setDetailOpen(open);
+          if (!open) setReportDetail(null);
+        }}
+        loading={detailLoading}
+        data={reportDetail}
+      />
 
       {/* Resolve Modal */}
       {resolvingReport && (

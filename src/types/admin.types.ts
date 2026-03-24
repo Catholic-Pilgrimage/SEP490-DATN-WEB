@@ -943,8 +943,16 @@ export interface WalletEscrowListData {
 
 // ============ REPORT TYPES ============
 
-export type ReportStatus = 'pending' | 'resolved' | 'dismissed';
-export type ReportTargetType = 'post' | 'comment' | 'journal';
+/** Trạng thái trên từng báo cáo (có thể có dismissed từ dữ liệu cũ) */
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed' | 'reject';
+/** GET /api/reports — query `status` (theo BE) */
+export type ReportQueryStatus = 'pending' | 'resolved' | 'reject';
+export type ReportTargetType =
+    | 'post'
+    | 'comment'
+    | 'journal'
+    | 'site_review'
+    | 'nearby_place_review';
 export type ReportReason = 'spam' | 'inappropriate' | 'harassment' | 'misinformation' | 'other';
 
 export interface Reporter {
@@ -962,12 +970,14 @@ export interface Resolver {
 
 export interface Report {
     id: string;
+    code?: string;
     reporter_id: string;
     target_type: ReportTargetType;
     target_id: string;
-    reason: ReportReason;
+    reason: ReportReason | string;
     description: string | null;
     status: ReportStatus;
+    admin_note?: string | null;
     resolved_by: string | null;
     created_at: string;
     updated_at: string;
@@ -975,9 +985,56 @@ export interface Report {
     resolver: Resolver | null;
 }
 
+/** Nội dung đánh giá site khi target_type = site_review (GET /api/reports/:id) */
+export interface ReportSiteReviewTargetContent {
+    id: string;
+    site_id: string;
+    user_id: string;
+    checkin_id: string | null;
+    rating: number;
+    feedback: string;
+    image_urls: string[];
+    verified_visit: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    reviewer: Reporter;
+}
+
+/** GET /api/reports/:id — data */
+export interface ReportDetail {
+    id: string;
+    code: string;
+    reporter_id: string;
+    target_type: string;
+    target_id: string;
+    reason: string;
+    description: string | null;
+    status: string;
+    admin_note: string | null;
+    resolved_by: string | null;
+    created_at: string;
+    updated_at: string;
+    reporter: Reporter;
+    resolver: Resolver | null;
+    target_content: ReportSiteReviewTargetContent | Record<string, unknown> | null;
+}
+
+export function isReportSiteReviewTarget(
+    content: ReportSiteReviewTargetContent | Record<string, unknown> | null | undefined
+): content is ReportSiteReviewTargetContent {
+    return (
+        !!content &&
+        typeof content === 'object' &&
+        'rating' in content &&
+        'feedback' in content &&
+        'reviewer' in content
+    );
+}
+
 // GET /api/reports - Query Parameters
 export interface ReportParams {
-    status?: ReportStatus | '';
+    status?: ReportQueryStatus | '';
     target_type?: ReportTargetType | '';
     page?: number;
     limit?: number;
