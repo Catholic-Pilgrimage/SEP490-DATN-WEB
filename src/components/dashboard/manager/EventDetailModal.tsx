@@ -22,6 +22,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Event, ContentStatus } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { ImagePreviewDialog } from '../../shared/ImagePreviewDialog';
 
 interface EventDetailModalProps {
     isOpen: boolean;
@@ -47,6 +48,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [rejectionReason, setRejectionReason] = useState('');
     const [actionError, setActionError] = useState<string | null>(null);
     const [currentEvent, setCurrentEvent] = useState<Event | null>(event);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     // Confirm Modal State
     const [confirmAction, setConfirmAction] = useState<'approve' | 'toggle_active' | null>(null);
@@ -319,15 +321,14 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                             {currentEvent.banner_url && (
                                 <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
                                     <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('event.banner')}</p>
-                                    <a
-                                        href={currentEvent.banner_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPreviewOpen(true)}
                                         className="inline-flex items-center gap-2 text-[#8a6d1c] hover:text-[#6b5516] text-sm font-medium transition-colors"
                                     >
                                         <ExternalLink className="w-4 h-4" />
                                         {t('event.openBanner')}
-                                    </a>
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -449,23 +450,25 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     )}
 
                     {/* Toggle Active Button */}
-                    <button
-                        onClick={handleToggleActiveClick}
-                        disabled={actionLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentEvent.is_active
-                            ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                            : 'bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
-                            }`}
-                    >
-                        {actionLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : currentEvent.is_active ? (
-                            <EyeOff className="w-4 h-4" />
-                        ) : (
-                            <RotateCcw className="w-4 h-4" />
-                        )}
-                        {currentEvent.is_active ? t('content.hide') : t('content.restore')}
-                    </button>
+                    {currentEvent.status === 'approved' && (
+                        <button
+                            onClick={handleToggleActiveClick}
+                            disabled={actionLoading}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentEvent.is_active
+                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                                : 'bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
+                                }`}
+                        >
+                            {actionLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : currentEvent.is_active ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <RotateCcw className="w-4 h-4" />
+                            )}
+                            {currentEvent.is_active ? t('content.hide') : t('content.restore')}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -544,6 +547,12 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     </div>
                 </div>
             )}
+            <ImagePreviewDialog
+                open={isPreviewOpen}
+                onOpenChange={setIsPreviewOpen}
+                src={currentEvent?.banner_url || null}
+                alt={currentEvent?.name || ''}
+            />
         </div>
     );
 };

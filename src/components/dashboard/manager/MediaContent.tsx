@@ -26,6 +26,15 @@ import { MediaDetailModal } from './MediaDetailModal';
 import { MediaViewerModal } from './MediaViewerModal';
 import { Upload3DModelModal } from './Upload3DModelModal';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 /**
  * MediaContent Component
@@ -161,121 +170,137 @@ export const MediaContent: React.FC = () => {
                     <h1 className="text-2xl font-bold text-slate-900">{t('media.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('media.subtitle')}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => setIsUpload3DModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-[#d4af37]/40 text-[#8a6d1c] rounded-xl hover:bg-[#f8f5ee] active:scale-95 transition-all duration-200"
+                        className="h-11 px-6 gap-2 rounded-xl border-[#d4af37]/40 text-[#8a6d1c] hover:bg-[#f8f5ee] text-[15px]"
                     >
-                        <Upload className="w-4 h-4" />
+                        <Upload className="h-5 w-5" />
                         {t('upload3D.title') || 'Tải lên 3D Model'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        type="button"
                         onClick={handleManualRefresh}
                         disabled={loading || refreshing}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="h-11 px-6 gap-2 rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white shadow-md shadow-[#d4af37]/25 hover:brightness-110 disabled:opacity-70 text-[15px]"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`h-5 w-5 ${loading || refreshing ? 'animate-spin' : ''}`} />
                         {t('common.refresh')}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl border border-[#d4af37]/20 shadow-sm mb-6">
-                <div className="flex flex-wrap items-center gap-4">
-                    {/* Type Filter */}
+            <Card className="mb-6 rounded-2xl border-[#d4af37]/20 shadow-sm">
+                <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => { setTypeFilter(e.target.value as MediaType | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('media.filterType')}</option>
-                            <option value="image">{t('media.image')}</option>
-                            <option value="video">{t('media.video')}</option>
-                            <option value="model_3d">{t('media.model3d')}</option>
-                        </select>
-                    </div>
-
-                    {/* Status Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('media.filterStatus')}</option>
-                            <option value="pending">{t('status.pending')}</option>
-                            <option value="approved">{t('status.approved')}</option>
-                            <option value="rejected">{t('status.rejected')}</option>
-                        </select>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={narrativeStatusFilter}
-                            onChange={(e) => {
-                                setNarrativeStatusFilter(e.target.value as ContentStatus | '');
+                        <Filter className="h-5 w-5 shrink-0 text-[#8a6d1c]/50" />
+                        <Select
+                            value={typeFilter || 'all'}
+                            onValueChange={(v) => {
+                                setTypeFilter(v === 'all' ? '' : (v as MediaType));
                                 setCurrentPage(1);
                             }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer min-w-[11rem]"
                         >
-                            <option value="">{t('media.filterNarrativeStatus')}</option>
-                            <option value="pending">{t('status.pending')}</option>
-                            <option value="approved">{t('status.approved')}</option>
-                            <option value="rejected">{t('status.rejected')}</option>
-                        </select>
+                            <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                                <SelectValue placeholder={t('media.filterType')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('media.filterType')}</SelectItem>
+                                <SelectItem value="image">{t('media.image')}</SelectItem>
+                                <SelectItem value="video">{t('media.video')}</SelectItem>
+                                <SelectItem value="model_3d">{t('media.model3d')}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    {/* Active Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={activeFilter === undefined ? '' : activeFilter.toString()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setActiveFilter(val === '' ? undefined : val === 'true');
-                                setCurrentPage(1);
-                            }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('media.filterActive')}</option>
-                            <option value="true">{t('media.activeTrue')}</option>
-                            <option value="false">{t('media.activeFalse')}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                    <Select
+                        value={statusFilter || 'all'}
+                        onValueChange={(v) => {
+                            setStatusFilter(v === 'all' ? '' : (v as ContentStatus));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                            <SelectValue placeholder={t('media.filterStatus')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('media.filterStatus')}</SelectItem>
+                            <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                            <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                            <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={narrativeStatusFilter || 'all'}
+                        onValueChange={(v) => {
+                            setNarrativeStatusFilter(v === 'all' ? '' : (v as ContentStatus));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,14rem)] min-w-[11rem] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[220px]">
+                            <SelectValue placeholder={t('media.filterNarrativeStatus')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('media.filterNarrativeStatus')}</SelectItem>
+                            <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                            <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                            <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={activeFilter === undefined ? 'all' : activeFilter ? 'true' : 'false'}
+                        onValueChange={(v) => {
+                            setActiveFilter(v === 'all' ? undefined : v === 'true');
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                            <SelectValue placeholder={t('media.filterActive')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('media.filterActive')}</SelectItem>
+                            <SelectItem value="true">{t('media.activeTrue')}</SelectItem>
+                            <SelectItem value="false">{t('media.activeFalse')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
 
             {/* Error */}
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    <span>{error}</span>
-                </div>
+                <Card className="rounded-xl border-red-200 bg-red-50">
+                    <CardContent className="flex items-center gap-2 p-4 text-red-600">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <span>{error}</span>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Loading */}
             {loading ? (
-                <div className="flex-1 flex items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
-                </div>
+                <Card className="flex flex-1 items-center justify-center rounded-2xl border-[#d4af37]/20">
+                    <CardContent className="flex justify-center py-16">
+                        <Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
+                    </CardContent>
+                </Card>
             ) : (
                 <>
                     {/* Content */}
                     {mediaList.length === 0 ? (
-                        /* Empty State */
-                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20 text-center p-12">
-                            <div className="w-16 h-16 bg-[#f5f3ee] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <Image className="w-8 h-8 text-[#d4af37]/40" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                {t('media.emptyTitle')}
-                            </h3>
-                            <p className="text-slate-500">
-                                {t('media.emptyDesc')}
-                            </p>
-                        </div>
+                        <Card className="flex flex-1 flex-col rounded-2xl border-[#d4af37]/20">
+                            <CardContent className="flex flex-col items-center justify-center px-6 py-12 text-center sm:py-16">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f5f3ee]">
+                                    <Image className="h-8 w-8 text-[#d4af37]/40" />
+                                </div>
+                                <h3 className="mb-2 text-lg font-semibold text-slate-900">{t('media.emptyTitle')}</h3>
+                                <p className="max-w-sm text-slate-500">{t('media.emptyDesc')}</p>
+                            </CardContent>
+                        </Card>
                     ) : (
                         /* Grid Layout */
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
@@ -292,9 +317,9 @@ export const MediaContent: React.FC = () => {
                                 }
 
                                 return (
-                                    <div
+                                    <Card
                                         key={media.id}
-                                        className={`flex flex-col h-full min-h-0 bg-white rounded-2xl border overflow-hidden hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300 group ${!media.is_active ? 'opacity-60 border-red-200' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
+                                        className={`group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-[#d4af37]/10 ${!media.is_active ? 'border-red-200 opacity-60' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
                                             }`}
                                     >
                                         {/* Media Preview */}
@@ -355,8 +380,7 @@ export const MediaContent: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Content — flex-1 + mt-auto on actions so buttons align across the row */}
-                                        <div className="p-4 flex flex-1 flex-col min-h-0">
+                                        <CardContent className="flex min-h-0 flex-1 flex-col p-4 pt-3">
                                             {/* Caption: fixed block height (2 lines) so cards stay even */}
                                             <p
                                                 className="text-sm text-slate-700 line-clamp-2 mb-3 min-h-[2.75rem] leading-snug"
@@ -392,25 +416,30 @@ export const MediaContent: React.FC = () => {
                                                 <span>{formatDate(media.created_at)}</span>
                                             </div>
 
-                                            {/* Actions */}
-                                            <div className="flex items-center gap-2 mt-auto pt-3 border-t border-slate-100">
-                                                <button
+                                            <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-3">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => setViewerMedia(media)}
-                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium border border-[#d4af37]/20 text-slate-600 rounded-lg hover:bg-[#f5f3ee] hover:text-[#8a6d1c] hover:border-[#d4af37]/40 transition-colors"
+                                                    className="h-8 flex-1 gap-1 rounded-lg border-[#d4af37]/25 text-xs text-slate-600 hover:border-[#d4af37]/45 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
                                                 >
-                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                    <ExternalLink className="h-3.5 w-3.5" />
                                                     {t('media.view')}
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="secondary"
+                                                    size="sm"
                                                     onClick={() => setSelectedMedia(media)}
-                                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium bg-[#f5f3ee] text-[#8a6d1c] rounded-lg hover:bg-[#ece8dc] transition-colors"
+                                                    className="h-8 flex-1 gap-1 rounded-lg bg-[#f5f3ee] text-xs text-[#8a6d1c] hover:bg-[#ece8dc]"
                                                 >
-                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <Eye className="h-3.5 w-3.5" />
                                                     {t('common.details')}
-                                                </button>
+                                                </Button>
                                             </div>
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 );
                             })}
                         </div>
@@ -423,13 +452,16 @@ export const MediaContent: React.FC = () => {
                                 {t('media.showing')} <span className="font-medium text-slate-900">{(currentPage - 1) * limit + 1}</span> {t('media.to')} <span className="font-medium text-slate-900">{Math.min(currentPage * limit, totalItems)}</span> {t('media.of')} <span className="font-medium text-slate-900">{totalItems}</span> {t('media.items')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <button
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="h-9 w-9 rounded-lg border-[#d4af37]/25 text-slate-600 hover:bg-[#f5f3ee] disabled:opacity-50"
                                 >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Button>
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                                         let pageNum;
@@ -443,26 +475,32 @@ export const MediaContent: React.FC = () => {
                                             pageNum = currentPage - 2 + i;
                                         }
                                         return (
-                                            <button
+                                            <Button
                                                 key={pageNum}
+                                                type="button"
+                                                variant={pageNum === currentPage ? 'default' : 'ghost'}
+                                                size="icon"
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
-                                                    : 'hover:bg-[#f5f3ee] text-slate-600 hover:text-[#8a6d1c]'
+                                                className={`h-9 w-9 rounded-lg font-medium ${pageNum === currentPage
+                                                    ? 'bg-[#d4af37] text-white shadow-md shadow-[#d4af37]/25 hover:bg-[#c9a227]'
+                                                    : 'text-slate-600 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]'
                                                     }`}
                                             >
                                                 {pageNum}
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
-                                <button
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="h-9 w-9 rounded-lg border-[#d4af37]/25 text-slate-600 hover:bg-[#f5f3ee] disabled:opacity-50"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
+                                    <ChevronRight className="h-5 w-5" />
+                                </Button>
                             </div>
                         </div>
                     )}

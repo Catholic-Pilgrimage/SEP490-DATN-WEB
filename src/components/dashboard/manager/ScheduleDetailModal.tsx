@@ -396,23 +396,25 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                     )}
 
                     {/* Toggle Active Button */}
-                    <button
-                        onClick={handleToggleActiveClick}
-                        disabled={actionLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 ${currentSchedule.is_active
-                            ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                            : 'bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-lg shadow-[#d4af37]/20'
-                            }`}
-                    >
-                        {actionLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : currentSchedule.is_active ? (
-                            <EyeOff className="w-4 h-4" />
-                        ) : (
-                            <RotateCcw className="w-4 h-4" />
-                        )}
-                        {currentSchedule.is_active ? t('schedule.hide') : t('schedule.restore')}
-                    </button>
+                    {currentSchedule.status === 'approved' && (
+                        <button
+                            onClick={handleToggleActiveClick}
+                            disabled={actionLoading}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 ${currentSchedule.is_active
+                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                                : 'bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-lg shadow-[#d4af37]/20'
+                                }`}
+                        >
+                            {actionLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : currentSchedule.is_active ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <RotateCcw className="w-4 h-4" />
+                            )}
+                            {currentSchedule.is_active ? t('schedule.hide') : t('schedule.restore')}
+                        </button>
+                    )}
                 </div>
             </div>
 

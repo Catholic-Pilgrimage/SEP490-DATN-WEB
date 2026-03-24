@@ -478,6 +478,9 @@ const translations: Record<Language, Record<string, string>> = {
         'schedule.noNote': '(Không có ghi chú)',
         'schedule.hide': 'Ẩn lịch lễ',
         'schedule.restore': 'Khôi phục',
+        'schedule.statTotal': 'Tổng lịch lễ',
+        'schedule.statHint': 'Theo bộ lọc hiện tại',
+        'schedule.pageLabel': 'Trang',
 
         // Event Content
         'event.title': 'Sự kiện',
@@ -1469,6 +1472,9 @@ const translations: Record<Language, Record<string, string>> = {
         'schedule.noNote': '(No note)',
         'schedule.hide': 'Hide Schedule',
         'schedule.restore': 'Restore',
+        'schedule.statTotal': 'Total schedules',
+        'schedule.statHint': 'Matching current filters',
+        'schedule.pageLabel': 'Page',
 
         // Event Content
         'event.title': 'Events',

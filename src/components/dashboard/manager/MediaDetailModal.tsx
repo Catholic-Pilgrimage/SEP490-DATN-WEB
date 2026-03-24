@@ -627,7 +627,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     )}
 
                     {/* Toggle Active Button */}
-                    {!isPending && (
+                    {currentMedia.status === 'approved' && (
                         <button
                             onClick={handleToggleActiveClick}
                             disabled={actionLoading}

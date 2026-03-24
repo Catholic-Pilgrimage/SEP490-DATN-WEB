@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Filter,
     ChevronLeft,
@@ -12,46 +12,54 @@ import {
     Trash2,
     Eye,
     Calendar,
-    User
+    User,
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
 import { Schedule, ContentStatus } from '../../../types/manager.types';
 import { ScheduleDetailModal } from './ScheduleDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
 /**
- * ScheduleContent Component
- * 
- * Giải thích:
- * - Hiển thị danh sách lịch lễ (schedules) của site
- * - Có filter theo: status, day_of_week, is_active
- * - Table layout với thông tin ngày, giờ, ghi chú
+ * ScheduleContent — danh sách lịch lễ site, filter & bảng chi tiết.
  */
 export const ScheduleContent: React.FC = () => {
     const { t, language } = useLanguage();
     const { showToast } = useToast();
-    // ============ STATE ============
     const [scheduleList, setScheduleList] = useState<Schedule[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [limit] = useState(10);
 
-    // Filters
     const [statusFilter, setStatusFilter] = useState<ContentStatus | ''>('');
     const [dayFilter, setDayFilter] = useState<number | undefined>(undefined);
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
 
-    // Selected schedule for detail modal
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [refreshing, setRefreshing] = useState(false);
 
-    // ============ FETCH DATA ============
     const fetchScheduleList = useCallback(async () => {
         try {
             setLoading(true);
@@ -62,7 +70,7 @@ export const ScheduleContent: React.FC = () => {
                 limit,
                 status: statusFilter || undefined,
                 day_of_week: dayFilter,
-                is_active: activeFilter
+                is_active: activeFilter,
             });
 
             if (response.success && response.data) {
@@ -91,7 +99,6 @@ export const ScheduleContent: React.FC = () => {
         showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
     };
 
-    // ============ HELPERS ============
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
@@ -100,259 +107,330 @@ export const ScheduleContent: React.FC = () => {
 
     const getStatusInfo = (status: ContentStatus) => {
         const statuses = {
-            pending: { label: t('status.pending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-            approved: { label: t('status.approved'), color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle },
-            rejected: { label: t('status.rejected'), color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle }
+            pending: {
+                label: t('status.pending'),
+                color: 'border-amber-200 bg-amber-50 text-amber-800',
+                icon: Clock,
+            },
+            approved: {
+                label: t('status.approved'),
+                color: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                icon: CheckCircle,
+            },
+            rejected: {
+                label: t('status.rejected'),
+                color: 'border-red-200 bg-red-50 text-red-800',
+                icon: XCircle,
+            },
         };
         return statuses[status] || statuses.pending;
     };
 
     const getDayName = (day: number): string => {
-        const days = language === 'vi'
-            ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
-            : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const days =
+            language === 'vi'
+                ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+                : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         return days[day] || '';
     };
 
-    const formatTime = (time: string): string => {
-        // "17:30:00" -> "17:30"
-        return time.slice(0, 5);
-    };
+    const formatTime = (time: string) => time.slice(0, 5);
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
         });
-    };
 
-    // ============ RENDER ============
+    const dayOptions = [
+        { value: '0', labelVi: 'Chủ nhật', labelEn: 'Sunday' },
+        { value: '1', labelVi: 'Thứ 2', labelEn: 'Monday' },
+        { value: '2', labelVi: 'Thứ 3', labelEn: 'Tuesday' },
+        { value: '3', labelVi: 'Thứ 4', labelEn: 'Wednesday' },
+        { value: '4', labelVi: 'Thứ 5', labelEn: 'Thursday' },
+        { value: '5', labelVi: 'Thứ 6', labelEn: 'Friday' },
+        { value: '6', labelVi: 'Thứ 7', labelEn: 'Saturday' },
+    ];
+
     return (
-        <div className="h-full flex flex-col p-6">
+        <div className="flex h-full min-h-0 flex-col gap-6 p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{t('schedule.title')}</h1>
-                    <p className="text-slate-500 mt-1">{t('schedule.subtitle')}</p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] shadow-lg shadow-[#d4af37]/25 ring-4 ring-[#d4af37]/10">
+                        <Calendar className="h-7 w-7 text-white" strokeWidth={1.75} />
+                    </div>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                            {t('schedule.title')}
+                        </h1>
+                        <p className="mt-1 max-w-xl text-sm text-slate-600 sm:text-base">{t('schedule.subtitle')}</p>
+                    </div>
                 </div>
-                <button
+                <Button
+                    type="button"
                     onClick={handleManualRefresh}
                     disabled={loading || refreshing}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                    className="h-11 shrink-0 gap-2 rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] px-6 text-white shadow-md shadow-[#d4af37]/25 hover:brightness-110 disabled:opacity-70"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-5 w-5 ${loading || refreshing ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
-                </button>
+                </Button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl border border-[#d4af37]/20 shadow-sm mb-6">
-                <div className="flex flex-wrap items-center gap-4">
-                    {/* Status Filter */}
+            <Card className="rounded-2xl border-[#d4af37]/20 shadow-sm">
+                <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('content.allStatus')}</option>
-                            <option value="pending">{t('status.pending')}</option>
-                            <option value="approved">{t('status.approved')}</option>
-                            <option value="rejected">{t('status.rejected')}</option>
-                        </select>
-                    </div>
-
-                    {/* Day of Week Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={dayFilter === undefined ? '' : dayFilter.toString()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setDayFilter(val === '' ? undefined : parseInt(val, 10));
+                        <Filter className="h-5 w-5 shrink-0 text-[#8a6d1c]/50" />
+                        <Select
+                            value={statusFilter === '' ? 'all' : statusFilter}
+                            onValueChange={(v) => {
+                                setStatusFilter(v === 'all' ? '' : (v as ContentStatus));
                                 setCurrentPage(1);
                             }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">{t('schedule.allDays')}</option>
-                            <option value="0">{language === 'vi' ? 'Chủ nhật' : 'Sunday'}</option>
-                            <option value="1">{language === 'vi' ? 'Thứ 2' : 'Monday'}</option>
-                            <option value="2">{language === 'vi' ? 'Thứ 3' : 'Tuesday'}</option>
-                            <option value="3">{language === 'vi' ? 'Thứ 4' : 'Wednesday'}</option>
-                            <option value="4">{language === 'vi' ? 'Thứ 5' : 'Thursday'}</option>
-                            <option value="5">{language === 'vi' ? 'Thứ 6' : 'Friday'}</option>
-                            <option value="6">{language === 'vi' ? 'Thứ 7' : 'Saturday'}</option>
-                        </select>
+                            <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                                <SelectValue placeholder={t('content.allStatus')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('content.allStatus')}</SelectItem>
+                                <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                                <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    {/* Active Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={activeFilter === undefined ? '' : activeFilter.toString()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setActiveFilter(val === '' ? undefined : val === 'true');
-                                setCurrentPage(1);
-                            }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('content.allActive')}</option>
-                            <option value="true">{t('content.activeTrue')}</option>
-                            <option value="false">{t('content.activeFalse')}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                    <Select
+                        value={dayFilter === undefined ? 'all' : String(dayFilter)}
+                        onValueChange={(v) => {
+                            setDayFilter(v === 'all' ? undefined : parseInt(v, 10));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,220px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[220px]">
+                            <SelectValue placeholder={t('schedule.allDays')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('schedule.allDays')}</SelectItem>
+                            {dayOptions.map((d) => (
+                                <SelectItem key={d.value} value={d.value}>
+                                    {language === 'vi' ? d.labelVi : d.labelEn}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-            {/* Error */}
+                    <Select
+                        value={activeFilter === undefined ? 'all' : activeFilter ? 'true' : 'false'}
+                        onValueChange={(v) => {
+                            setActiveFilter(v === 'all' ? undefined : v === 'true');
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                            <SelectValue placeholder={t('content.allActive')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('content.allActive')}</SelectItem>
+                            <SelectItem value="true">{t('content.activeTrue')}</SelectItem>
+                            <SelectItem value="false">{t('content.activeFalse')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    <span>{error}</span>
-                </div>
+                <Card className="rounded-xl border-red-200 bg-red-50">
+                    <CardContent className="flex items-center gap-2 p-4 text-red-600">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <span>{error}</span>
+                    </CardContent>
+                </Card>
             )}
 
-            {/* Loading */}
             {loading ? (
-                <div className="flex-1 flex items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
-                </div>
+                <Card className="flex min-h-[280px] flex-1 items-center justify-center rounded-2xl border-[#d4af37]/20">
+                    <CardContent className="flex flex-col items-center gap-3 py-16">
+                        <Loader2 className="h-9 w-9 animate-spin text-[#d4af37]" />
+                        <p className="text-sm text-slate-500">{t('modal.loading')}</p>
+                    </CardContent>
+                </Card>
             ) : (
                 <>
-                    {/* Content */}
                     {scheduleList.length === 0 ? (
-                        /* Empty State */
-                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-[#d4af37]/20 text-center p-12">
-                            <div className="w-16 h-16 bg-[#f5f3ee] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <Calendar className="w-8 h-8 text-[#d4af37]/40" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                {t('schedule.empty')}
-                            </h3>
-                            <p className="text-slate-500">
-                                {t('schedule.emptyDesc')}
-                            </p>
-                        </div>
+                        <Card className="flex min-h-[320px] flex-1 flex-col rounded-2xl border-[#d4af37]/20">
+                            <CardContent className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+                                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc] ring-1 ring-[#d4af37]/15">
+                                    <Calendar className="h-9 w-9 text-[#d4af37]/50" />
+                                </div>
+                                <h3 className="mb-2 text-lg font-semibold text-slate-900">{t('schedule.empty')}</h3>
+                                <p className="max-w-md text-slate-500">{t('schedule.emptyDesc')}</p>
+                            </CardContent>
+                        </Card>
                     ) : (
-                        /* Table Layout */
-                        <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gradient-to-r from-[#f5f3ee] via-[#faf8f3] to-[#f5f3ee] border-b border-[#d4af37]/20">
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.scheduleCode')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.day')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.time')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.note')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.status')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.creator')}</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('content.createdAt')}</th>
-                                            <th className="text-center py-4 px-6 font-semibold text-[#8a6d1c] text-sm uppercase tracking-wider">{t('table.actions')}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                        <Card className="min-h-0 flex-1 overflow-hidden rounded-2xl border-[#d4af37]/20 shadow-md shadow-[#d4af37]/5">
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableHeader className="sticky top-0 z-10 bg-gradient-to-r from-[#f5f3ee] via-[#faf8f3] to-[#f5f3ee] shadow-[0_1px_0_0_rgba(212,175,55,0.2)]">
+                                        <TableRow className="border-0 border-b border-[#d4af37]/20 hover:bg-transparent">
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.scheduleCode')}
+                                            </TableHead>
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.day')}
+                                            </TableHead>
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.time')}
+                                            </TableHead>
+                                            <TableHead className="h-12 min-w-[180px] px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.note')}
+                                            </TableHead>
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.status')}
+                                            </TableHead>
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.creator')}
+                                            </TableHead>
+                                            <TableHead className="h-12 whitespace-nowrap px-5 text-left text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('content.createdAt')}
+                                            </TableHead>
+                                            <TableHead className="h-12 w-[120px] whitespace-nowrap px-5 text-center text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">
+                                                {t('table.actions')}
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
                                         {scheduleList.map((schedule) => {
                                             const statusInfo = getStatusInfo(schedule.status);
                                             const StatusIcon = statusInfo.icon;
 
                                             return (
-                                                <tr
+                                                <TableRow
                                                     key={schedule.id}
-                                                    className={`border-b border-slate-100 hover:bg-[#faf8f3] transition-all duration-200 ${!schedule.is_active ? 'opacity-60 bg-red-50/30' : ''}`}
+                                                    className={`border-slate-100 transition-colors hover:bg-[#faf8f3]/90 ${!schedule.is_active ? 'bg-red-50/35 opacity-[0.92]' : ''}`}
                                                 >
-                                                    <td className="py-4 px-6">
-                                                        <span className="inline-flex items-center px-2.5 py-1 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-lg font-mono text-sm text-[#8a6d1c] font-medium">{schedule.code}</span>
-                                                    </td>
-                                                    <td className="py-4 px-6">
+                                                    <TableCell className="px-5 py-4 align-middle">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="font-mono text-xs font-semibold text-[#8a6d1c] border-[#d4af37]/30 bg-[#f5f3ee]/80"
+                                                        >
+                                                            {schedule.code}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 align-middle">
                                                         <div className="flex flex-wrap gap-1">
-                                                            {schedule.days_of_week.map(day => (
+                                                            {schedule.days_of_week.map((day) => (
                                                                 <span
                                                                     key={day}
-                                                                    className="px-2.5 py-0.5 bg-[#f5f3ee] text-[#8a6d1c] text-xs font-medium rounded-full border border-[#d4af37]/20"
+                                                                    className="inline-flex items-center rounded-full border border-[#d4af37]/25 bg-white px-2 py-0.5 text-xs font-medium text-[#8a6d1c] shadow-sm"
                                                                 >
                                                                     {getDayName(day)}
                                                                 </span>
                                                             ))}
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-6">
-                                                        <div className="flex items-center gap-2 text-slate-700 font-medium">
-                                                            <Clock className="w-4 h-4 text-[#d4af37]" />
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 align-middle">
+                                                        <div className="flex items-center gap-2 font-medium text-slate-800">
+                                                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f5f3ee]">
+                                                                <Clock className="h-4 w-4 text-[#d4af37]" />
+                                                            </span>
                                                             {formatTime(schedule.time)}
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-6">
-                                                        <p className="text-slate-600 line-clamp-2 max-w-[200px]" title={schedule.note}>
+                                                    </TableCell>
+                                                    <TableCell className="max-w-[220px] px-5 py-4 align-middle">
+                                                        <p
+                                                            className="line-clamp-2 text-sm leading-snug text-slate-600"
+                                                            title={schedule.note}
+                                                        >
                                                             {schedule.note}
                                                         </p>
-                                                    </td>
-                                                    <td className="py-4 px-6">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                                                                <StatusIcon className="w-3 h-3" />
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 align-middle">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span
+                                                                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${statusInfo.color}`}
+                                                            >
+                                                                <StatusIcon className="h-3.5 w-3.5 shrink-0" />
                                                                 {statusInfo.label}
                                                             </span>
                                                             {!schedule.is_active && (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-medium">
-                                                                    <Trash2 className="w-3 h-3" />
+                                                                <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white shadow-sm">
+                                                                    <Trash2 className="h-3 w-3 shrink-0" />
                                                                     {t('content.deleted')}
                                                                 </span>
                                                             )}
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-6">
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 align-middle">
                                                         {schedule.creator ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
-                                                                    <User className="w-3 h-3 text-white" />
+                                                            <div className="flex min-w-0 max-w-[140px] items-center gap-2">
+                                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] shadow-sm">
+                                                                    <User className="h-3.5 w-3.5 text-white" />
                                                                 </div>
-                                                                <span className="text-slate-700 text-sm font-medium truncate max-w-[120px]">
+                                                                <span className="truncate text-sm font-medium text-slate-700">
                                                                     {schedule.creator.full_name}
                                                                 </span>
                                                             </div>
                                                         ) : (
-                                                            <span className="text-slate-400">-</span>
+                                                            <span className="text-slate-400">—</span>
                                                         )}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-slate-500 text-sm">
+                                                    </TableCell>
+                                                    <TableCell className="whitespace-nowrap px-5 py-4 text-sm text-slate-500 align-middle">
                                                         {formatDate(schedule.created_at)}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-center">
-                                                        <button
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 text-center align-middle">
+                                                        <Button
+                                                            type="button"
+                                                            variant="secondary"
+                                                            size="sm"
                                                             onClick={() => setSelectedSchedule(schedule)}
-                                                            className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-[#f5f3ee] text-[#8a6d1c] border border-[#d4af37]/20 rounded-lg hover:bg-[#ece8dc] hover:border-[#d4af37]/40 hover:shadow-sm transition-all duration-200 mx-auto"
+                                                            className="h-8 gap-1.5 rounded-lg border border-[#d4af37]/20 bg-[#f5f3ee] text-xs text-[#8a6d1c] hover:bg-[#ece8dc]"
                                                         >
-                                                            <Eye className="w-3.5 h-3.5" />
+                                                            <Eye className="h-3.5 w-3.5" />
                                                             {t('content.detail')}
-                                                        </button>
-                                                    </td>
-                                                </tr>
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
                                             );
                                         })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
                     )}
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between mt-6">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm text-slate-500">
-                                {t('media.showing')} <span className="font-medium text-slate-900">{(currentPage - 1) * limit + 1}</span> {t('media.to')} <span className="font-medium text-slate-900">{Math.min(currentPage * limit, totalItems)}</span> {t('media.of')} <span className="font-medium text-slate-900">{totalItems}</span> {t('media.items')}
+                                {t('media.showing')}{' '}
+                                <span className="font-medium text-slate-900">
+                                    {(currentPage - 1) * limit + 1}
+                                </span>{' '}
+                                {t('media.to')}{' '}
+                                <span className="font-medium text-slate-900">
+                                    {Math.min(currentPage * limit, totalItems)}
+                                </span>{' '}
+                                {t('media.of')}{' '}
+                                <span className="font-medium text-slate-900">{totalItems}</span>{' '}
+                                {t('media.items')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <button
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="h-9 w-9 rounded-lg border-[#d4af37]/25 text-slate-600 hover:bg-[#f5f3ee] disabled:opacity-50"
                                 >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Button>
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                        let pageNum;
+                                        let pageNum: number;
                                         if (totalPages <= 5) {
                                             pageNum = i + 1;
                                         } else if (currentPage <= 3) {
@@ -363,33 +441,39 @@ export const ScheduleContent: React.FC = () => {
                                             pageNum = currentPage - 2 + i;
                                         }
                                         return (
-                                            <button
+                                            <Button
                                                 key={pageNum}
+                                                type="button"
+                                                variant={pageNum === currentPage ? 'default' : 'ghost'}
+                                                size="icon"
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
-                                                    : 'hover:bg-[#f5f3ee] text-slate-600 hover:text-[#8a6d1c]'
-                                                    }`}
+                                                className={`h-9 w-9 rounded-lg font-medium ${
+                                                    pageNum === currentPage
+                                                        ? 'bg-[#d4af37] text-white shadow-md shadow-[#d4af37]/25 hover:bg-[#c9a227]'
+                                                        : 'text-slate-600 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]'
+                                                }`}
                                             >
                                                 {pageNum}
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
-                                <button
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="h-9 w-9 rounded-lg border-[#d4af37]/25 text-slate-600 hover:bg-[#f5f3ee] disabled:opacity-50"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
+                                    <ChevronRight className="h-5 w-5" />
+                                </Button>
                             </div>
                         </div>
                     )}
                 </>
             )}
 
-            {/* ============ DETAIL MODAL ============ */}
             <ScheduleDetailModal
                 isOpen={selectedSchedule !== null}
                 schedule={selectedSchedule}

@@ -451,23 +451,25 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                     )}
 
                     {/* Toggle Active Button */}
-                    <button
-                        onClick={handleToggleActiveClick}
-                        disabled={actionLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentPlace.is_active
-                            ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
-                            : 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
-                            }`}
-                    >
-                        {actionLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : currentPlace.is_active ? (
-                            <EyeOff className="w-4 h-4" />
-                        ) : (
-                            <RotateCcw className="w-4 h-4" />
-                        )}
-                        {currentPlace.is_active ? t('content.hide') : t('content.restore')}
-                    </button>
+                    {currentPlace.status === 'approved' && (
+                        <button
+                            onClick={handleToggleActiveClick}
+                            disabled={actionLoading}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all disabled:opacity-50 ${currentPlace.is_active
+                                ? 'border border-orange-200 text-orange-600 hover:bg-orange-50'
+                                : 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20 hover:brightness-110'
+                                }`}
+                        >
+                            {actionLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : currentPlace.is_active ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <RotateCcw className="w-4 h-4" />
+                            )}
+                            {currentPlace.is_active ? t('content.hide') : t('content.restore')}
+                        </button>
+                    )}
                 </div>
             </div>
 

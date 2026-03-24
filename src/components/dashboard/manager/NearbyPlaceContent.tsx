@@ -23,6 +23,16 @@ import { NearbyPlace, ContentStatus, NearbyPlaceCategory } from '../../../types/
 import { NearbyPlaceDetailModal } from './NearbyPlaceDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 /**
  * NearbyPlaceContent Component
@@ -134,66 +144,76 @@ export const NearbyPlaceContent: React.FC = () => {
                     <h1 className="text-2xl font-bold text-slate-900">{t('nearby.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('nearby.subtitle')}</p>
                 </div>
-                <button
+                <Button
                     onClick={handleManualRefresh}
                     disabled={loading || refreshing}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 border-0 h-10 px-4"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
-                </button>
+                </Button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-4 mb-6">
-                <div className="flex flex-wrap items-center gap-4">
-                    {/* Status Filter */}
+            <Card className="rounded-2xl border-[#d4af37]/20 shadow-sm mb-6">
+                <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-[#8a6d1c]/50" />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => { setStatusFilter(e.target.value as ContentStatus | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('content.allStatus')}</option>
-                            <option value="pending">{t('status.pending')}</option>
-                            <option value="approved">{t('status.approved')}</option>
-                            <option value="rejected">{t('status.rejected')}</option>
-                        </select>
-                    </div>
-
-                    {/* Category Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={categoryFilter}
-                            onChange={(e) => { setCategoryFilter(e.target.value as NearbyPlaceCategory | ''); setCurrentPage(1); }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
-                        >
-                            <option value="">{t('nearby.allCategories')}</option>
-                            <option value="food">{t('category.food')}</option>
-                            <option value="lodging">{t('category.lodging')}</option>
-                            <option value="medical">{t('category.medical')}</option>
-                        </select>
-                    </div>
-
-                    {/* Active Filter */}
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={activeFilter === undefined ? '' : activeFilter.toString()}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setActiveFilter(val === '' ? undefined : val === 'true');
+                        <Filter className="h-5 w-5 shrink-0 text-[#8a6d1c]/50" />
+                        <Select
+                            value={statusFilter === '' ? 'all' : statusFilter}
+                            onValueChange={(v) => {
+                                setStatusFilter(v === 'all' ? '' : (v as ContentStatus));
                                 setCurrentPage(1);
                             }}
-                            className="px-4 py-2.5 bg-[#f5f3ee] border border-[#d4af37]/30 rounded-xl text-slate-700 focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] hover:border-[#d4af37]/50 transition-all cursor-pointer"
                         >
-                            <option value="">{t('content.allActive')}</option>
-                            <option value="true">{t('content.activeTrue')}</option>
-                            <option value="false">{t('content.activeFalse')}</option>
-                        </select>
+                            <SelectTrigger className="h-9 w-[min(100vw-4rem,240px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[240px]">
+                                <SelectValue placeholder={t('content.allStatus')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('content.allStatus')}</SelectItem>
+                                <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                                <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
-                </div>
-            </div>
+
+                    <Select
+                        value={categoryFilter === '' ? 'all' : categoryFilter}
+                        onValueChange={(v) => {
+                            setCategoryFilter(v === 'all' ? '' : (v as NearbyPlaceCategory));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,240px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[240px]">
+                            <SelectValue placeholder={t('nearby.allCategories')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('nearby.allCategories')}</SelectItem>
+                            <SelectItem value="food">{t('category.food')}</SelectItem>
+                            <SelectItem value="lodging">{t('category.lodging')}</SelectItem>
+                            <SelectItem value="medical">{t('category.medical')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={activeFilter === undefined ? 'all' : activeFilter ? 'true' : 'false'}
+                        onValueChange={(v) => {
+                            setActiveFilter(v === 'all' ? undefined : v === 'true');
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,240px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[240px]">
+                            <SelectValue placeholder={t('content.allActive')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('content.allActive')}</SelectItem>
+                            <SelectItem value="true">{t('content.activeTrue')}</SelectItem>
+                            <SelectItem value="false">{t('content.activeFalse')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
 
             {/* Error */}
             {error && (
@@ -256,23 +276,23 @@ export const NearbyPlaceContent: React.FC = () => {
 
                                             {/* Status Badge - top left */}
                                             <div className="absolute top-2.5 left-2.5">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/90 shadow-sm ${statusInfo.color}`}>
-                                                    <StatusIcon className="w-3 h-3" />
+                                                <Badge className={`px-2 py-1 text-xs font-medium border backdrop-blur-sm bg-white/90 shadow-sm hover:bg-white/90 ${statusInfo.color}`}>
+                                                    <StatusIcon className="w-3.5 h-3.5 mr-1" />
                                                     {statusInfo.label}
-                                                </span>
+                                                </Badge>
                                             </div>
 
                                             {/* Distance Badge - top right */}
-                                            <span className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-black/30 backdrop-blur-md text-white text-xs rounded-lg font-semibold border border-white/10 shadow-sm">
+                                            <Badge variant="outline" className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-black/30 backdrop-blur-md text-white text-xs font-semibold border-white/10 shadow-sm hover:bg-black/40">
                                                 {formatDistance(place.distance_meters)}
-                                            </span>
+                                            </Badge>
 
                                             {/* Deleted badge */}
                                             {!place.is_active && (
-                                                <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-1 bg-red-500/90 backdrop-blur-sm text-white rounded-full text-xs font-medium shadow-sm">
-                                                    <Trash2 className="w-3 h-3" />
+                                                <Badge variant="destructive" className="absolute bottom-2.5 left-2.5 px-2 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs font-medium shadow-sm hover:bg-red-500/90">
+                                                    <Trash2 className="w-3 h-3 mr-1" />
                                                     {t('content.deleted')}
-                                                </span>
+                                                </Badge>
                                             )}
                                         </div>
 
@@ -284,13 +304,13 @@ export const NearbyPlaceContent: React.FC = () => {
                                                     {place.name}
                                                 </h3>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="inline-flex items-center px-2 py-0.5 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-md text-xs text-[#8a6d1c] font-mono font-medium">
+                                                    <Badge variant="outline" className="bg-[#f5f3ee] border-[#d4af37]/20 text-[#8a6d1c] font-mono hover:bg-[#ece8dc] px-2 py-0.5">
                                                         {place.code}
-                                                    </span>
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${categoryInfo.color}`}>
-                                                        <CategoryIcon className="w-3 h-3" />
+                                                    </Badge>
+                                                    <Badge className={`px-2 py-0.5 border-0 hover:bg-opacity-80 shadow-none ${categoryInfo.color}`}>
+                                                        <CategoryIcon className="w-3 h-3 mr-1" />
                                                         {categoryInfo.label}
-                                                    </span>
+                                                    </Badge>
                                                 </div>
                                             </div>
 
@@ -328,13 +348,14 @@ export const NearbyPlaceContent: React.FC = () => {
 
                                         {/* Action Footer */}
                                         <div className="px-4 pb-4">
-                                            <button
+                                            <Button
+                                                variant="outline"
                                                 onClick={(e) => { e.stopPropagation(); setSelectedPlace(place); }}
-                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-[#f5f3ee] to-[#ece8dc] text-[#8a6d1c] border border-[#d4af37]/20 rounded-xl hover:from-[#ece8dc] hover:to-[#e3ddd0] hover:border-[#d4af37]/40 hover:shadow-md hover:shadow-[#d4af37]/10 active:scale-[0.98] transition-all duration-200"
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-5 text-sm font-semibold bg-gradient-to-r from-[#f5f3ee] to-[#ece8dc] text-[#8a6d1c] border-[#d4af37]/20 rounded-xl hover:from-[#ece8dc] hover:to-[#e3ddd0] hover:border-[#d4af37]/40 hover:shadow-md hover:shadow-[#d4af37]/10 active:scale-[0.98] transition-all duration-200"
                                             >
                                                 <Eye className="w-4 h-4" />
                                                 {t('content.detail')}
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 );
@@ -349,13 +370,15 @@ export const NearbyPlaceContent: React.FC = () => {
                                 {t('media.showing')} <span className="font-medium text-slate-900">{(currentPage - 1) * limit + 1}</span> {t('media.to')} <span className="font-medium text-slate-900">{Math.min(currentPage * limit, totalItems)}</span> {t('media.of')} <span className="font-medium text-slate-900">{totalItems}</span> {t('media.items')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 rounded-lg"
                                 >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
+                                    <ChevronLeft className="w-4 h-4" />
+                                </Button>
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                                         let pageNum;
@@ -369,26 +392,29 @@ export const NearbyPlaceContent: React.FC = () => {
                                             pageNum = currentPage - 2 + i;
                                         }
                                         return (
-                                            <button
+                                            <Button
                                                 key={pageNum}
+                                                variant={pageNum === currentPage ? "default" : "ghost"}
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className={`w-10 h-10 rounded-lg font-medium transition-colors ${pageNum === currentPage
-                                                    ? 'bg-[#d4af37] text-white shadow-lg shadow-[#d4af37]/20'
-                                                    : 'hover:bg-[#f5f3ee] text-slate-600 hover:text-[#8a6d1c]'
+                                                className={`w-9 h-9 rounded-lg font-medium transition-colors ${pageNum === currentPage
+                                                    ? 'bg-[#d4af37] hover:bg-[#b5952f] text-white shadow-md shadow-[#d4af37]/20'
+                                                    : 'text-slate-600 hover:text-[#8a6d1c] hover:bg-[#f5f3ee]'
                                                     }`}
                                             >
                                                 {pageNum}
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="icon"
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="border-[#d4af37]/20 hover:bg-[#f5f3ee] text-slate-600 rounded-lg"
                                 >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
+                                    <ChevronRight className="w-4 h-4" />
+                                </Button>
                             </div>
                         </div>
                     )}
