@@ -16,6 +16,7 @@ import {
   Clock3,
   Building2,
   Calendar as CalendarIcon,
+  X,
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
 import {
@@ -256,6 +257,7 @@ export const ManagerDashboard: React.FC = () => {
 
   const [data, setData] = useState<ManagerDashboardOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [period, setPeriod] = useState<ManagerDashboardPeriod | 'all'>('month');
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
@@ -265,7 +267,7 @@ export const ManagerDashboard: React.FC = () => {
       selectedPeriod?: ManagerDashboardPeriod,
       fDate?: Date,
       tDate?: Date,
-      isManualRefresh = false
+      notifyUser = false
     ) => {
       setLoading(true);
       try {
@@ -277,15 +279,26 @@ export const ManagerDashboard: React.FC = () => {
 
         if (response.success && response.data) {
           setData(response.data);
-          if (isManualRefresh) {
+          setFetchError(null);
+          if (notifyUser) {
             showToast('success', 'Cập nhật thành công', 'Dữ liệu dashboard đã được làm mới.');
           }
         } else {
-          showToast('error', 'Lỗi tải dữ liệu', response.message || 'Không thể tải dữ liệu dashboard');
+          const msg = response.message || 'Không thể tải dữ liệu dashboard';
+          if (notifyUser) {
+            showToast('error', 'Lỗi tải dữ liệu', msg);
+          } else {
+            setFetchError(msg);
+          }
         }
       } catch (error) {
         console.error('Error fetching manager dashboard:', error);
-        showToast('error', 'Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng thử lại.');
+        const msg = 'Không thể kết nối đến server. Vui lòng thử lại.';
+        if (notifyUser) {
+          showToast('error', 'Lỗi kết nối', msg);
+        } else {
+          setFetchError(msg);
+        }
       } finally {
         setLoading(false);
       }
@@ -297,7 +310,8 @@ export const ManagerDashboard: React.FC = () => {
     fetchData(
       period === 'all' ? undefined : period,
       fromDate,
-      toDate
+      toDate,
+      false
     );
   }, [period, fromDate, toDate, fetchData]);
 
@@ -350,7 +364,7 @@ export const ManagerDashboard: React.FC = () => {
                 period === 'all' ? undefined : period,
                 fromDate,
                 toDate,
-                true  // isManualRefresh → hiện toast success
+                true
               )
             }
             disabled={loading}
@@ -361,6 +375,27 @@ export const ManagerDashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {fetchError && !loading && (
+        <div
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-amber-950 shadow-sm"
+          role="alert"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-amber-900">{t('dashboard.loadErrorTitle')}</p>
+            <p className="mt-1 text-sm text-amber-800/90">{fetchError}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFetchError(null)}
+            className="shrink-0 rounded-lg p-1 text-amber-700 transition-colors hover:bg-amber-100/80"
+            aria-label={t('common.close')}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
 
       {/* ── Period Filter ───────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

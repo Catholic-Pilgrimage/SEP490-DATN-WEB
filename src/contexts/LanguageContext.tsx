@@ -397,6 +397,9 @@ const translations: Record<Language, Record<string, string>> = {
         'shifts.title': 'Lịch trực Local Guide',
         'shifts.subtitle': 'Xem lịch làm việc của Local Guides theo thời gian',
         'shifts.allGuides': 'Tất cả Local Guide',
+        'shifts.filterByStatus': 'Lọc theo trạng thái',
+        'shifts.allStatuses': 'Tất cả trạng thái',
+        'shifts.legend': 'Chú thích',
         'shifts.selectDay': 'Chọn một ngày',
         'shifts.selectDayDesc': 'Click vào ngày trên lịch để xem chi tiết ca làm việc',
         'shifts.noShiftsDay': 'trong ngày này',
@@ -731,6 +734,7 @@ const translations: Record<Language, Record<string, string>> = {
         'dashboard.fromDate': 'Từ ngày',
         'dashboard.toDate': 'Đến ngày',
         'dashboard.selectDate': 'Chọn ngày',
+        'dashboard.loadErrorTitle': 'Không tải được dữ liệu tổng quan',
 
         // KPI Cards
         'kpi.activeSites': 'Tuyến hoạt động',
@@ -1387,6 +1391,9 @@ const translations: Record<Language, Record<string, string>> = {
         'shifts.title': 'Local Guide Shifts',
         'shifts.subtitle': 'View Local Guide work schedules over time',
         'shifts.allGuides': 'All Local Guides',
+        'shifts.filterByStatus': 'Filter by status',
+        'shifts.allStatuses': 'All statuses',
+        'shifts.legend': 'Legend',
         'shifts.selectDay': 'Select a date',
         'shifts.selectDayDesc': 'Click on a date to view shift details',
         'shifts.noShiftsDay': 'on this day',
@@ -1673,6 +1680,7 @@ const translations: Record<Language, Record<string, string>> = {
         'dashboard.fromDate': 'From Date',
         'dashboard.toDate': 'To Date',
         'dashboard.selectDate': 'Select date',
+        'dashboard.loadErrorTitle': 'Could not load dashboard data',
 
         // KPI Cards
         'kpi.activeSites': 'Active Sites',

@@ -341,7 +341,7 @@ export class ManagerService {
      * 
      * Giải thích:
      * - Lấy chi tiết 1 submission theo ID
-     * - Nếu submission_type = 'change', response sẽ có field `changes` 
+     * - Nếu submission_type = change hoặc update, response có thể có field `changes` 
      *   chứa danh sách các thay đổi so với lịch cũ (diff)
      * 
      * @param id - ID của submission cần xem

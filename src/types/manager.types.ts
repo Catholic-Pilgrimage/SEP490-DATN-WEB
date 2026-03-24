@@ -138,10 +138,11 @@ export interface UpdateLocalGuideStatusResponse {
 // - rejected: đã từ chối
 export type ShiftSubmissionStatus = 'pending' | 'approved' | 'rejected';
 
-// Loại submission
-// - new: submission mới
-// - change: thay đổi lịch (có previous_submission_id)
-export type ShiftSubmissionType = 'new' | 'change';
+// Loại submission (theo API thực tế)
+// - new: đăng ký mới
+// - change: thay đổi lịch (một số tài liệu / phiên bản API)
+// - update: thay đổi lịch (backend hiện trả giá trị này; có previous_submission_id, change_reason, changes ở GET detail)
+export type ShiftSubmissionType = 'new' | 'change' | 'update';
 
 // Thông tin 1 ca làm việc trong submission
 export interface Shift {
@@ -170,7 +171,7 @@ export interface ShiftSubmission {
     code: string | null;
     week_start_date: string;        // Ngày bắt đầu tuần (YYYY-MM-DD)
     submission_type: ShiftSubmissionType;
-    change_reason: string | null;   // Lý do thay đổi (nếu type = 'change')
+    change_reason: string | null;   // Lý do thay đổi (nếu type = change | update)
     previous_submission_id: string | null;
     status: ShiftSubmissionStatus;
     total_shifts: number;           // Tổng số ca trong tuần
@@ -193,7 +194,10 @@ export interface ShiftSubmissionListParams {
     week_start_date?: string;       // Lọc theo tuần (YYYY-MM-DD)
 }
 
-// GET /api/manager/local-guides/shift-submissions - Response
+/**
+ * Phần `data` trong body khi GET list thành công:
+ * { success, message, data: { data: ShiftSubmission[], pagination } }
+ */
 export interface ShiftSubmissionListResponse {
     data: ShiftSubmission[];
     pagination: {
@@ -206,7 +210,7 @@ export interface ShiftSubmissionListResponse {
 
 // ============ SHIFT SUBMISSION DETAIL TYPES ============
 
-// Thông tin thay đổi lịch (diff) - dùng khi submission_type = 'change'
+// Thông tin thay đổi lịch (diff) - GET detail khi submission_type = change | update
 // Hiển thị sự khác biệt giữa lịch cũ và lịch mới
 export interface ShiftChange {
     day_of_week: number;
@@ -238,8 +242,7 @@ export interface UpdateShiftSubmissionStatusData {
     rejection_reason?: string;  // Bắt buộc khi status = 'rejected'
 }
 
-// PATCH /api/manager/local-guides/shift-submissions/{id}/status - Response
-// Trả về submission đã cập nhật
+// PATCH .../status — data = submission sau khi duyệt/từ chối (400 nếu thiếu rejection_reason khi reject)
 export type UpdateShiftSubmissionStatusResponse = ShiftSubmission;
 
 // ============================================================================

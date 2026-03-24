@@ -20,7 +20,7 @@ import {
     ShiftSubmission,
     ShiftSubmissionStatus,
     Shift,
-    LocalGuide
+    LocalGuide,
 } from '../../../types/manager.types';
 import { ShiftSubmissionDetailModal } from './ShiftSubmissionDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -35,6 +35,15 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+/**
+ * Manager — lịch đăng ký ca làm (shift submissions).
+ *
+ * API:
+ * - GET  /api/manager/local-guides/shift-submissions — danh sách (`ManagerService.getShiftSubmissions`)
+ * - GET  /api/manager/local-guides/shift-submissions/{id} — chi tiết (`ShiftSubmissionDetailModal` + `getShiftSubmissionDetail`)
+ * - PATCH /api/manager/local-guides/shift-submissions/{id}/status — duyệt/từ chối (modal + `updateShiftSubmissionStatus`)
+ */
+
 // ============ TYPES ============
 type ViewMode = 'month' | 'week' | 'year';
 
@@ -48,6 +57,7 @@ interface DayShifts {
     shifts: ShiftWithGuide[];
     hasApproved: boolean;
     hasPending: boolean;
+    hasRejected: boolean;
 }
 
 // ============ DATE HELPERS ============
@@ -91,14 +101,18 @@ const getMondayBasedColumn = (date: Date): number => {
     return day === 0 ? 7 : day; // Mon=1 ... Sun=7
 };
 
+const LIST_PAGE_SIZE = 100;
+
+/** YYYY-MM-DD theo giờ local — tránh lệch ngày khi dùng toISOString() (UTC). */
+function toLocalDateKey(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 /**
- * ShiftSubmissions Component - Calendar View
- * 
- * Features:
- * - Month and Week view toggle
- * - Click date to see shifts in right panel
- * - Pending shifts shown with different color
- * - Approved shifts shown with green
+ * Lịch (tháng/tuần/năm) + filter; tải danh sách bằng GET shift-submissions.
  */
 export const ShiftSubmissions: React.FC = () => {
     const { t, language } = useLanguage();
@@ -119,6 +133,7 @@ export const ShiftSubmissions: React.FC = () => {
 
     // Filter state
     const [guideFilter, setGuideFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState<ShiftSubmissionStatus | ''>('');
     const [guides, setGuides] = useState<LocalGuide[]>([]);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -160,14 +175,15 @@ export const ShiftSubmissions: React.FC = () => {
                 if (shift.day_of_week === 0) daysToAdd = 6; // Sunday is 6 days after Monday
 
                 const shiftDate = addDays(weekStart, daysToAdd);
-                const dateKey = shiftDate.toISOString().split('T')[0];
+                const dateKey = toLocalDateKey(shiftDate);
 
                 if (!map.has(dateKey)) {
                     map.set(dateKey, {
                         date: shiftDate,
                         shifts: [],
                         hasApproved: false,
-                        hasPending: false
+                        hasPending: false,
+                        hasRejected: false,
                     });
                 }
 
@@ -178,6 +194,8 @@ export const ShiftSubmissions: React.FC = () => {
                     dayShifts.hasApproved = true;
                 } else if (submission.status === 'pending') {
                     dayShifts.hasPending = true;
+                } else if (submission.status === 'rejected') {
+                    dayShifts.hasRejected = true;
                 }
             });
         });
@@ -188,7 +206,7 @@ export const ShiftSubmissions: React.FC = () => {
     // Get shifts for selected date
     const selectedDayShifts = useMemo(() => {
         if (!selectedDate) return null;
-        const dateKey = selectedDate.toISOString().split('T')[0];
+        const dateKey = toLocalDateKey(selectedDate);
         return shiftsMap.get(dateKey) || null;
     }, [selectedDate, shiftsMap]);
 
@@ -198,24 +216,42 @@ export const ShiftSubmissions: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            // Fetch all submissions for current view (we need enough data)
-            const response = await ManagerService.getShiftSubmissions({
-                limit: 100,
-                guide_id: guideFilter || undefined
-            });
+            const weekStartParam =
+                viewMode === 'week' ? toLocalDateKey(getMonday(currentDate)) : undefined;
 
-            if (response.success && response.data) {
-                setSubmissions(response.data.data);
-            } else {
-                setError(response.message || t('shifts.errorLoad'));
+            let page = 1;
+            let totalPages = 1;
+            const merged: ShiftSubmission[] = [];
+
+            while (page <= totalPages) {
+                const response = await ManagerService.getShiftSubmissions({
+                    page,
+                    limit: LIST_PAGE_SIZE,
+                    guide_id: guideFilter || undefined,
+                    status: statusFilter || undefined,
+                    week_start_date: weekStartParam,
+                });
+
+                if (!response.success || !response.data) {
+                    setSubmissions([]);
+                    setError(response.message || t('shifts.errorLoad'));
+                    return;
+                }
+
+                merged.push(...response.data.data);
+                totalPages = Math.max(1, response.data.pagination.totalPages);
+                page += 1;
             }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : t('shifts.errorLoad');
+
+            setSubmissions(merged);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : t('shifts.errorLoad');
             setError(message);
+            setSubmissions([]);
         } finally {
             setLoading(false);
         }
-    }, [guideFilter, t]);
+    }, [guideFilter, statusFilter, viewMode, currentDate, t]);
 
     const fetchGuides = useCallback(async () => {
         try {
@@ -324,131 +360,161 @@ export const ShiftSubmissions: React.FC = () => {
         ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
         : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+    const controlTriggerClass =
+        'h-9 rounded-lg border-[#d4af37]/25 bg-white text-sm shadow-sm focus:ring-1 focus:ring-[#d4af37]/40 focus:border-[#d4af37]';
+
     return (
-        <div className="h-full flex flex-col p-6">
-            {/* Header */}
-            <div className="flex flex-col gap-4 mb-6 xl:flex-row xl:items-center xl:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{t('shifts.title')}</h1>
-                    <p className="text-slate-500 mt-1">{t('shifts.subtitle')}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* View Mode Toggle */}
-                    <div className="flex items-center bg-slate-100 rounded-xl p-1">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setViewMode('year')}
-                            className={`rounded-lg ${getViewModeButtonClass('year')}`}
-                        >
-                            <Calendar className="w-4 h-4" />
-                            {t('common.year')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setViewMode('month')}
-                            className={`rounded-lg ${getViewModeButtonClass('month')}`}
-                        >
-                            <CalendarDays className="w-4 h-4" />
-                            {t('common.month')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setViewMode('week')}
-                            className={`rounded-lg ${getViewModeButtonClass('week')}`}
-                        >
-                            <CalendarRange className="w-4 h-4" />
-                            {t('common.week')}
-                        </Button>
+        <div className="flex h-full flex-col gap-5 p-4 sm:p-6">
+            {/* Header + controls — một cụm gọn */}
+            <div className="rounded-2xl border border-[#d4af37]/18 bg-gradient-to-br from-white via-[#faf8f4]/90 to-white px-4 py-4 shadow-sm sm:px-5 sm:py-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{t('shifts.title')}</h1>
+                        <p className="mt-0.5 text-sm text-slate-500">{t('shifts.subtitle')}</p>
                     </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 lg:justify-end">
+                        <div className="inline-flex shrink-0 rounded-lg border border-slate-200/80 bg-slate-100/90 p-0.5">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewMode('year')}
+                                className={`h-8 gap-1 rounded-md px-2.5 text-xs sm:text-sm ${getViewModeButtonClass('year')}`}
+                            >
+                                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                {t('common.year')}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewMode('month')}
+                                className={`h-8 gap-1 rounded-md px-2.5 text-xs sm:text-sm ${getViewModeButtonClass('month')}`}
+                            >
+                                <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                {t('common.month')}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewMode('week')}
+                                className={`h-8 gap-1 rounded-md px-2.5 text-xs sm:text-sm ${getViewModeButtonClass('week')}`}
+                            >
+                                <CalendarRange className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                {t('common.week')}
+                            </Button>
+                        </div>
 
-                    {/* Guide Filter */}
-                    <Select
-                        value={guideFilter || 'all'}
-                        onValueChange={(value) => setGuideFilter(value === 'all' ? '' : value)}
-                    >
-                        <SelectTrigger className="w-[220px] h-10 rounded-xl border-[#d4af37]/30 bg-white focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37]">
-                            <SelectValue placeholder={t('shifts.allGuides')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{t('shifts.allGuides')}</SelectItem>
-                            {guides.map((guide) => (
-                                <SelectItem key={guide.id} value={guide.id}>
-                                    {guide.full_name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleManualRefresh}
+                            disabled={loading || refreshing}
+                            className="h-9 shrink-0 gap-1.5 rounded-lg bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] px-3 text-sm font-medium text-white shadow-sm hover:brightness-105"
+                        >
+                            <RefreshCw className={`h-3.5 w-3.5 ${loading || refreshing ? 'animate-spin' : ''}`} />
+                            {t('common.refresh')}
+                        </Button>
 
-                    <Button
-                        type="button"
-                        onClick={handleManualRefresh}
-                        disabled={loading || refreshing}
-                        className="rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-lg shadow-[#d4af37]/20"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
-                        {t('common.refresh')}
-                    </Button>
+                        <Select value={guideFilter || 'all'} onValueChange={(value) => setGuideFilter(value === 'all' ? '' : value)}>
+                            <SelectTrigger className={`w-[min(100vw-2rem,220px)] sm:w-[220px] ${controlTriggerClass}`}>
+                                <SelectValue placeholder={t('shifts.allGuides')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('shifts.allGuides')}</SelectItem>
+                                {guides.map((guide) => (
+                                    <SelectItem key={guide.id} value={guide.id}>
+                                        {guide.full_name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select
+                            value={statusFilter || 'all'}
+                            onValueChange={(value) =>
+                                setStatusFilter(value === 'all' ? '' : (value as ShiftSubmissionStatus))
+                            }
+                        >
+                            <SelectTrigger
+                                className={`w-[min(100vw-2rem,200px)] sm:w-[200px] ${controlTriggerClass}`}
+                                aria-label={t('shifts.filterByStatus')}
+                            >
+                                <SelectValue placeholder={t('shifts.allStatuses')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('shifts.allStatuses')}</SelectItem>
+                                <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('status.approved')}</SelectItem>
+                                <SelectItem value="rejected">{t('status.rejected')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
 
             {/* Error */}
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 flex items-center gap-2 mb-6">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 sm:p-4">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
                     <span>{error}</span>
                 </div>
             )}
 
             {/* Main Content */}
-            <div className="flex-1 flex gap-6 min-h-0">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:gap-5">
                 {/* Calendar */}
-                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
-                    {/* Calendar Header */}
-                    <div className="flex flex-col gap-4 p-4 border-b border-slate-200 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex flex-wrap items-center gap-3">
-                            <h2 className="text-lg font-semibold text-slate-900">
-                                {renderHeaderTitle()}
-                            </h2>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={goToToday}
-                                className="h-8 rounded-lg border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
-                            >
-                                {t('common.today')}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsDayDetailOpen(true)}
-                                disabled={!selectedDate || viewMode === 'year'}
-                                className="h-8 rounded-lg border-[#d4af37]/30 text-[#8a6d1c] hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
-                            >
-                                {t('common.details')}
-                            </Button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={navigatePrev}
-                                className="rounded-lg text-slate-600 hover:bg-[#f5f3ee] hover:text-slate-900"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={navigateNext}
-                                className="rounded-lg text-slate-600 hover:bg-[#f5f3ee] hover:text-slate-900"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </Button>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#d4af37]/18 bg-white shadow-sm">
+                    {/* Calendar toolbar */}
+                    <div className="flex flex-col gap-3 border-b border-slate-100 bg-[#faf8f4]/40 px-3 py-3 sm:px-4 sm:py-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                <h2 className="text-base font-semibold capitalize text-slate-900 sm:text-lg">
+                                    {renderHeaderTitle()}
+                                </h2>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={goToToday}
+                                        className="h-8 rounded-lg border-[#d4af37]/35 text-xs text-[#6b5420] hover:bg-[#f5f3ee]"
+                                    >
+                                        {t('common.today')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsDayDetailOpen(true)}
+                                        disabled={!selectedDate || viewMode === 'year'}
+                                        className="h-8 rounded-lg border-[#d4af37]/35 text-xs text-[#6b5420] hover:bg-[#f5f3ee]"
+                                    >
+                                        {t('common.details')}
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={navigatePrev}
+                                    className="h-8 w-8 rounded-lg text-slate-600 hover:bg-white hover:text-slate-900"
+                                >
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={navigateNext}
+                                    className="h-8 w-8 rounded-lg text-slate-600 hover:bg-white hover:text-slate-900"
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -487,37 +553,51 @@ export const ShiftSubmissions: React.FC = () => {
                     ) : (
                         // MONTH & WEEK VIEW
                         <>
-                            {/* Legend */}
-                            <div className="flex items-center gap-4 px-4 py-2 border-b border-slate-100 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                    <span className="text-slate-600">{t('status.approved')}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                    <span className="text-slate-600">{t('status.pending')}</span>
+                            {/* Legend — chip nhỏ, dễ đọc */}
+                            <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-3 py-2 sm:px-4">
+                                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                    {t('shifts.legend')}
+                                </span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-green-200/80 bg-green-50/90 px-2.5 py-1 text-xs font-medium text-green-800">
+                                        <span className="h-2 w-2 rounded-full bg-green-500" />
+                                        {t('status.approved')}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/90 px-2.5 py-1 text-xs font-medium text-amber-900">
+                                        <span className="h-2 w-2 rounded-full bg-amber-400" />
+                                        {t('status.pending')}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200/80 bg-red-50/90 px-2.5 py-1 text-xs font-medium text-red-800">
+                                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                                        {t('status.rejected')}
+                                    </span>
                                 </div>
                             </div>
 
                             {/* Day Names */}
-                            <div className="grid grid-cols-7 border-b border-slate-200">
-                                {dayNames.map(day => (
+                            <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/50">
+                                {dayNames.map((day) => (
                                     <div
                                         key={day}
-                                        className="py-3 text-center text-sm font-semibold text-slate-500"
+                                        className="py-2 text-center text-[11px] font-bold uppercase tracking-wide text-slate-500 sm:py-2.5 sm:text-xs"
                                     >
                                         {day}
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Calendar Grid */}
+                            {/* Calendar Grid — tháng: ô cố định tối thiểu, không kéo giãn quá cao */}
                             <div
-                                className="flex-1 min-h-0 grid grid-cols-7"
-                                style={{ gridTemplateRows: `repeat(${calendarRowCount}, minmax(0, 1fr))` }}
+                                className="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto"
+                                style={{
+                                    gridTemplateRows:
+                                        viewMode === 'week'
+                                            ? `repeat(${calendarRowCount}, minmax(11rem, 1fr))`
+                                            : `repeat(${calendarRowCount}, minmax(4.75rem, auto))`,
+                                }}
                             >
                                 {calendarDays.map((date, index) => {
-                                    const dateKey = date.toISOString().split('T')[0];
+                                    const dateKey = toLocalDateKey(date);
                                     const dayShifts = shiftsMap.get(dateKey);
                                     const isToday = isSameDay(date, today);
                                     const isSelected = selectedDate && isSameDay(date, selectedDate);
@@ -525,68 +605,72 @@ export const ShiftSubmissions: React.FC = () => {
                                     return (
                                         <button
                                             key={index}
+                                            type="button"
                                             onClick={() => setSelectedDate(date)}
                                             style={viewMode === 'month' && index === 0
                                                 ? { gridColumnStart: getMondayBasedColumn(date) }
                                                 : undefined}
                                             className={`
-                                                p-2 border-b border-r border-slate-100 
-                                                text-left transition-colors relative
-                                                ${viewMode === 'week' ? 'min-h-[200px]' : 'h-full min-h-0'}
-                                                bg-white
-                                                ${isSelected ? 'ring-2 ring-[#d4af37] ring-inset z-10' : ''}
-                                                hover:bg-[#f5f3ee]
+                                                relative flex flex-col border-b border-r border-slate-100/90 bg-white p-1.5 text-left
+                                                transition-colors sm:p-2
+                                                ${viewMode === 'week' ? 'min-h-0' : ''}
+                                                ${isSelected ? 'z-10 ring-2 ring-inset ring-[#d4af37]/90' : ''}
+                                                hover:bg-[#faf8f4]/80
                                             `}
                                         >
-                                            {/* Date Number */}
-                                            <div className={`
-                                                inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium
-                                                ${isToday ? 'bg-[#8a6d1c] text-white' : ''}
-                                                ${!isToday ? 'text-slate-900' : ''}
-                                            `}>
+                                            <div
+                                                className={`
+                                                    flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold sm:h-8 sm:w-8 sm:text-sm
+                                                    ${isToday ? 'bg-[#8a6d1c] text-white shadow-sm' : 'text-slate-800'}
+                                                `}
+                                            >
                                                 {date.getDate()}
                                             </div>
 
-                                            {/* Shift Indicators */}
                                             {dayShifts && (
-                                                <div className="mt-1 space-y-1">
+                                                <div className="mt-1 flex min-h-0 flex-1 flex-col gap-1">
                                                     {viewMode === 'week' ? (
-                                                        // Week view - show details
-                                                        dayShifts.shifts.slice(0, 4).map((item, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                className={`
-                                                                    text-xs px-2 py-1 rounded truncate
-                                                                    ${item.submission.status === 'approved'
-                                                                        ? 'bg-green-100 text-green-700'
-                                                                        : item.submission.status === 'pending'
-                                                                            ? 'bg-yellow-100 text-yellow-700'
-                                                                            : 'bg-red-100 text-red-700'
-                                                                    }
-                                                                `}
-                                                            >
-                                                                {item.submission.guide.full_name.split(' ').pop()}
-                                                            </div>
-                                                        ))
+                                                        <>
+                                                            {dayShifts.shifts.slice(0, 4).map((item, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className={`
+                                                                        truncate rounded-md px-2 py-1 text-[11px] font-medium sm:text-xs
+                                                                        ${item.submission.status === 'approved'
+                                                                            ? 'border border-green-200/80 bg-green-50 text-green-800'
+                                                                            : item.submission.status === 'pending'
+                                                                                ? 'border border-amber-200/80 bg-amber-50 text-amber-900'
+                                                                                : 'border border-red-200/80 bg-red-50 text-red-800'
+                                                                        }
+                                                                    `}
+                                                                >
+                                                                    {item.submission.guide.full_name.split(' ').pop()}
+                                                                </div>
+                                                            ))}
+                                                            {dayShifts.shifts.length > 4 && (
+                                                                <div className="text-[10px] font-medium text-slate-500">
+                                                                    +{dayShifts.shifts.length - 4}
+                                                                </div>
+                                                            )}
+                                                        </>
                                                     ) : (
-                                                        // Month view - show dots
-                                                        <div className="flex items-center gap-1">
-                                                            {dayShifts.hasApproved && (
-                                                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                                            )}
-                                                            {dayShifts.hasPending && (
-                                                                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                                            )}
+                                                        <div className="mt-auto flex flex-wrap items-center gap-1">
+                                                            <div className="flex items-center gap-1">
+                                                                {dayShifts.hasApproved && (
+                                                                    <span className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-sm ring-1 ring-white" />
+                                                                )}
+                                                                {dayShifts.hasPending && (
+                                                                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm ring-1 ring-white" />
+                                                                )}
+                                                                {dayShifts.hasRejected && (
+                                                                    <span className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-sm ring-1 ring-white" />
+                                                                )}
+                                                            </div>
                                                             {dayShifts.shifts.length > 0 && (
-                                                                <span className="text-xs text-slate-500 ml-1">
+                                                                <span className="rounded bg-slate-100 px-1 py-0.5 text-[10px] font-semibold tabular-nums text-slate-600">
                                                                     {dayShifts.shifts.length}
                                                                 </span>
                                                             )}
-                                                        </div>
-                                                    )}
-                                                    {viewMode === 'week' && dayShifts.shifts.length > 4 && (
-                                                        <div className="text-xs text-slate-500">
-                                                            +{dayShifts.shifts.length - 4} more
                                                         </div>
                                                     )}
                                                 </div>
@@ -601,7 +685,7 @@ export const ShiftSubmissions: React.FC = () => {
 
                 {/* Right Panel - Day Detail */}
                 {isDayDetailOpen && (
-                    <div className="w-80 bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden flex flex-col">
+                    <div className="flex max-h-[70vh] w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-[#d4af37]/18 bg-white shadow-sm lg:max-h-none lg:w-[min(100%,20rem)] xl:w-80">
                         {selectedDate ? (
                             <>
                                 {/* Panel Header */}

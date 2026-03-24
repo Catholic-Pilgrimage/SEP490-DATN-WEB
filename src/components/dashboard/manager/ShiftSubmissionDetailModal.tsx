@@ -40,6 +40,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 
+/**
+ * Chi tiết + duyệt/từ chối submission.
+ * - GET   /api/manager/local-guides/shift-submissions/{id}
+ * - PATCH /api/manager/local-guides/shift-submissions/{id}/status
+ */
+
 interface ShiftSubmissionDetailModalProps {
     isOpen: boolean;
     submissionId: string | null;
@@ -123,8 +129,8 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
             if (response.success) {
                 showToast('success', t('toast.shiftApproved'));
                 setShowConfirmApprove(false);
-                await fetchDetail();
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('localGuides.updateError'));
             }
@@ -157,8 +163,8 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 showToast('success', t('toast.shiftRejected'));
                 setShowRejectForm(false);
                 setRejectionReason('');
-                await fetchDetail();
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('localGuides.updateError'));
             }
