@@ -1,18 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { TrendingUp, MapPin, Users, AlertCircle, CheckCircle, BarChart3 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
-import { CheckinsAnalyticsData, PopularSiteData, SOSBySiteData, DashboardPeriod, UsersGrowthData } from '../../../types/admin.types';
+import { CheckinsAnalyticsData, PopularSiteData, SOSBySiteData, AdminDashboardPeriod, UsersGrowthData } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { format } from 'date-fns';
 
 interface ChartsSectionProps {
-  period: DashboardPeriod;
+  period: AdminDashboardPeriod;
   fromDate?: Date;
   toDate?: Date;
 }
 
 export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, toDate }) => {
+  const apiPeriod = period === 'all' ? undefined : period;
   const { showToast } = useToast();
   const { t } = useLanguage();
   const [usersGrowthData, setUsersGrowthData] = useState<UsersGrowthData[]>([]);
@@ -28,7 +29,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     setLoadingCheckins(true);
     try {
       const response = await AdminService.getCheckinsAnalytics({ 
-        period,
+        period: apiPeriod,
         from_date: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
         to_date: toDate ? format(toDate, 'yyyy-MM-dd') : undefined
       });
@@ -44,13 +45,13 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     } finally {
       setLoadingCheckins(false);
     }
-  }, [period, fromDate, toDate, showToast]);
+  }, [apiPeriod, fromDate, toDate, showToast]);
 
   const fetchUsersGrowth = useCallback(async () => {
     setLoadingUsersGrowth(true);
     try {
       const response = await AdminService.getUsersGrowth({ 
-        period,
+        period: apiPeriod,
         from_date: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
         to_date: toDate ? format(toDate, 'yyyy-MM-dd') : undefined
       });
@@ -66,13 +67,13 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     } finally {
       setLoadingUsersGrowth(false);
     }
-  }, [period, fromDate, toDate, showToast]);
+  }, [apiPeriod, fromDate, toDate, showToast]);
 
   const fetchPopularSites = useCallback(async () => {
     setLoadingPopularSites(true);
     try {
       const response = await AdminService.getPopularSites({ 
-        period, 
+        period: apiPeriod, 
         limit: 5,
         from_date: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
         to_date: toDate ? format(toDate, 'yyyy-MM-dd') : undefined
@@ -89,13 +90,13 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     } finally {
       setLoadingPopularSites(false);
     }
-  }, [period, fromDate, toDate, showToast]);
+  }, [apiPeriod, fromDate, toDate, showToast]);
 
   const fetchSOSBySite = useCallback(async () => {
     setLoadingSOSBySite(true);
     try {
       const response = await AdminService.getSOSBySite({ 
-        period, 
+        period: apiPeriod, 
         limit: 5,
         from_date: fromDate ? format(fromDate, 'yyyy-MM-dd') : undefined,
         to_date: toDate ? format(toDate, 'yyyy-MM-dd') : undefined
@@ -112,7 +113,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     } finally {
       setLoadingSOSBySite(false);
     }
-  }, [period, fromDate, toDate, showToast]);
+  }, [apiPeriod, fromDate, toDate, showToast]);
 
   useEffect(() => {
     fetchUsersGrowth();
@@ -175,30 +176,34 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
     data: typeof displayCheckinsData,
     maxValue: number,
     colorClass: string,
-    hoverColorClass: string,
     label: string
   ) => (
-    <div className="flex items-end justify-between gap-2 h-40">
-      {data.map((item, index) => (
-        <div key={index} className="flex-1 flex flex-col items-center group">
-          <div
-            className={`w-full ${colorClass} rounded-t-lg transition-all duration-300 hover:${hoverColorClass} relative`}
-            style={{
-              height: `${(item.value / maxValue) * 100}%`,
-              minHeight: item.value > 0 ? '4px' : '2px'
-            }}
-          >
-            {item.value > 0 && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                {item.value} {label}
-                <br />
-                <span className="text-slate-400">{item.date}</span>
+    <div className="flex h-40 justify-between gap-2">
+      {data.map((item, index) => {
+        const pct = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+        return (
+          <div key={index} className="group flex min-w-0 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1 flex-col justify-end">
+              <div
+                className={`relative w-full rounded-t-lg transition-all duration-300 ${colorClass} hover:opacity-90`}
+                style={{
+                  height: `${pct}%`,
+                  minHeight: item.value > 0 ? '6px' : '2px',
+                }}
+              >
+                {item.value > 0 && (
+                  <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {item.value} {label}
+                    <br />
+                    <span className="text-slate-400">{item.date}</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            <div className="mt-2 shrink-0 text-center text-xs font-medium text-slate-500">{item.day}</div>
           </div>
-          <div className="mt-2 text-xs font-medium text-slate-500">{item.day}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -227,11 +232,11 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
       {/* User Growth Chart */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
+      <div className="rounded-2xl border border-[#d4af37]/20 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-xl">
-              <Users className="w-5 h-5 text-blue-600" />
+            <div className="rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 p-2.5">
+              <Users className="h-5 w-5 text-[#8a6d1c]" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.userGrowth')}</h3>
@@ -246,15 +251,15 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
 
         {loadingUsersGrowth ? renderLoadingSkeleton() :
           usersGrowthData.length === 0 ? renderEmptyState(t('chart.noUserData')) :
-            renderBarChart(displayUsersGrowthData, maxUsersGrowth, 'bg-gradient-to-t from-[#8a6d1c] to-[#d4af37]', 'from-[#8a6d1c] to-[#d4af37] opacity-80', t('chart.newUsers'))}
+            renderBarChart(displayUsersGrowthData, maxUsersGrowth, 'bg-gradient-to-t from-[#8a6d1c] to-[#d4af37]', t('chart.newUsers'))}
       </div>
 
       {/* Check-ins Chart */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
+      <div className="rounded-2xl border border-[#d4af37]/20 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
-              <TrendingUp className="w-5 h-5 text-amber-600" />
+            <div className="rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 p-2.5">
+              <TrendingUp className="h-5 w-5 text-[#8a6d1c]" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.dailyCheckins')}</h3>
@@ -269,15 +274,15 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
 
         {loadingCheckins ? renderLoadingSkeleton() :
           checkinsData.length === 0 ? renderEmptyState(t('chart.noCheckinData')) :
-            renderBarChart(displayCheckinsData, maxCheckIns, 'bg-gradient-to-t from-[#8a6d1c] to-[#d4af37]', 'from-[#8a6d1c] to-[#d4af37] opacity-80', t('chart.checkins'))}
+            renderBarChart(displayCheckinsData, maxCheckIns, 'bg-gradient-to-t from-[#8a6d1c] to-[#d4af37]', t('chart.checkins'))}
       </div>
 
       {/* Popular Sites */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
+      <div className="rounded-2xl border border-[#d4af37]/20 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-              <MapPin className="w-5 h-5 text-emerald-600" />
+            <div className="rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 p-2.5">
+              <MapPin className="h-5 w-5 text-[#8a6d1c]" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.popularSites')}</h3>
@@ -313,8 +318,8 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
                   {data.site.cover_image ? (
                     <img src={data.site.cover_image} alt={data.site.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#d4af37]/5">
-                      <MapPin className="w-4 h-4 text-[#8a6d1c]/50" />
+                    <div className="w-full h-full flex items-center justify-center bg-[#d4af37]/10">
+                      <MapPin className="w-4 h-4 text-[#8a6d1c]/45" />
                     </div>
                   )}
                 </div>
@@ -339,11 +344,11 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       </div>
 
       {/* SOS Alerts by Site */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 p-6">
+      <div className="rounded-2xl border border-[#d4af37]/20 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-rose-600" />
+            <div className="rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 p-2.5">
+              <AlertCircle className="h-5 w-5 text-[#8a6d1c]" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-slate-900">{t('chart.sosByLocation')}</h3>
@@ -389,8 +394,8 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
                     {data.site.cover_image ? (
                       <img src={data.site.cover_image} alt={data.site.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#d4af37]/5">
-                        <MapPin className="w-4 h-4 text-[#8a6d1c]/50" />
+                      <div className="w-full h-full flex items-center justify-center bg-[#d4af37]/10">
+                        <MapPin className="w-4 h-4 text-[#8a6d1c]/45" />
                       </div>
                     )}
                   </div>
@@ -403,7 +408,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
                     <div className="mt-2">
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-rose-400 to-red-500 rounded-full"
+                          className="h-full rounded-full bg-gradient-to-r from-[#8a6d1c] to-[#d4af37]"
                           style={{ width: `${(data.sos_count / maxSOS) * 100}%` }}
                         />
                       </div>

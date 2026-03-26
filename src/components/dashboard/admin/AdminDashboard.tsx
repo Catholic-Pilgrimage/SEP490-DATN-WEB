@@ -1,32 +1,35 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { KPICards } from './KPICards';
+import { DashboardOverviewPanel } from './DashboardOverviewPanel';
 import { ChartsSection } from './ChartsSection';
 import { AdminService } from '../../../services/admin.service';
-import { DashboardOverviewData, DashboardPeriod } from '../../../types/admin.types';
+import { DashboardOverviewData, AdminDashboardPeriod } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { dash } from './dashboardTheme';
 
 export const AdminDashboard: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
   const [dashboardData, setDashboardData] = useState<DashboardOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<DashboardPeriod>('month');
+  const [period, setPeriod] = useState<AdminDashboardPeriod>('all');
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
 
   const fetchDashboardData = useCallback(async (
-    selectedPeriod?: DashboardPeriod,
+    selectedPeriod?: AdminDashboardPeriod,
     fDate?: Date,
     tDate?: Date
   ) => {
     setLoading(true);
     try {
       const response = await AdminService.getDashboardOverview({
-        period: selectedPeriod,
+        period:
+          selectedPeriod && selectedPeriod !== 'all' ? selectedPeriod : undefined,
         from_date: fDate ? format(fDate, 'yyyy-MM-dd') : undefined,
         to_date: tDate ? format(tDate, 'yyyy-MM-dd') : undefined
       });
@@ -48,50 +51,38 @@ export const AdminDashboard: React.FC = () => {
     fetchDashboardData(period, fromDate, toDate);
   }, [period, fromDate, toDate, fetchDashboardData]);
 
-  const handlePeriodChange = (newPeriod: DashboardPeriod | undefined) => {
+  const handlePeriodChange = (newPeriod: AdminDashboardPeriod | undefined) => {
     if (newPeriod) {
       setPeriod(newPeriod);
+      if (newPeriod !== 'custom') {
+        setFromDate(undefined);
+        setToDate(undefined);
+      }
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+    <div className="mx-auto max-w-7xl space-y-8 pb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className={`text-2xl font-semibold tracking-tight sm:text-3xl ${dash.textAccent}`}>
             {t('dashboard.title')}
           </h1>
-          <p className="text-slate-600 mt-1">
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
             {t('dashboard.welcome')}
           </p>
         </div>
-
-        {/* Quick Stats Summary */}
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-xs text-slate-500">{t('dashboard.lastUpdated')}</p>
-            <p className="text-sm font-medium text-slate-700">
-              {new Date().toLocaleDateString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </p>
-          </div>
-          <Button
-            onClick={() => fetchDashboardData(period, fromDate, toDate)}
-            disabled={loading}
-            className="flex items-center gap-2 h-10 px-4 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-lg hover:brightness-110 transition-all disabled:opacity-50 shadow-sm shadow-[#d4af37]/20"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            {t('common.refresh')}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={() => fetchDashboardData(period, fromDate, toDate)}
+          disabled={loading}
+          className="flex h-[46px] shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] px-6 font-medium text-white shadow-lg shadow-[#d4af37]/20 transition-all hover:brightness-110 disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {t('common.refresh')}
+        </Button>
       </div>
 
-      {/* KPI Cards */}
       <KPICards
         data={dashboardData || undefined}
         loading={loading}
@@ -103,13 +94,14 @@ export const AdminDashboard: React.FC = () => {
         onToDateChange={setToDate}
       />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6">
-        {/* Charts Section - Full Width */}
-        <div className="w-full">
-          <ChartsSection period={period} fromDate={fromDate} toDate={toDate} />
-        </div>
-      </div>
+      <DashboardOverviewPanel data={dashboardData} loading={loading} />
+
+      <section className="space-y-3">
+        <h2 className={`text-xs font-semibold uppercase tracking-[0.2em] ${dash.textAccentSoft}`}>
+          {t('menu.analytics')}
+        </h2>
+        <ChartsSection period={period} fromDate={fromDate} toDate={toDate} />
+      </section>
     </div>
   );
 };

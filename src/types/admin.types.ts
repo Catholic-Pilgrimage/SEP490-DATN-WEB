@@ -579,6 +579,9 @@ export interface AdminSOSStats {
 
 export type DashboardPeriod = 'today' | 'week' | 'month' | 'custom';
 
+/** Admin dashboard filter: `all` = không gửi `period` (thống kê toàn thời gian, theo API). */
+export type AdminDashboardPeriod = DashboardPeriod | 'all';
+
 export interface DashboardFilterApplied {
     period: DashboardPeriod | 'all';
     from_date: string | null;
@@ -665,7 +668,8 @@ export interface DashboardReportsStats {
     by_status: {
         pending: number;
         resolved: number;
-        dismissed: number;
+        dismissed?: number;
+        reject?: number;
     };
     by_reason: {
         spam: number;
