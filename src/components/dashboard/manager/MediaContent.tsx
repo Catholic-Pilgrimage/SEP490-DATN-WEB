@@ -165,12 +165,17 @@ export const MediaContent: React.FC = () => {
     return (
         <div className="h-full flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{t('media.title')}</h1>
-                    <p className="text-slate-500 mt-1">{t('media.subtitle')}</p>
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] shadow-lg shadow-[#d4af37]/25 ring-4 ring-[#d4af37]/10">
+                        <Image className="h-7 w-7 text-white" strokeWidth={1.75} />
+                    </div>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t('media.title')}</h1>
+                        <p className="mt-1 max-w-xl text-sm text-slate-600 sm:text-base">{t('media.subtitle')}</p>
+                    </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
                     <Button
                         type="button"
                         variant="outline"

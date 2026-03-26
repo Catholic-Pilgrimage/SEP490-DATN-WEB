@@ -51,7 +51,7 @@ export const ContentManagement: React.FC = () => {
                                 onClick={() => !tab.disabled && setActiveTab(tab.id)}
                                 disabled={tab.disabled}
                                 className={`
-                                    flex items-center gap-2.5 px-5 py-3.5 font-medium text-sm
+                                    group flex items-center gap-2.5 px-5 py-3.5 font-medium text-sm
                                     border-b-2 transition-all duration-200 whitespace-nowrap outline-none
                                     ${isActive
                                         ? 'border-[#8a6d1c] text-[#8a6d1c] bg-[#f5f3ee]/50 rounded-t-xl'
@@ -61,7 +61,17 @@ export const ContentManagement: React.FC = () => {
                                     }
                                 `}
                             >
-                                <Icon className={`w-4 h-4 ${isActive ? 'text-[#8a6d1c]' : 'text-slate-400 group-hover:text-[#8a6d1c]'}`} />
+                                <span
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm transition-colors ${
+                                        isActive
+                                            ? 'bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] text-white ring-2 ring-[#d4af37]/20'
+                                            : tab.disabled
+                                              ? 'bg-slate-100 text-slate-300'
+                                              : 'bg-[#f5f3ee] text-[#8a6d1c]/70 group-hover:bg-[#ece8dc] group-hover:text-[#8a6d1c]'
+                                    }`}
+                                >
+                                    <Icon className="h-4 w-4" strokeWidth={isActive ? 2 : 1.75} />
+                                </span>
                                 {tab.label}
                                 {tab.disabled && (
                                     <span className="text-[10px] uppercase tracking-wider font-bold bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-md ml-1">

@@ -138,17 +138,23 @@ export const EventContent: React.FC = () => {
     return (
         <div className="h-full flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{t('event.title')}</h1>
-                    <p className="text-slate-500 mt-1">{t('event.subtitle')}</p>
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] shadow-lg shadow-[#d4af37]/25 ring-4 ring-[#d4af37]/10">
+                        <Sparkles className="h-7 w-7 text-white" strokeWidth={1.75} />
+                    </div>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t('event.title')}</h1>
+                        <p className="mt-1 max-w-xl text-sm text-slate-600 sm:text-base">{t('event.subtitle')}</p>
+                    </div>
                 </div>
                 <Button
+                    type="button"
                     onClick={handleManualRefresh}
                     disabled={loading || refreshing}
-                    className="flex items-center gap-2 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white rounded-xl shadow-lg shadow-[#d4af37]/20 hover:brightness-110 active:scale-95 transition-all duration-200 border-0 h-10 px-4"
+                    className="h-11 shrink-0 gap-2 rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] px-6 text-white shadow-md shadow-[#d4af37]/25 hover:brightness-110 disabled:opacity-70"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading || refreshing ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-5 w-5 ${loading || refreshing ? 'animate-spin' : ''}`} />
                     {t('common.refresh')}
                 </Button>
             </div>
