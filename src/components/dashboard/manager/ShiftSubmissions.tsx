@@ -477,20 +477,18 @@ export const ShiftSubmissions: React.FC = () => {
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <Button
                                         type="button"
-                                        variant="outline"
                                         size="sm"
                                         onClick={goToToday}
-                                        className="h-8 rounded-lg border-[#d4af37]/35 text-xs text-[#6b5420] hover:bg-[#f5f3ee]"
+                                        className="h-8 px-3 rounded-lg bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-xs font-medium text-white shadow-sm hover:brightness-105 border-none"
                                     >
                                         {t('common.today')}
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant="outline"
                                         size="sm"
                                         onClick={() => setIsDayDetailOpen(true)}
                                         disabled={!selectedDate || viewMode === 'year'}
-                                        className="h-8 rounded-lg border-[#d4af37]/35 text-xs text-[#6b5420] hover:bg-[#f5f3ee]"
+                                        className="h-8 px-3 rounded-lg bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-xs font-medium text-white shadow-sm hover:brightness-105 border-none disabled:opacity-50 disabled:pointer-events-none"
                                     >
                                         {t('common.details')}
                                     </Button>
