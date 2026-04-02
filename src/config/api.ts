@@ -16,6 +16,7 @@ export const API_CONFIG = {
             DASHBOARD_OVERVIEW: '/api/admin/dashboard/overview',
             DASHBOARD_FINANCE: '/api/admin/dashboard/finance',
             WALLET_TRANSACTIONS: '/api/admin/wallet/transactions',
+            WALLET_TRANSACTION_DETAIL: (id: string) => `/api/admin/wallet/transactions/${id}`,
             WALLET_ESCROW: '/api/admin/wallet/escrow',
             WALLET_WITHDRAWALS: '/api/admin/wallet/withdrawals',
             ANALYTICS_USERS_GROWTH: '/api/admin/dashboard/analytics/users-growth',

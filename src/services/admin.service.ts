@@ -245,6 +245,16 @@ export class AdminService {
     }
 
     /**
+     * Get wallet transaction detail by ID
+     * GET /api/admin/wallet/transactions/:id
+     */
+    static async getWalletTransactionById(id: string): Promise<ApiResponse<import('../types/admin.types').WalletTransaction>> {
+        return ApiService.get<ApiResponse<import('../types/admin.types').WalletTransaction>>(
+            API_CONFIG.ENDPOINTS.ADMIN.WALLET_TRANSACTION_DETAIL(id)
+        );
+    }
+
+    /**
      * Get planners holding escrow (admin)
      * GET /api/admin/wallet/escrow
      */

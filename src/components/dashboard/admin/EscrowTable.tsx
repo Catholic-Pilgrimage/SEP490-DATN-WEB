@@ -188,9 +188,6 @@ export const EscrowTable: React.FC = () => {
                       <p className="text-sm font-medium text-slate-900 max-w-[200px] truncate" title={row.planner_name}>
                         {row.planner_name}
                       </p>
-                      <p className="text-xs text-slate-400 font-mono truncate max-w-[200px]" title={row.planner_id}>
-                        {row.planner_id.slice(0, 8)}…
-                      </p>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">

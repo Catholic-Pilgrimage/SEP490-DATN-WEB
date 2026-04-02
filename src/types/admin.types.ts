@@ -842,7 +842,7 @@ export interface WalletTransaction {
     reference_type: TransactionReferenceType;
     reference_id: string;
     description: string;
-    bank_info: string | null;
+    bank_info: BankInfo | null;
     code: string;
     created_at: string;
     updated_at: string;

@@ -352,6 +352,9 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                                                 key={shift.id}
                                                 className="flex items-center gap-3 p-3 bg-slate-100 rounded-lg"
                                             >
+                                                <span className="font-semibold text-slate-900 w-8">
+                                                    {getDayName(shift.day_of_week)}
+                                                </span>
                                                 <Clock className="w-4 h-4 text-slate-400" />
                                                 <span className="text-slate-700">
                                                     {formatTime(shift.start_time)} - {formatTime(shift.end_time)}

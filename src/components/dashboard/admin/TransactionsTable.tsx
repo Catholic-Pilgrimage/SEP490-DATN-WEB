@@ -16,6 +16,7 @@ import {
   CreditCard,
   RotateCcw,
   Calendar as CalendarIcon,
+  Eye,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
@@ -38,6 +39,7 @@ import {
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { TransactionDetailModal } from './TransactionDetailModal';
 
 export const TransactionsTable: React.FC = () => {
   const { showToast } = useToast();
@@ -58,6 +60,10 @@ export const TransactionsTable: React.FC = () => {
   const [refTypeFilter, setRefTypeFilter] = useState<TransactionReferenceType | ''>('');
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
+  
+  // Detail Modal State
+  const [selectedTxnId, setSelectedTxnId] = useState<string | null>(null);
+
   const limit = 10;
 
   useEffect(() => {
@@ -71,9 +77,13 @@ export const TransactionsTable: React.FC = () => {
   const fetchTransactions = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
     try {
+      const isLocalSearch = !!searchDebounce;
+      const requestLimit = isLocalSearch ? 1000 : limit;
+      const requestPage = isLocalSearch ? 1 : currentPage;
+
       const response = await AdminService.getWalletTransactions({
-        page: currentPage,
-        limit,
+        page: requestPage,
+        limit: requestLimit,
         type: typeFilter || undefined,
         status: statusFilter || undefined,
         reference_type: refTypeFilter || undefined,
@@ -85,7 +95,9 @@ export const TransactionsTable: React.FC = () => {
         setTransactions(response.data.transactions);
         setTotal(response.data.total);
         setTotalPages(response.data.totalPages);
-        setCurrentPage(response.data.currentPage);
+        if (!isLocalSearch) {
+           setCurrentPage(response.data.currentPage);
+        }
         if (showSuccessToast) {
           showToast('success', tRef.current('toast.refreshSuccess'), tRef.current('toast.refreshSuccessMsg'));
         }
@@ -103,6 +115,10 @@ export const TransactionsTable: React.FC = () => {
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  const handleViewDetail = (id: string) => {
+    setSelectedTxnId(id);
+  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1) {
@@ -186,6 +202,22 @@ export const TransactionsTable: React.FC = () => {
     return labels[status] || status;
   };
 
+  const filteredTransactions = React.useMemo(() => {
+    if (!searchDebounce) return transactions;
+    const lower = searchDebounce.toLowerCase();
+    return transactions.filter(txn => {
+      const name = (txn.wallet?.user?.full_name || '').toLowerCase();
+      const email = (txn.wallet?.user?.email || '').toLowerCase();
+      return name.includes(lower) || email.includes(lower);
+    });
+  }, [transactions, searchDebounce]);
+
+  const displayTotal = searchDebounce ? filteredTransactions.length : total;
+  const displayTotalPages = searchDebounce ? Math.ceil(filteredTransactions.length / limit) : totalPages;
+  const displayTransactions = searchDebounce
+    ? filteredTransactions.slice((currentPage - 1) * limit, currentPage * limit)
+    : filteredTransactions;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -237,7 +269,6 @@ export const TransactionsTable: React.FC = () => {
                     <SelectItem value="escrow_lock">{t('txn.type.escrowLock')}</SelectItem>
                     <SelectItem value="escrow_refund">{t('txn.type.escrowRefund')}</SelectItem>
                     <SelectItem value="withdraw">{t('txn.type.withdraw')}</SelectItem>
-                    <SelectItem value="deposit">{t('txn.type.deposit')}</SelectItem>
                     <SelectItem value="topup">{t('txn.type.topup')}</SelectItem>
                     <SelectItem value="penalty_applied">{t('txn.type.penaltyApplied')}</SelectItem>
                     <SelectItem value="penalty_received">{t('txn.type.penaltyReceived')}</SelectItem>
@@ -279,8 +310,6 @@ export const TransactionsTable: React.FC = () => {
                   <SelectItem value="planner">{t('txn.refType.planner')}</SelectItem>
                   <SelectItem value="planner_deposit">{t('txn.refType.plannerDeposit')}</SelectItem>
                   <SelectItem value="planner_penalty">{t('txn.refType.plannerPenalty')}</SelectItem>
-                  <SelectItem value="payos_payout">{t('txn.refType.payosPayout')}</SelectItem>
-                  <SelectItem value="payos_topup">{t('txn.refType.payosTopup')}</SelectItem>
                   <SelectItem value="wallet">{t('txn.refType.wallet')}</SelectItem>
                 </SelectContent>
               </Select>
@@ -349,13 +378,12 @@ export const TransactionsTable: React.FC = () => {
             </div>
 
             <p className="text-sm text-gray-500 lg:text-right shrink-0 pb-0.5">
-              {total} {t('txn.totalSuffix')}
+              {displayTotal} {t('txn.totalSuffix')}
             </p>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -367,74 +395,77 @@ export const TransactionsTable: React.FC = () => {
               <th className="text-center px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('txn.col.status')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('txn.col.description')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('txn.col.date')}</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i}>
-                  {[...Array(7)].map((__, j) => (
+                  {[...Array(8)].map((__, j) => (
                     <td key={j} className="px-6 py-4">
                       <div className="h-4 bg-slate-100 rounded animate-pulse" style={{ width: `${50 + Math.random() * 50}%` }} />
                     </td>
                   ))}
                 </tr>
               ))
-            ) : transactions.length === 0 ? (
+            ) : displayTransactions.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={8} className="px-6 py-12 text-center">
                   <CreditCard className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                   <p className="text-sm font-medium text-slate-500">{t('txn.noData')}</p>
                 </td>
               </tr>
             ) : (
-              transactions.map((txn) => (
+              displayTransactions.map((txn) => (
                 <tr key={txn.id} className="hover:bg-[#f5f3ee]/50 transition-colors">
-                  {/* Code */}
                   <td className="px-6 py-4">
                     <span className="text-xs font-mono font-medium text-slate-700 bg-slate-100 px-2 py-1 rounded">{txn.code}</span>
                   </td>
-                  {/* User */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      {txn.wallet.user.avatar_url ? (
+                      {txn.wallet?.user?.avatar_url ? (
                         <img src={txn.wallet.user.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center">
-                          <span className="text-xs font-bold text-[#8a6d1c]">{txn.wallet.user.full_name.charAt(0)}</span>
+                          <span className="text-xs font-bold text-[#8a6d1c]">{txn.wallet?.user?.full_name?.charAt(0) || '?'}</span>
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate max-w-[120px]">{txn.wallet.user.full_name}</p>
-                        <p className="text-xs text-slate-400 truncate max-w-[120px]">{txn.wallet.user.email}</p>
+                        <p className="text-sm font-medium text-slate-900 truncate max-w-[120px]">{txn.wallet?.user?.full_name || t('txn.unknownUser')}</p>
+                        <p className="text-xs text-slate-400 truncate max-w-[120px]">{txn.wallet?.user?.email || '—'}</p>
                       </div>
                     </div>
                   </td>
-                  {/* Type */}
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${getTypeStyle(txn.type)}`}>
                       {getTypeIcon(txn.type)}
                       {getTypeLabel(txn.type)}
                     </span>
                   </td>
-                  {/* Amount */}
                   <td className="px-6 py-4 text-right">
                     <span className="text-sm font-bold text-slate-900">{formatCurrency(txn.amount)}</span>
                   </td>
-                  {/* Status */}
                   <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusStyle(txn.status)}`}>
                       {getStatusIcon(txn.status)}
                       {getStatusLabel(txn.status)}
                     </span>
                   </td>
-                  {/* Description */}
                   <td className="px-6 py-4">
                     <p className="text-xs text-slate-600 max-w-[200px] truncate" title={txn.description}>{txn.description}</p>
                   </td>
-                  {/* Date */}
                   <td className="px-6 py-4">
                     <span className="text-xs text-slate-500">{formatDate(txn.created_at)}</span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => handleViewDetail(txn.id)}
+                      title="Xem chi tiết"
+                      className="p-1.5 text-slate-400 hover:text-[#d4af37] bg-slate-50 hover:bg-[#d4af37]/10 rounded transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -443,11 +474,10 @@ export const TransactionsTable: React.FC = () => {
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {displayTotalPages > 1 && (
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
           <p className="text-sm text-slate-500">
-            {t('txn.showing')} {((currentPage - 1) * limit) + 1}–{Math.min(currentPage * limit, total)} {t('txn.of')} {total}
+            {t('txn.showing')} {((currentPage - 1) * limit) + 1}–{Math.min(currentPage * limit, displayTotal)} {t('txn.of')} {displayTotal}
           </p>
           <div className="flex items-center gap-1">
             <button
@@ -457,8 +487,8 @@ export const TransactionsTable: React.FC = () => {
             >
               <ChevronLeft className="w-4 h-4 text-slate-600" />
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+            {Array.from({ length: displayTotalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === displayTotalPages || Math.abs(p - currentPage) <= 1)
               .map((page, idx, arr) => (
                 <React.Fragment key={page}>
                   {idx > 0 && arr[idx - 1] !== page - 1 && (
@@ -478,7 +508,7 @@ export const TransactionsTable: React.FC = () => {
               ))}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages}
+              disabled={currentPage >= displayTotalPages}
               className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-4 h-4 text-slate-600" />
@@ -487,6 +517,14 @@ export const TransactionsTable: React.FC = () => {
         </div>
       )}
       </div>
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        transactionId={selectedTxnId}
+        isOpen={!!selectedTxnId}
+        onClose={() => setSelectedTxnId(null)}
+      />
     </div>
   );
 };
+
