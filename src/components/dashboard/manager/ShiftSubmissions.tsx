@@ -251,7 +251,8 @@ export const ShiftSubmissions: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [guideFilter, statusFilter, viewMode, currentDate, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [guideFilter, statusFilter, viewMode, currentDate]);
 
     const fetchGuides = useCallback(async () => {
         try {

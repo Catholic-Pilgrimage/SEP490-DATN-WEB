@@ -67,9 +67,9 @@ const BarChart = ({ data, maxValue }: { data: ChartItem[]; maxValue: number }) =
     {data.map((item, idx) => {
       const heightPct = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
       return (
-        <div key={idx} className="flex-1 flex flex-col items-center group">
+        <div key={idx} className="flex-1 h-full flex flex-col justify-end items-center group">
           {/* Bar */}
-          <div className="relative w-full flex items-end justify-center">
+          <div className="relative w-full max-w-[80px] flex-1 flex items-end justify-center">
             <div
               className="w-full bg-gradient-to-t from-[#8a6d1c] to-[#d4af37] rounded-t-md transition-all duration-500 hover:opacity-80"
               style={{
@@ -134,7 +134,8 @@ export const ManagerChartsSection: React.FC<ManagerChartsSectionProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [period, fromDate, toDate, showToast, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [period, fromDate, toDate]);
 
   useEffect(() => {
     fetchCheckins();

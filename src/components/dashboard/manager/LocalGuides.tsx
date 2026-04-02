@@ -117,7 +117,8 @@ export const LocalGuides: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, searchDebounce, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, limit, statusFilter, searchDebounce]);
 
     useEffect(() => {
         fetchLocalGuides();
@@ -308,7 +309,6 @@ export const LocalGuides: React.FC = () => {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="font-medium text-slate-900 truncate">{guide.full_name}</p>
-                                                            <p className="text-xs text-slate-500 font-mono">{guide.id.slice(0, 8)}...</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>

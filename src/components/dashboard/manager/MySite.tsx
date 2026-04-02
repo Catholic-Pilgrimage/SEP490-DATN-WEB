@@ -22,6 +22,7 @@ import { ManagerSite, Media } from '../../../types/manager.types';
 import { SiteType, SiteRegion } from '../../../types/admin.types';
 import { SiteFormModal } from './SiteFormModal';
 import { MediaViewerModal } from './MediaViewerModal';
+import VietMapView from '../../shared/VietMapView';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -134,6 +135,12 @@ export const MySite: React.FC = () => {
         });
     };
 
+    const fullAddress = site ? [
+        site.address,
+        site.district,
+        site.province,
+    ].filter(Boolean).join(', ') : '';
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
@@ -202,6 +209,22 @@ export const MySite: React.FC = () => {
 
     const typeInfo = getTypeInfo(site.type);
     const TypeIcon = typeInfo.icon;
+
+    const markerColor = site.is_active ? '#16a34a' : '#9ca3af';
+    const markerIcon = site.is_active ? '⛪' : '⛔';
+
+    const allMarkers = [
+        {
+            id: site.id,
+            lat: Number(site.latitude),
+            lng: Number(site.longitude),
+            title: site.name,
+            address: fullAddress,
+            color: markerColor,
+            icon: markerIcon,
+            isActive: site.is_active,
+        }
+    ];
 
     return (
         <div className="p-6 space-y-6">
@@ -293,20 +316,53 @@ export const MySite: React.FC = () => {
                         </div>
                         <h2 className="text-2xl font-bold text-slate-900">{site.name}</h2>
                         {site.patron_saint && (
-                            <p className="text-slate-600 mt-1">{t('mySite.patronSaint')}: {site.patron_saint}</p>
+                            <p className="text-slate-700 font-semibold mt-1">{t('mySite.patronSaint')}: {site.patron_saint}</p>
                         )}
                     </div>
 
                     {/* Address */}
                     <div className="flex items-start gap-3 p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/10">
                         <MapPin className="w-5 h-5 text-[#d4af37] mt-0.5" />
-                        <div>
-                            <p className="font-medium text-gray-900">{site.address}</p>
-                            <p className="text-sm text-gray-500">
-                                {site.district && `${site.district}, `}{site.province}
-                            </p>
+                        <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <div>
+                                    <p className="font-medium text-gray-900">{fullAddress}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Map View Card */}
+                    {site.latitude && site.longitude && (
+                        <div className="bg-white rounded-2xl border border-[#d4af37]/20 shadow-sm overflow-hidden">
+                            <div className="p-4">
+                                <div className="relative">
+                                    <VietMapView
+                                        latitude={Number(site.latitude)}
+                                        longitude={Number(site.longitude)}
+                                        zoom={15}
+                                        markers={allMarkers}
+                                        className="w-full h-[360px] rounded-xl overflow-hidden border border-[#d4af37]/20 shadow-sm"
+                                    />
+
+                                    {/* Overlay nhỏ trên bản đồ */}
+                                    <div className="pointer-events-none absolute left-4 top-4">
+                                        <div className="inline-flex flex-col gap-1 px-3 py-2 rounded-xl bg-white/85 backdrop-blur shadow-md border border-[#d4af37]/30 max-w-[260px]">
+                                            <span className="text-[11px] uppercase tracking-wide text-slate-400">
+                                                Địa điểm chính
+                                            </span>
+                                            <span className="text-sm font-semibold text-slate-900 truncate">
+                                                {site.name}
+                                            </span>
+                                            <span className="text-[11px] text-slate-500 line-clamp-2">
+                                                {fullAddress}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Description */}
                     {site.description && (
