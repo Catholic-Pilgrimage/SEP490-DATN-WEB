@@ -277,6 +277,7 @@ export interface Media {
     created_at: string;
     updated_at: string;
     creator: ContentCreator;        // Thông tin người tạo
+    reviewer?: ContentCreator;      // Thông tin người duyệt/từ chối
     /** Chỉ model_3d: thuyết minh âm thanh do Local Guide gửi */
     narrative_status?: ContentStatus | null;
     audio_url?: string | null;
@@ -370,6 +371,7 @@ export interface Schedule {
     created_at: string;
     updated_at: string;
     creator?: ContentCreator;
+    reviewer?: ContentCreator;
 }
 
 // GET /api/manager/content/schedules - Query params
@@ -434,6 +436,7 @@ export interface Event {
     created_at: string;
     updated_at: string;
     creator?: ContentCreator;
+    reviewer?: ContentCreator;
 }
 
 // GET /api/manager/content/events - Query params
@@ -500,6 +503,7 @@ export interface NearbyPlace {
     is_active: boolean;
     created_at: string;
     proposer?: ContentCreator;
+    reviewer?: ContentCreator;
 }
 
 // GET /api/manager/content/nearby-places - Query params

@@ -90,7 +90,8 @@ export const NearbyPlaceContent: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, limit, statusFilter, categoryFilter, activeFilter, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, limit, statusFilter, categoryFilter, activeFilter]);
 
     useEffect(() => {
         fetchPlaceList();

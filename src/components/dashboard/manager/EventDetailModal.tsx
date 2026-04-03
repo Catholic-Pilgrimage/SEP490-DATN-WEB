@@ -84,6 +84,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     showToast('success', t('toast.approveSuccess') || 'Đã duyệt sự kiện thành công');
                     setCurrentEvent(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -96,6 +97,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     showToast('success', currentEvent.is_active ? (t('toast.hideSuccess') || 'Đã ẩn sự kiện') : (t('toast.restoreSuccess') || 'Đã hiển thị sự kiện'));
                     setCurrentEvent(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -113,7 +115,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         if (!currentEvent) return;
 
         if (!rejectionReason.trim()) {
-            setActionError(t('content.enterRejectReason'));
+            setActionError(t('content.enterRejectionReason'));
             return;
         }
 
@@ -132,6 +134,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 setShowRejectForm(false);
                 setRejectionReason('');
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('common.error'));
             }
@@ -176,12 +179,26 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         });
     };
 
+    // ============ HELPERS ============
+    const getReviewerInfo = () => {
+        if (currentEvent?.reviewer) return currentEvent.reviewer;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return { id: user.id, full_name: user.name || 'Manager', email: user.email || '' };
+            }
+        } catch { /* ignore */ }
+        return { id: 'unknown', full_name: 'Manager', email: '' };
+    };
+
     // ============ RENDER ============
     if (!isOpen || !currentEvent) return null;
 
     const statusInfo = getStatusInfo(currentEvent.status);
     const StatusIcon = statusInfo.icon;
     const isPending = currentEvent.status === 'pending';
+    const reviewerInfo = (currentEvent.status === 'approved' || currentEvent.status === 'rejected') ? getReviewerInfo() : null;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
@@ -331,6 +348,26 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                     </button>
                                 </div>
                             )}
+
+                            {/* Reviewer */}
+                            {reviewerInfo && (
+                                <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">
+                                        {currentEvent.status === 'approved' ? 'Người duyệt' : 'Người từ chối'}
+                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-md shadow-[#d4af37]/15 flex-shrink-0">
+                                            <User className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-slate-900 text-sm truncate">
+                                                {reviewerInfo.full_name}
+                                            </p>
+                                            <p className="text-xs text-slate-500 truncate">{reviewerInfo.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Timestamps */}
@@ -366,7 +403,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                         {/* Reject Form */}
                         {showRejectForm && isPending && (
                             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                <h4 className="font-medium text-red-700 mb-3">{t('content.enterRejectReason')}</h4>
+                                <h4 className="font-medium text-red-700 mb-3">{t('content.enterRejectionReason')}</h4>
                                 <textarea
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}

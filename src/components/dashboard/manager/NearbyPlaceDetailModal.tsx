@@ -87,6 +87,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                     showToast('success', t('toast.approveSuccess') || 'Đã duyệt địa điểm lân cận thành công');
                     setCurrentPlace(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -99,6 +100,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                     showToast('success', currentPlace.is_active ? (t('toast.hideSuccess') || 'Đã ẩn địa điểm lân cận') : (t('toast.restoreSuccess') || 'Đã hiển thị địa điểm lân cận'));
                     setCurrentPlace(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -135,6 +137,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                 setShowRejectForm(false);
                 setRejectionReason('');
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('common.error'));
             }
@@ -189,6 +192,18 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
         }
     };
 
+    const getReviewerInfo = () => {
+        if (currentPlace?.reviewer) return currentPlace.reviewer;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return { id: user.id, full_name: user.name || 'Manager', email: user.email || '' };
+            }
+        } catch { /* ignore */ }
+        return { id: 'unknown', full_name: 'Manager', email: '' };
+    };
+
     // ============ RENDER ============
     if (!isOpen || !currentPlace) return null;
 
@@ -197,6 +212,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
     const categoryInfo = getCategoryInfo(currentPlace.category);
     const CategoryIcon = categoryInfo.icon;
     const isPending = currentPlace.status === 'pending';
+    const reviewerInfo = (currentPlace.status === 'approved' || currentPlace.status === 'rejected') ? getReviewerInfo() : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -317,21 +333,42 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                             </div>
                         )}
 
-                        {/* Proposer */}
-                        {currentPlace.proposer && (
-                            <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15">
-                                <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('nearby.proposer')}</p>
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
-                                        <User className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-slate-900 text-sm truncate">{currentPlace.proposer.full_name}</p>
-                                        <p className="text-xs text-slate-500 truncate">{currentPlace.proposer.email}</p>
+                        {/* Users Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Proposer */}
+                            {currentPlace.proposer && (
+                                <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15">
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('nearby.proposer') || 'Người đề xuất'}</p>
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
+                                            <User className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-900 text-sm truncate">{currentPlace.proposer.full_name}</p>
+                                            <p className="text-xs text-slate-500 truncate">{currentPlace.proposer.email}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {/* Reviewer */}
+                            {reviewerInfo && (
+                                <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15">
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">
+                                        {currentPlace.status === 'approved' ? 'Người duyệt' : 'Người từ chối'}
+                                    </p>
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
+                                            <User className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-900 text-sm truncate">{reviewerInfo.full_name}</p>
+                                            <p className="text-xs text-slate-500 truncate">{reviewerInfo.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Timestamps — full width row */}
                         <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 flex items-start gap-4">

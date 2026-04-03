@@ -254,6 +254,19 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
         });
     };
 
+    // ============ HELPERS ============
+    const getReviewerInfo = () => {
+        if (currentMedia?.reviewer) return currentMedia.reviewer;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return { id: user.id, full_name: user.name || 'Manager', email: user.email || '' };
+            }
+        } catch { /* ignore */ }
+        return { id: 'unknown', full_name: 'Manager', email: '' };
+    };
+
     const isYoutubeUrl = (url: string) => {
         return url.includes('youtube.com') || url.includes('youtu.be');
     };
@@ -273,6 +286,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
     const StatusIcon = statusInfo.icon;
     const TypeIcon = typeInfo.icon;
     const isPending = currentMedia.status === 'pending';
+    const reviewerInfo = (currentMedia.status === 'approved' || currentMedia.status === 'rejected') ? getReviewerInfo() : null;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
@@ -365,19 +379,38 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     <div className="space-y-4">
                         {/* Info Hero Card — Creator + Open URL + Timestamps */}
                         <div className="bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc] rounded-2xl p-5 border border-[#d4af37]/20">
-                            {/* Creator + Open URL row */}
-                            <div className="flex items-center justify-between gap-3 mb-4">
+                            {/* Users Info */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                 {currentMedia.creator ? (
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
-                                            <User className="w-4 h-4 text-white" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="font-semibold text-slate-900 text-sm truncate">{currentMedia.creator.full_name}</p>
-                                            <p className="text-xs text-slate-500 truncate">{currentMedia.creator.email}</p>
+                                    <div>
+                                        <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('table.creator') || 'Người tạo'}</p>
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
+                                                <User className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-slate-900 text-sm truncate">{currentMedia.creator.full_name}</p>
+                                                <p className="text-xs text-slate-500 truncate">{currentMedia.creator.email}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : <div />}
+                                {reviewerInfo && (
+                                    <div>
+                                        <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">
+                                            {currentMedia.status === 'approved' ? 'Người duyệt' : 'Người từ chối'}
+                                        </p>
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-sm shadow-[#d4af37]/15 flex-shrink-0">
+                                                <User className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-slate-900 text-sm truncate">{reviewerInfo.full_name}</p>
+                                                <p className="text-xs text-slate-500 truncate">{reviewerInfo.email}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Timestamps row */}

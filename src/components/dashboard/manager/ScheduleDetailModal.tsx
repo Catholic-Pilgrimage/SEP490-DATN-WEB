@@ -79,6 +79,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                     showToast('success', t('toast.approveSuccess') || 'Đã duyệt lịch biểu thành công');
                     setCurrentSchedule(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -91,6 +92,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                     showToast('success', currentSchedule.is_active ? (t('toast.hideSuccess') || 'Đã ẩn lịch biểu') : (t('toast.restoreSuccess') || 'Đã hiển thị lịch biểu'));
                     setCurrentSchedule(response.data);
                     onStatusChange?.();
+                    onClose();
                 } else {
                     setActionError(response.message || t('common.error'));
                 }
@@ -127,6 +129,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 setShowRejectForm(false);
                 setRejectionReason('');
                 onStatusChange?.();
+                onClose();
             } else {
                 setActionError(response.message || t('common.error'));
             }
@@ -169,12 +172,26 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
         });
     };
 
+    // ============ HELPERS ============
+    const getReviewerInfo = () => {
+        if (currentSchedule?.reviewer) return currentSchedule.reviewer;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return { id: user.id, full_name: user.name || 'Manager', email: user.email || '' };
+            }
+        } catch { /* ignore */ }
+        return { id: 'unknown', full_name: 'Manager', email: '' };
+    };
+
     // ============ RENDER ============
     if (!isOpen || !currentSchedule) return null;
 
     const statusInfo = getStatusInfo(currentSchedule.status);
     const StatusIcon = statusInfo.icon;
     const isPending = currentSchedule.status === 'pending';
+    const reviewerInfo = (currentSchedule.status === 'approved' || currentSchedule.status === 'rejected') ? getReviewerInfo() : null;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
@@ -263,7 +280,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                             {/* Creator */}
                             {currentSchedule.creator && (
                                 <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
-                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('table.creator')}</p>
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">{t('table.creator') || 'Người tạo'}</p>
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-md shadow-[#d4af37]/15 flex-shrink-0">
                                             <User className="w-5 h-5 text-white" />
@@ -273,6 +290,26 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                                                 {currentSchedule.creator.full_name}
                                             </p>
                                             <p className="text-xs text-slate-500 truncate">{currentSchedule.creator.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Reviewer */}
+                            {reviewerInfo && (
+                                <div className="bg-white rounded-xl p-4 border border-[#d4af37]/15 hover:border-[#d4af37]/30 transition-colors">
+                                    <p className="text-xs text-[#8a6d1c]/70 font-semibold uppercase tracking-wider mb-2">
+                                        {currentSchedule.status === 'approved' ? 'Người duyệt' : 'Người từ chối'}
+                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shadow-md shadow-[#d4af37]/15 flex-shrink-0">
+                                            <User className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-slate-900 text-sm truncate">
+                                                {reviewerInfo.full_name}
+                                            </p>
+                                            <p className="text-xs text-slate-500 truncate">{reviewerInfo.email}</p>
                                         </div>
                                     </div>
                                 </div>
