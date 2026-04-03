@@ -647,3 +647,80 @@ export interface ManagerCheckinsAnalyticsData {
     count: number;
 }
 
+// =====================================================================
+// MANAGER REVIEWS TYPES
+// =====================================================================
+
+export interface ManagerReviewListParams {
+    page?: number;
+    limit?: number;
+    type?: string;        // 'all', 'site', 'nearby_place', etc.
+    has_reply?: string;   // 'true', 'false', empty string
+    sort?: string;        // 'newest', 'oldest', 'highest', 'lowest', empty string
+}
+
+// Người đánh giá (reviewer)
+export interface ReviewReviewer {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+}
+
+// Người phản hồi (replier) trong reply
+export interface ReviewReplier {
+    id: string;
+    full_name: string;
+}
+
+// Phản hồi từ Manager (single object, không phải array)
+export interface ReviewReply {
+    id: string;
+    content: string;
+    created_at: string;
+    replier: ReviewReplier;
+}
+
+// 1 Review item từ API
+export interface ReviewItem {
+    id: string;
+    type: string;                    // 'site' | 'nearby_place'
+    rating: number;
+    feedback: string | null;         // Nội dung đánh giá
+    image_urls: string[];            // Ảnh đính kèm
+    has_reply: boolean;              // Đã có phản hồi hay chưa
+    created_at: string;
+    updated_at: string;
+    site_id: string;                 // ID của site
+    verified_visit: boolean;         // Đã check-in thật chưa
+    reviewer: ReviewReviewer;        // Người đánh giá
+    reply: ReviewReply | null;       // Phản hồi (null nếu chưa phản hồi)
+    // Nearby place reviews có thể có thêm related_info
+    related_info?: {
+        name: string;
+        type?: string;
+    } | null;
+}
+
+export interface ReviewSummary {
+    avg_rating: number;
+    total_reviews: number;
+}
+
+export interface ReviewPagination {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+}
+
+export interface ManagerReviewData {
+    site_reviews: {
+        summary: ReviewSummary;
+        reviews: ReviewItem[];
+        pagination: ReviewPagination;
+    };
+    nearby_place_reviews: {
+        reviews: ReviewItem[];
+        pagination: ReviewPagination;
+    };
+}

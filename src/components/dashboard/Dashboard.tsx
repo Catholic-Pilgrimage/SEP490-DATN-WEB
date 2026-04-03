@@ -16,6 +16,7 @@ import { AdminSOSCenter } from './admin/AdminSOSCenter';
 import { AdminFinance } from './admin/AdminFinance';
 import { ReportsManagement } from './admin/ReportsManagement';
 import { ManagerSOSCenter } from './manager/ManagerSOSCenter';
+import { ManagerReviews } from './manager/ManagerReviews';
 import { ProfilePage } from './profile/ProfilePage';
 import { SettingsPage } from './settings/SettingsPage';
 import { User } from '../../App';
@@ -85,6 +86,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout, onUserProf
                 <Route path="shifts" element={<ShiftSubmissions />} />
                 <Route path="content" element={<ContentManagement />} />
                 <Route path="sos" element={<ManagerSOSCenter />} />
+                <Route path="reviews" element={<ManagerReviews />} />
                 <Route path="profile" element={<ProfilePage onProfileUpdated={onUserProfileUpdated} />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

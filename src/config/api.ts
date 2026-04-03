@@ -73,6 +73,7 @@ export const API_CONFIG = {
             },
             SOS_LIST: '/api/sos/manager/list',
             SOS_STATS: '/api/sos/manager/stats',
+            REVIEWS: '/api/manager/reviews',
         },
         NOTIFICATIONS: {
             BASE: '/api/notifications', // GET list, DELETE all
