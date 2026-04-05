@@ -147,6 +147,17 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
         return icons[type] || HelpCircle;
     };
 
+    const getTypeLabel = (type: SiteType) => {
+        const labels = {
+            church: t('type.church'),
+            shrine: t('type.shrine'),
+            monastery: t('type.monastery'),
+            center: t('type.center'),
+            other: t('type.other')
+        };
+        return labels[type] || type;
+    };
+
     const getRegionLabel = (region: SiteRegion) => {
         const labels = { Bac: t('region.bac'), Trung: t('region.trung'), Nam: t('region.nam') };
         return labels[region] || region;
@@ -227,7 +238,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                                             <span className="truncate">{request.site_address}, {request.site_province}</span>
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
-                                            <span className="px-2.5 py-1 bg-[#d4af37]/20 text-[#8a6d1c] rounded-lg text-xs font-medium capitalize">{request.site_type}</span>
+                                            <span className="px-2.5 py-1 bg-[#d4af37]/20 text-[#8a6d1c] rounded-lg text-xs font-medium">{getTypeLabel(request.site_type)}</span>
                                             <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">{getRegionLabel(request.site_region)}</span>
                                         </div>
                                     </div>
