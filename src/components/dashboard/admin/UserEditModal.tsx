@@ -209,6 +209,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                             name="date_of_birth"
                             value={formData.date_of_birth || ''}
                             onChange={handleInputChange}
+                            max={new Date().toISOString().split('T')[0]}
                             className="w-full bg-[#f5f3ee] border-[#d4af37]/30 rounded-xl focus-visible:ring-1 focus-visible:ring-[#d4af37] focus-visible:border-[#d4af37] hover:border-[#d4af37]/50 transition-all h-11"
                         />
                     </div>

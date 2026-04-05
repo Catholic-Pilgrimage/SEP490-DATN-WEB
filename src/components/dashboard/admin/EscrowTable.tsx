@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw, Lock } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { AdminService } from '../../../services/admin.service';
 import { WalletEscrowPlannerItem } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
@@ -96,7 +97,10 @@ export const EscrowTable: React.FC = () => {
   };
 
   const formatDateRange = (start: string, end: string) => {
-    return `${start} ${t('esc.dateRangeSep')} ${end}`;
+    const fmtDate = (d: string) => {
+      try { return format(parseISO(d), 'dd/MM/yyyy'); } catch { return d; }
+    };
+    return `${fmtDate(start)} ${t('esc.dateRangeSep')} ${fmtDate(end)}`;
   };
 
   const plannerStatusLabel = (status: string) => {

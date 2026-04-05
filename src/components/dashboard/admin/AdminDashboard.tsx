@@ -23,7 +23,8 @@ export const AdminDashboard: React.FC = () => {
   const fetchDashboardData = useCallback(async (
     selectedPeriod?: AdminDashboardPeriod,
     fDate?: Date,
-    tDate?: Date
+    tDate?: Date,
+    notifyUser = false
   ) => {
     setLoading(true);
     try {
@@ -36,19 +37,22 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.success && response.data) {
         setDashboardData(response.data);
+        if (notifyUser) {
+          showToast('success', t('toast.refreshSuccess'), t('toast.refreshSuccessMsg'));
+        }
       } else {
-        showToast('error', 'Error', response.message || 'Failed to load dashboard data');
+        showToast('error', t('common.error'), response.message || t('dashboard.loadError') || 'Failed to load dashboard data');
       }
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      showToast('error', 'Error', 'Failed to load dashboard data');
+      showToast('error', t('common.error'), t('dashboard.loadError') || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, t]);
 
   useEffect(() => {
-    fetchDashboardData(period, fromDate, toDate);
+    fetchDashboardData(period, fromDate, toDate, false);
   }, [period, fromDate, toDate, fetchDashboardData]);
 
   const handlePeriodChange = (newPeriod: AdminDashboardPeriod | undefined) => {
@@ -74,7 +78,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
         <Button
           type="button"
-          onClick={() => fetchDashboardData(period, fromDate, toDate)}
+          onClick={() => fetchDashboardData(period, fromDate, toDate, true)}
           disabled={loading}
           className="flex h-[46px] shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] px-6 font-medium text-white shadow-lg shadow-[#d4af37]/20 transition-all hover:brightness-110 disabled:opacity-50"
         >

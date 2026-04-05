@@ -107,6 +107,15 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
               />
             </PopoverContent>
           </Popover>
+          {fromDate && (
+            <button
+              type="button"
+              onClick={() => onFromDateChange(undefined)}
+              className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           <span className="text-slate-400">-</span>
 
@@ -138,6 +147,15 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
               />
             </PopoverContent>
           </Popover>
+          {toDate && (
+            <button
+              type="button"
+              onClick={() => onToDateChange(undefined)}
+              className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       )}
     </div>

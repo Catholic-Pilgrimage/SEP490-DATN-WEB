@@ -143,20 +143,23 @@ export const ManagerSOSCenter: React.FC = () => {
                             <Filter className="w-5 h-5 text-[#8a6d1c]/80" />
                         </div>
 
-                        {/* From Date */}
-                        <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-1 border border-slate-200">
-                            <span className="text-sm text-slate-500 font-medium hidden sm:inline pl-2">{t('sos.fromDate')}:</span>
+                        {/* Date Range Filter */}
+                        <div className="flex flex-wrap items-center gap-1 p-1 bg-[#f5f3ee] border border-[#d4af37]/20 rounded-xl">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"ghost"}
-                                        className={`justify-start text-left font-normal h-9 px-2 hover:bg-transparent ${!fromDate && "text-muted-foreground"}`}
+                                    <button
+                                        type="button"
+                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium border transition-all ${
+                                            fromDate
+                                                ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                                                : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                                        }`}
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {fromDate ? format(new Date(fromDate), "dd/MM/yyyy") : <span>Chọn ngày</span>}
-                                    </Button>
+                                        <CalendarIcon className="h-3.5 w-3.5 text-[#d4af37]" />
+                                        {fromDate ? format(new Date(fromDate), 'dd/MM/yyyy') : t('dashboard.fromDate')}
+                                    </button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className="w-auto overflow-hidden rounded-xl border border-[#d4af37]/20 p-0" align="start">
                                     <Calendar
                                         mode="single"
                                         selected={fromDate ? new Date(fromDate) : undefined}
@@ -171,29 +174,29 @@ export const ManagerSOSCenter: React.FC = () => {
                             </Popover>
                             {fromDate && (
                                 <button
+                                    type="button"
                                     onClick={() => setFromDate('')}
-                                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors mr-1 cursor-pointer"
-                                    title="Xóa ngày lọc"
+                                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                                 >
-                                    <X className="w-4 h-4" />
+                                    <X className="w-3.5 h-3.5" />
                                 </button>
                             )}
-                        </div>
-
-                        {/* To Date */}
-                        <div className="flex items-center gap-2 bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl px-1 border border-slate-200">
-                            <span className="text-sm text-slate-500 font-medium hidden sm:inline pl-2">{t('sos.toDate')}:</span>
+                            <span className="text-[#d4af37]/50">—</span>
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"ghost"}
-                                        className={`justify-start text-left font-normal h-9 px-2 hover:bg-transparent ${!toDate && "text-muted-foreground"}`}
+                                    <button
+                                        type="button"
+                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium border transition-all ${
+                                            toDate
+                                                ? 'border-[#d4af37] text-[#8a6d1c] bg-white'
+                                                : 'border-[#d4af37]/30 text-slate-500 bg-white hover:bg-[#d4af37]/5'
+                                        }`}
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {toDate ? format(new Date(toDate), "dd/MM/yyyy") : <span>Chọn ngày</span>}
-                                    </Button>
+                                        <CalendarIcon className="h-3.5 w-3.5 text-[#d4af37]" />
+                                        {toDate ? format(new Date(toDate), 'dd/MM/yyyy') : t('dashboard.toDate')}
+                                    </button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className="w-auto overflow-hidden rounded-xl border border-[#d4af37]/20 p-0" align="start">
                                     <Calendar
                                         mode="single"
                                         selected={toDate ? new Date(toDate) : undefined}
@@ -208,11 +211,11 @@ export const ManagerSOSCenter: React.FC = () => {
                             </Popover>
                             {toDate && (
                                 <button
+                                    type="button"
                                     onClick={() => setToDate('')}
-                                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors mr-1 cursor-pointer"
-                                    title="Xóa ngày lọc"
+                                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                                 >
-                                    <X className="w-4 h-4" />
+                                    <X className="w-3.5 h-3.5" />
                                 </button>
                             )}
                         </div>
@@ -223,7 +226,7 @@ export const ManagerSOSCenter: React.FC = () => {
                                 value={statusFilter}
                                 onValueChange={(value) => setStatusFilter(value === 'all' ? '' : value as SOSStatus)}
                             >
-                                <SelectTrigger className="w-[150px] h-[38px] bg-[#f8fafc] hover:bg-slate-100 transition-colors rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-[#d4af37]/50 border-slate-200">
+                                <SelectTrigger className="w-[150px] h-[38px] bg-[#f5f3ee] hover:bg-[#d4af37]/10 transition-colors rounded-xl text-slate-700 font-medium focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] border border-[#d4af37]/30 hover:border-[#d4af37]/50 cursor-pointer">
                                     <SelectValue placeholder={t('sos.allStatuses')} />
                                 </SelectTrigger>
                                 <SelectContent>

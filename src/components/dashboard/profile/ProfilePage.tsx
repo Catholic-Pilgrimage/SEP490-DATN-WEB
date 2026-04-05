@@ -335,6 +335,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onProfileUpdated }) =>
                                     type="date"
                                     value={dateOfBirth}
                                     onChange={(e) => setDateOfBirth(e.target.value)}
+                                    max={new Date().toISOString().split('T')[0]}
                                     className={inputEditClass}
                                 />
                             ) : (

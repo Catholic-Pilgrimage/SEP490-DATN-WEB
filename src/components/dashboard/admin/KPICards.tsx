@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Calendar as CalendarIcon,
   Route,
+  X,
 } from 'lucide-react';
 import { DashboardOverviewData, AdminDashboardPeriod } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -275,6 +276,15 @@ export const KPICards: React.FC<KPICardsProps> = ({
                   />
                 </PopoverContent>
               </Popover>
+              {fromDate && (
+                <button
+                  type="button"
+                  onClick={() => onFromDateChange(undefined)}
+                  className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
               <span className="text-[#d4af37]/50">—</span>
               <Popover>
                 <PopoverTrigger asChild>
@@ -303,6 +313,15 @@ export const KPICards: React.FC<KPICardsProps> = ({
                   />
                 </PopoverContent>
               </Popover>
+              {toDate && (
+                <button
+                  type="button"
+                  onClick={() => onToDateChange(undefined)}
+                  className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           )}
         </div>

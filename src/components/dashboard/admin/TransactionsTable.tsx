@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Calendar as CalendarIcon,
   Eye,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
@@ -345,6 +346,15 @@ export const TransactionsTable: React.FC = () => {
                     />
                   </PopoverContent>
                 </Popover>
+                {fromDate && (
+                  <button
+                    type="button"
+                    onClick={() => { setFromDate(undefined); setCurrentPage(1); }}
+                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
 
                 <span className="text-slate-400">-</span>
 
@@ -378,6 +388,15 @@ export const TransactionsTable: React.FC = () => {
                     />
                   </PopoverContent>
                 </Popover>
+                {toDate && (
+                  <button
+                    type="button"
+                    onClick={() => { setToDate(undefined); setCurrentPage(1); }}
+                    className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
