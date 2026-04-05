@@ -191,7 +191,9 @@ export const WithdrawalsTable: React.FC = () => {
                     onSelect={(d) => {
                       setFromDate(d);
                       setCurrentPage(1);
+                      if (d && toDate && d > toDate) setToDate(undefined);
                     }}
+                    disabled={toDate ? { after: toDate } : undefined}
                     initialFocus
                     locale={language === 'vi' ? vi : enUS}
                     className="bg-white"
@@ -222,7 +224,9 @@ export const WithdrawalsTable: React.FC = () => {
                     onSelect={(d) => {
                       setToDate(d);
                       setCurrentPage(1);
+                      if (d && fromDate && d < fromDate) setFromDate(undefined);
                     }}
+                    disabled={fromDate ? { before: fromDate } : undefined}
                     initialFocus
                     locale={language === 'vi' ? vi : enUS}
                     className="bg-white"

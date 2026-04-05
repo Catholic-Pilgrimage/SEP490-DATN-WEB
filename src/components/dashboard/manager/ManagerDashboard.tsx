@@ -96,7 +96,11 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
               <CalendarPicker
                 mode="single"
                 selected={fromDate}
-                onSelect={onFromDateChange}
+                onSelect={(d) => {
+                  onFromDateChange(d);
+                  if (d && toDate && d > toDate) onToDateChange(undefined);
+                }}
+                disabled={toDate ? { after: toDate } : undefined}
                 initialFocus
                 locale={language === 'vi' ? vi : enUS}
                 className="bg-white"
@@ -123,7 +127,11 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
               <CalendarPicker
                 mode="single"
                 selected={toDate}
-                onSelect={onToDateChange}
+                onSelect={(d) => {
+                  onToDateChange(d);
+                  if (d && fromDate && d < fromDate) onFromDateChange(undefined);
+                }}
+                disabled={fromDate ? { before: fromDate } : undefined}
                 initialFocus
                 locale={language === 'vi' ? vi : enUS}
                 className="bg-white"

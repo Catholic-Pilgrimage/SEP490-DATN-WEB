@@ -160,7 +160,11 @@ export const ManagerSOSCenter: React.FC = () => {
                                     <Calendar
                                         mode="single"
                                         selected={fromDate ? new Date(fromDate) : undefined}
-                                        onSelect={(date) => setFromDate(date ? format(date, "yyyy-MM-dd") : '')}
+                                        onSelect={(date) => {
+                                            setFromDate(date ? format(date, "yyyy-MM-dd") : '');
+                                            if (date && toDate && date > new Date(toDate)) setToDate('');
+                                        }}
+                                        disabled={toDate ? { after: new Date(toDate) } : undefined}
                                         initialFocus
                                     />
                                 </PopoverContent>
@@ -193,7 +197,11 @@ export const ManagerSOSCenter: React.FC = () => {
                                     <Calendar
                                         mode="single"
                                         selected={toDate ? new Date(toDate) : undefined}
-                                        onSelect={(date) => setToDate(date ? format(date, "yyyy-MM-dd") : '')}
+                                        onSelect={(date) => {
+                                            setToDate(date ? format(date, "yyyy-MM-dd") : '');
+                                            if (date && fromDate && date < new Date(fromDate)) setFromDate('');
+                                        }}
+                                        disabled={fromDate ? { before: new Date(fromDate) } : undefined}
                                         initialFocus
                                     />
                                 </PopoverContent>
