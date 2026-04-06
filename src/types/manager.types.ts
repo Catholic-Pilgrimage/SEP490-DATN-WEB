@@ -728,3 +728,37 @@ export interface ManagerReviewData {
         pagination: ReviewPagination;
     };
 }
+
+// =====================================================================
+// AI ARTICLE WRITER TYPES
+// =====================================================================
+
+/** Phong cách viết bài (theo BE validation) */
+export type ArticleStyle = 'devotional' | 'informational' | 'historical' | 'youth';
+
+/** Độ dài bài viết */
+export type ArticleLength = 'short' | 'medium' | 'long';
+
+/** POST /api/ai/generate-article - Request body */
+export interface GenerateArticleRequest {
+    topic: string;                   // Chủ đề viết bài
+    additional_context?: string;     // Thông tin bổ sung (tuỳ chọn)
+    language?: 'vi' | 'en';          // Ngôn ngữ output
+    length?: ArticleLength;          // 'short' | 'medium' | 'long'
+    style?: ArticleStyle;            // Phong cách viết
+}
+
+/** POST /api/ai/generate-article - Response data */
+export interface GenerateArticleData {
+    title: string;                   // Tiêu đề bài viết
+    summary: string;                 // Tóm tắt ngắn
+    content: string;                 // Nội dung đầy đủ
+    tags: string[];                  // Tags gợi ý
+    metadata: {
+        generated_by: string;
+        language: string;
+        length: string;
+        style: string;
+        topic: string;
+    };
+}

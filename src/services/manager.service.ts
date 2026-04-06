@@ -50,6 +50,8 @@ import {
     ManagerCheckinsAnalyticsData,
     ManagerReviewListParams,
     ManagerReviewData,
+    GenerateArticleRequest,
+    GenerateArticleData,
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -763,5 +765,24 @@ export class ManagerService {
             : API_CONFIG.ENDPOINTS.MANAGER.REVIEWS;
 
         return ApiService.get<ApiResponse<ManagerReviewData>>(url);
+    }
+
+    // =====================================================================
+    // AI ARTICLE WRITER
+    // =====================================================================
+
+    /**
+     * Generate AI article about the manager's pilgrimage site
+     * POST /api/ai/generate-article
+     *
+     * @param data - { topic, additional_context?, language?, length?, style? }
+     */
+    static async generateArticle(
+        data: GenerateArticleRequest
+    ): Promise<ApiResponse<GenerateArticleData>> {
+        return ApiService.post<ApiResponse<GenerateArticleData>>(
+            API_CONFIG.ENDPOINTS.MANAGER.AI_GENERATE_ARTICLE,
+            data
+        );
     }
 }

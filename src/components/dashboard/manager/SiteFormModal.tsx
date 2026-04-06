@@ -13,7 +13,8 @@ import {
     Phone,
     Mail,
     Save,
-    Map
+    Map,
+    Sparkles
 } from 'lucide-react';
 import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
 import { geocodeAddress } from '@/services/vietmap.service';
@@ -22,6 +23,7 @@ import { ManagerSite, CreateManagerSiteData, UpdateManagerSiteData } from '../..
 import { SiteType, SiteRegion, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { AIGeneratorModal } from './AIGeneratorModal';
 
 interface SiteFormModalProps {
     isOpen: boolean;
@@ -82,6 +84,10 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
     const [coverImage, setCoverImage] = useState<File | null>(null);
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
     const [showMapPicker, setShowMapPicker] = useState(false);
+
+    // AI Generation state
+    const [showAIGenerator, setShowAIGenerator] = useState(false);
+    const [aiTargetField, setAiTargetField] = useState<'description' | 'history'>('description');
 
     // Opening hours
     const [openingHours, setOpeningHours] = useState<Record<string, string>>({});
@@ -416,7 +422,20 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                             {/* Description */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.description')}</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-sm font-medium text-gray-700">{t('siteForm.description')}</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAiTargetField('description');
+                                            setShowAIGenerator(true);
+                                        }}
+                                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#8a6d1c] bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-lg transition-colors border border-[#d4af37]/30"
+                                    >
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        {t('ai.btnWrite')}
+                                    </button>
+                                </div>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
@@ -428,7 +447,20 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                             {/* History */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('siteForm.history')}</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-sm font-medium text-gray-700">{t('siteForm.history')}</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAiTargetField('history');
+                                            setShowAIGenerator(true);
+                                        }}
+                                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#8a6d1c] bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-lg transition-colors border border-[#d4af37]/30"
+                                    >
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        {t('ai.btnWrite')}
+                                    </button>
+                                </div>
                                 <textarea
                                     value={history}
                                     onChange={(e) => setHistory(e.target.value)}
@@ -658,6 +690,21 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* AI Generator Modal */}
+            <AIGeneratorModal
+                isOpen={showAIGenerator}
+                onClose={() => setShowAIGenerator(false)}
+                modalTitle={aiTargetField === 'description' ? t('ai.titleDesc') : t('ai.titleHistory')}
+                defaultTopic={name || t('ai.topicPlaceholder')}
+                onApply={(content) => {
+                    if (aiTargetField === 'description') {
+                        setDescription(content);
+                    } else {
+                        setHistory(content);
+                    }
+                }}
+            />
         </div>
     );
 };
