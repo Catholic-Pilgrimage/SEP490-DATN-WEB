@@ -20,10 +20,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   const location = useLocation();
 
   // Extract current view from URL path
-  const pathParts = location.pathname.split('/');
-  const activeView = pathParts[pathParts.length - 1] || 'dashboard';
+  const pathParts = location.pathname.split('/').filter(Boolean);
 
-  const getPageTitle = () => {
+  const getPageTitle = (viewKey: string) => {
+    // Check if it's a UUID (typical for detail pages)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(viewKey);
+    if (isUUID) return t('common.details');
+
     const titles: Record<string, string> = {
       dashboard: t('menu.dashboard'),
       sites: t('menu.sites'),
@@ -40,15 +43,18 @@ export const TopBar: React.FC<TopBarProps> = ({
       finance: t('menu.finance'),
       reports: t('menu.reports')
     };
-    return titles[activeView] || activeView.charAt(0).toUpperCase() + activeView.slice(1);
+    return titles[viewKey] || viewKey.charAt(0).toUpperCase() + viewKey.slice(1);
   };
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [t('nav.dashboard')];
-    if (activeView !== 'dashboard') {
-      breadcrumbs.push(getPageTitle());
-    }
-    return breadcrumbs;
+    const relevantParts = pathParts.filter(p => p !== 'dashboard' && p !== 'admin');
+    
+    relevantParts.forEach(part => {
+      breadcrumbs.push(getPageTitle(part));
+    });
+    
+    return breadcrumbs.length > 1 ? breadcrumbs : breadcrumbs;
   };
 
   return (
@@ -58,7 +64,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="flex items-center gap-2">
           <nav className="flex items-center gap-2 text-sm">
             {getBreadcrumbs().map((crumb, index) => (
-              <React.Fragment key={crumb}>
+              <React.Fragment key={`${crumb}-${index}`}>
                 {index > 0 && (
                   <ChevronRight className="w-4 h-4 text-[#8a6d1c]/50" />
                 )}
