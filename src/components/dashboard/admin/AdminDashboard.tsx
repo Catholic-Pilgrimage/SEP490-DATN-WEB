@@ -69,7 +69,7 @@ export const AdminDashboard: React.FC = () => {
     <div className="mx-auto max-w-7xl space-y-8 pb-10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1">
-          <h1 className={`text-2xl font-semibold tracking-tight sm:text-3xl ${dash.textAccent}`}>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">
             {t('dashboard.title')}
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-slate-600">

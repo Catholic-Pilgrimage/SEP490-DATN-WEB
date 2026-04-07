@@ -226,7 +226,7 @@ export const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-[#8a6d1c]">{t('users.title')}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">{t('users.title')}</h1>
           <p className="text-gray-500 mt-1">{t('users.subtitle')}</p>
         </div>
         <button

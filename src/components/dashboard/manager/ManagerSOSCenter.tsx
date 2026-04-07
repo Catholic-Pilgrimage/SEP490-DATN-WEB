@@ -131,7 +131,7 @@ export const ManagerSOSCenter: React.FC = () => {
             {/* Header and Filters */}
             <div className="flex flex-col gap-5">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">
                         {t('sos.title')}
                     </h1>
                     <p className="text-slate-600 mt-2 text-sm">{t('sos.subtitleManager')}</p>

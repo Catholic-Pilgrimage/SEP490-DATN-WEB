@@ -164,7 +164,7 @@ export const VerificationRequests: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-[#8a6d1c]">{t('verification.title')}</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">{t('verification.title')}</h1>
                     <p className="text-slate-500 mt-1">{t('verification.subtitle')}</p>
                 </div>
                 <Button
