@@ -2,47 +2,60 @@
 import React, { useState } from 'react';
 import {
   Loader2,
-  Shield,
+  X,
   Hash,
-  CalendarClock,
-  Target,
+  CalendarDays,
+  Clock,
   FileText,
   StickyNote,
-  Users,
   ImageIcon,
   Star,
   CheckCircle,
-  Clock,
   XCircle,
   Flag,
   MessageSquare,
   BookOpen,
   MapPin,
+  ThumbsUp,
+  Volume2,
+  Video,
+  Eye,
+  EyeOff,
+  User,
+  AlertTriangle,
+  Target,
 } from 'lucide-react';
-import { ReportDetail, isReportSiteReviewTarget, type ReportTargetType } from '../../../types/admin.types';
+import {
+  ReportDetail,
+  isReportSiteReviewTarget,
+  isReportPostTarget,
+  isReportCommentTarget,
+  isReportJournalTarget,
+  isReportNearbyPlaceReviewTarget,
+} from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ImagePreviewDialog } from '../../shared/ImagePreviewDialog';
 
-/** Helpers dùng chung cho bảng & dialog báo cáo */
-export function formatReportDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+// ─── Props ────────────────────────────────────────────────────
+export interface ReportDetailDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading: boolean;
+  data: ReportDetail | null;
 }
 
-export function getReportStatusIcon(status: string): React.ReactNode {
+// ─── Helpers (exported for ReportsManagement table reuse) ──────
+
+export function getReportStatusIcon(status: string) {
   switch (status) {
     case 'pending':
       return <Clock className="w-3.5 h-3.5" />;
@@ -52,37 +65,42 @@ export function getReportStatusIcon(status: string): React.ReactNode {
       return <XCircle className="w-3.5 h-3.5" />;
     case 'reject':
       return <XCircle className="w-3.5 h-3.5" />;
+    case 'cancelled':
+      return <XCircle className="w-3.5 h-3.5" />;
     default:
       return <Flag className="w-3.5 h-3.5" />;
   }
 }
 
-export function getReportStatusStyle(status: string): string {
+export function getReportStatusStyle(status: string) {
   switch (status) {
     case 'pending':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
+      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
     case 'resolved':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-green-100 text-green-700 border-green-200';
     case 'dismissed':
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+      return 'bg-slate-100 text-slate-600 border-slate-200';
     case 'reject':
-      return 'bg-rose-50 text-rose-700 border-rose-200';
+      return 'bg-rose-100 text-rose-700 border-rose-200';
+    case 'cancelled':
+      return 'bg-slate-100 text-slate-500 border-slate-300';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+      return 'bg-slate-100 text-slate-600 border-slate-200';
   }
 }
 
-export function getReportStatusLabel(status: string, t: (key: string) => string): string {
+export function getReportStatusLabel(status: string, t: (k: string) => string) {
   const labels: Record<string, string> = {
     pending: t('rpt.status.pending'),
     resolved: t('rpt.status.resolved'),
     dismissed: t('rpt.status.dismissed'),
     reject: t('rpt.status.reject'),
+    cancelled: t('rpt.status.cancelled'),
   };
   return labels[status] || status;
 }
 
-export function getReportTargetTypeIcon(type: string): React.ReactNode {
+export function getReportTargetTypeIcon(type: string) {
   switch (type) {
     case 'post':
       return <FileText className="w-3.5 h-3.5" />;
@@ -99,7 +117,7 @@ export function getReportTargetTypeIcon(type: string): React.ReactNode {
   }
 }
 
-export function getReportTargetTypeStyle(type: string): string {
+export function getReportTargetTypeStyle(type: string) {
   switch (type) {
     case 'post':
       return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -108,15 +126,15 @@ export function getReportTargetTypeStyle(type: string): string {
     case 'journal':
       return 'bg-orange-50 text-orange-700 border-orange-200';
     case 'site_review':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'nearby_place_review':
-      return 'bg-teal-50 text-teal-800 border-teal-200';
+      return 'bg-teal-50 text-teal-700 border-teal-200';
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200';
   }
 }
 
-export function getReportTargetTypeLabel(type: ReportTargetType | string, t: (key: string) => string): string {
+export function getReportTargetTypeLabel(type: string, t: (k: string) => string) {
   const labels: Record<string, string> = {
     post: t('rpt.targetType.post'),
     comment: t('rpt.targetType.comment'),
@@ -127,7 +145,7 @@ export function getReportTargetTypeLabel(type: ReportTargetType | string, t: (ke
   return labels[type] || type;
 }
 
-export function getReportReasonLabel(reason: string, t: (key: string) => string): string {
+export function getReportReasonLabel(reason: string, t: (k: string) => string) {
   const labels: Record<string, string> = {
     spam: t('rpt.reason.spam'),
     inappropriate: t('rpt.reason.inappropriate'),
@@ -138,81 +156,13 @@ export function getReportReasonLabel(reason: string, t: (key: string) => string)
   return labels[reason] || reason;
 }
 
-export interface ReportDetailDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  loading: boolean;
-  data: ReportDetail | null;
-}
+// ─── Internal helpers ─────────────────────────────────────────
 
-function SectionCard({
-  icon: Icon,
-  title,
-  children,
-  className = '',
-  tone = 'default' as 'default' | 'gold' | 'emerald',
-}: {
-  icon: React.ElementType;
-  title: string;
-  children: React.ReactNode;
-  className?: string;
-  tone?: 'default' | 'gold' | 'emerald';
-}) {
-  const toneBar =
-    tone === 'gold'
-      ? 'from-[#d4af37]/80 to-[#c9a227]/60'
-      : tone === 'emerald'
-        ? 'from-emerald-500/70 to-emerald-600/50'
-        : 'from-slate-400/50 to-slate-300/40';
-  const titleColor =
-    tone === 'gold' ? 'text-[#6b5420]' : tone === 'emerald' ? 'text-emerald-900' : 'text-slate-700';
-  const iconWrap =
-    tone === 'gold'
-      ? 'bg-[#d4af37]/12 text-[#8a6d1c]'
-      : tone === 'emerald'
-        ? 'bg-emerald-100 text-emerald-700'
-        : 'bg-slate-100 text-slate-600';
-
-  return (
-    <section
-      className={`report-detail-section rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden ${className}`}
-    >
-      <div className={`h-1 w-full bg-gradient-to-r ${toneBar}`} aria-hidden />
-      <div className="px-4 py-3 sm:px-5 sm:py-4">
-        <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-          <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconWrap}`}>
-            <Icon className="h-4 w-4" strokeWidth={2} />
-          </span>
-          <h3 className={`text-xs font-bold uppercase tracking-wide ${titleColor}`}>{title}</h3>
-        </div>
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function MetaItem({
-  label,
-  children,
-  emphasis = false,
-}: {
-  label: string;
-  children: React.ReactNode;
-  /** Nổi bật giá trị (ID, thời gian quan trọng) */
-  emphasis?: boolean;
-}) {
-  return (
-    <div className={`min-w-0 space-y-1.5 ${emphasis ? 'rounded-xl border border-slate-200/90 bg-slate-50/90 p-3 shadow-sm' : ''}`}>
-      <p
-        className={`text-[11px] font-bold uppercase tracking-wide ${emphasis ? 'text-slate-600' : 'text-slate-400'}`}
-      >
-        {label}
-      </p>
-      <div className={`min-w-0 ${emphasis ? 'text-base font-semibold text-slate-900' : 'text-sm text-slate-800'}`}>
-        {children}
-      </div>
-    </div>
-  );
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleString('vi-VN', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
 }
 
 function StarRating({ value }: { value: number }) {
@@ -230,7 +180,88 @@ function StarRating({ value }: { value: number }) {
   );
 }
 
-/** Modal chi tiết báo cáo (GET /api/reports/:id). */
+/** Reusable info row — icon box + label/value */
+function InfoRow({ icon: Icon, label, children }: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-2.5">
+      <div className="p-2 bg-[#f5f3ee] rounded-lg mt-0.5 shrink-0">
+        <Icon className="w-4 h-4 text-[#8a6d1c]" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-slate-500">{label}</p>
+        <div className="text-sm font-semibold text-slate-800 mt-0.5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** User / person card matching project gold style */
+function PersonCard({ name, email, avatarUrl, roleLabel, roleColor = 'text-[#8a6d1c]', bgClass = 'bg-[#f5f3ee]' }: {
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+  roleLabel: string;
+  roleColor?: string;
+  bgClass?: string;
+}) {
+  return (
+    <div className={`${bgClass} rounded-xl p-4 border border-[#d4af37]/10`}>
+      <div className="flex items-center gap-2 mb-3">
+        <User className="w-4 h-4 text-[#8a6d1c]" />
+        <h4 className={`text-xs font-semibold uppercase tracking-wider ${roleColor}`}>{roleLabel}</h4>
+      </div>
+      <div className="flex items-center gap-3">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#d4af37]/30" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+            <span className="text-sm font-bold text-white">{name.charAt(0)}</span>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-gray-900 truncate text-sm">{name}</p>
+          <p className="text-xs text-gray-500 truncate">{email}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Image grid component */
+function ImageGrid({ urls, onPreview, viewLabel }: {
+  urls: string[];
+  onPreview: (url: string) => void;
+  viewLabel: string;
+}) {
+  if (!urls || urls.length === 0) return null;
+  return (
+    <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+      <div className="flex items-center gap-2 text-[#8a6d1c] mb-3">
+        <ImageIcon className="w-4 h-4" />
+        <span className="text-xs font-semibold uppercase tracking-wider">{viewLabel}</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {urls.map((url) => (
+          <button
+            key={url}
+            type="button"
+            onClick={() => onPreview(url)}
+            className="group relative aspect-square overflow-hidden rounded-lg border border-[#d4af37]/20 bg-white shadow-sm transition hover:border-[#d4af37]/50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+          >
+            <img src={url} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.03]" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────
+
 export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
   open,
   onOpenChange,
@@ -242,242 +273,440 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
 
   const handleClose = () => {
     onOpenChange(false);
+    setPreviewImageUrl(null);
   };
+
+  const handleDialogChange = (next: boolean) => {
+    if (!next) handleClose();
+    else onOpenChange(next);
+  };
+
+  if (!open) return null;
 
   return (
     <>
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) setPreviewImageUrl(null);
-      }}
-    >
-      <DialogContent className="report-detail-dialog flex max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
-        {/* Header */}
-        <div className="relative shrink-0 border-b border-slate-200/90 bg-gradient-to-br from-[#faf8f4] via-white to-slate-50/80 px-5 pb-4 pt-5 pr-14 sm:px-6 sm:pb-5 sm:pt-6">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#c9a227]" />
-          <DialogHeader className="space-y-3 text-left">
-            <DialogTitle className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
-              {t('rpt.detail.title')}
-            </DialogTitle>
-            {data && !loading ? (
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
-                <div className="inline-flex max-w-full flex-col gap-1 rounded-xl border-2 border-[#d4af37]/45 bg-gradient-to-br from-white via-amber-50/40 to-[#faf8f4] px-4 py-3 shadow-md ring-1 ring-[#c9a227]/15">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#8a6d1c]">
-                    {t('rpt.detail.code')}
-                  </span>
-                  <span className="break-all font-mono text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">
-                    {data.code}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:pt-0.5">
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full border-2 px-3.5 py-1.5 text-sm font-bold shadow-sm ring-1 ring-black/[0.04] ${getReportStatusStyle(data.status)}`}
-                  >
-                    {getReportStatusIcon(data.status)}
-                    {getReportStatusLabel(data.status, t)}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full border-2 px-3.5 py-1.5 text-sm font-bold shadow-sm ring-1 ring-black/[0.04] ${getReportTargetTypeStyle(data.target_type)}`}
-                  >
-                    {getReportTargetTypeIcon(data.target_type)}
-                    {getReportTargetTypeLabel(data.target_type, t)}
-                  </span>
-                  <span className="inline-flex items-center gap-2 rounded-full border-2 border-rose-300/80 bg-gradient-to-r from-rose-50 to-rose-100/80 px-3.5 py-1.5 text-sm font-bold text-rose-900 shadow-sm ring-1 ring-rose-200/60">
-                    {getReportReasonLabel(data.reason, t)}
-                  </span>
-                </div>
+      <Dialog open={open} onOpenChange={handleDialogChange}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden border-[#d4af37]/20 rounded-2xl p-0 gap-0 [&>button]:hidden">
+          {/* ─── Header ─── */}
+          <DialogHeader className="px-6 py-4 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] shrink-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-white text-left">
+                <DialogTitle className="text-lg font-semibold">
+                  {t('rpt.detail.title')}
+                </DialogTitle>
+                <DialogDescription className="text-sm opacity-80 mt-0.5">
+                  {data?.code || ''}
+                </DialogDescription>
               </div>
-            ) : null}
-          </DialogHeader>
-        </div>
-
-        {/* Body */}
-        <div className="report-detail-body min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16">
-              <Loader2 className="h-9 w-9 animate-spin text-[#d4af37]" />
-              <p className="text-sm text-slate-500">{t('rpt.detail.loading')}</p>
+              <button
+                onClick={handleClose}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          ) : data ? (
-            <div className="space-y-5 sm:space-y-6">
-              {/* Thông tin & định danh */}
-              <SectionCard icon={Hash} title={t('rpt.detail.metaSection')} className="shadow-md ring-1 ring-slate-200/60">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <MetaItem label={t('rpt.col.date')} emphasis>
-                    <p className="flex items-center gap-2.5 tabular-nums text-slate-900">
-                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-800">
-                        <CalendarClock className="h-4 w-4" strokeWidth={2} />
-                      </span>
-                      <span className="font-semibold">{formatReportDate(data.created_at)}</span>
-                    </p>
-                  </MetaItem>
-                  <MetaItem label={t('rpt.detail.updatedAt')} emphasis>
-                    <p className="tabular-nums font-semibold text-slate-900">{formatReportDate(data.updated_at)}</p>
-                  </MetaItem>
-                </div>
-              </SectionCard>
+          </DialogHeader>
 
-              {/* Mô tả */}
-              <SectionCard icon={FileText} title={t('rpt.col.description')} className="shadow-md ring-1 ring-slate-200/50">
-                <div className="rounded-xl border-l-4 border-l-rose-500/90 bg-white px-4 py-4 shadow-inner ring-1 ring-slate-200/80">
-                  <p className="whitespace-pre-wrap text-base font-medium leading-relaxed text-slate-900">
-                    {data.description?.trim() ? data.description : '—'}
-                  </p>
-                </div>
-              </SectionCard>
+          {/* ─── Body ─── */}
+          <div className="p-5 overflow-y-auto max-h-[calc(90vh-140px)]">
+            {loading && (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
+              </div>
+            )}
 
-              {data.admin_note != null && data.admin_note !== '' ? (
-                <SectionCard icon={StickyNote} title={t('rpt.detail.adminNote')} tone="gold" className="shadow-md ring-1 ring-amber-200/50">
-                  <div className="rounded-xl border-l-4 border-l-[#c9a227] bg-gradient-to-r from-amber-50/90 to-amber-50/30 px-4 py-4 shadow-sm">
-                    <p className="whitespace-pre-wrap text-base font-semibold leading-relaxed text-[#3d2f0a]">
-                      {data.admin_note}
-                    </p>
+            {!loading && !data && (
+              <div className="flex flex-col items-center justify-center h-48 text-center">
+                <AlertTriangle className="w-10 h-10 text-amber-500 mb-3" />
+                <p className="text-gray-600 font-medium">{t('rpt.detail.loadError')}</p>
+              </div>
+            )}
+
+            {!loading && data && (
+              <div className="space-y-5">
+                {/* ── Status badges hero ── */}
+                <div className="bg-gradient-to-br from-[#f5f3ee] to-[#ede8db] rounded-2xl p-5 text-center border border-[#d4af37]/15">
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <Badge
+                      variant="outline"
+                      className={`gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${getReportStatusStyle(data.status)}`}
+                    >
+                      {getReportStatusIcon(data.status)}
+                      {getReportStatusLabel(data.status, t)}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${getReportTargetTypeStyle(data.target_type)}`}
+                    >
+                      {getReportTargetTypeIcon(data.target_type)}
+                      {getReportTargetTypeLabel(data.target_type, t)}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-rose-50 text-rose-700 border-rose-200"
+                    >
+                      <Flag className="w-3 h-3" />
+                      {getReportReasonLabel(data.reason, t)}
+                    </Badge>
                   </div>
-                </SectionCard>
-              ) : null}
+                </div>
 
-              {/* Người liên quan */}
-              <SectionCard icon={Users} title={t('rpt.detail.peopleSection')}>
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-[#faf8f4]/80 p-4">
-                    {data.reporter.avatar_url ? (
-                      <img
-                        src={data.reporter.avatar_url}
-                        alt=""
-                        className="h-12 w-12 shrink-0 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200/80"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#d4af37]/25 to-[#c9a227]/15 text-base font-bold text-[#6b5420] ring-2 ring-white shadow-sm">
-                        {data.reporter.full_name.charAt(0)}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-[#8a6d1c]">
-                        {t('rpt.col.reporter')}
-                      </p>
-                      <p className="mt-1 truncate text-lg font-bold tracking-tight text-slate-900">
-                        {data.reporter.full_name}
-                      </p>
-                      <p className="truncate text-sm font-medium text-slate-600">{data.reporter.email}</p>
+                {/* ── Report info ── */}
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+                    {t('rpt.detail.metaSection')}
+                  </h4>
+
+                  <InfoRow icon={Hash} label={t('rpt.detail.code')}>
+                    <span className="font-mono">{data.code}</span>
+                  </InfoRow>
+                  <hr className="border-slate-100" />
+
+                  <InfoRow icon={CalendarDays} label={t('rpt.col.date')}>
+                    {formatDate(data.created_at)}
+                  </InfoRow>
+                  <hr className="border-slate-100" />
+
+                  <InfoRow icon={Clock} label={t('rpt.detail.updatedAt')}>
+                    {formatDate(data.updated_at)}
+                  </InfoRow>
+
+                  {data.description?.trim() && (
+                    <>
+                      <hr className="border-slate-100" />
+                      <InfoRow icon={FileText} label={t('rpt.col.description')}>
+                        <p className="break-words leading-relaxed whitespace-pre-wrap">{data.description}</p>
+                      </InfoRow>
+                    </>
+                  )}
+                </div>
+
+                {/* ── Admin note ── */}
+                {data.admin_note != null && data.admin_note !== '' && (
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60">
+                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                      <StickyNote className="w-4 h-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.adminNote')}</span>
                     </div>
+                    <p className="text-sm font-medium text-[#3d2f0a] leading-relaxed whitespace-pre-wrap">{data.admin_note}</p>
                   </div>
+                )}
 
+                {/* ── People ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <PersonCard
+                    name={data.reporter.full_name}
+                    email={data.reporter.email}
+                    avatarUrl={data.reporter.avatar_url}
+                    roleLabel={t('rpt.col.reporter')}
+                  />
                   {data.resolver ? (
-                    <div className="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-emerald-100">
-                        <Shield className="h-6 w-6 text-emerald-600" strokeWidth={1.75} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-800">
-                          {t('rpt.col.resolver')}
-                        </p>
-                        <p className="mt-1 truncate text-lg font-bold tracking-tight text-slate-900">
-                          {data.resolver.full_name}
-                        </p>
-                        <p className="truncate text-sm font-medium text-slate-600">{data.resolver.email}</p>
-                      </div>
-                    </div>
+                    <PersonCard
+                      name={data.resolver.full_name}
+                      email={data.resolver.email}
+                      roleLabel={t('rpt.col.resolver')}
+                      bgClass="bg-[#d4af37]/10"
+                    />
                   ) : (
-                    <div className="flex min-h-[5.5rem] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 text-center text-xs text-slate-400">
-                      {t('rpt.detail.noResolver')}
+                    <div className="flex items-center justify-center rounded-xl border border-dashed border-[#d4af37]/30 bg-[#faf8f4]/50 p-4 text-center">
+                      <p className="text-xs text-slate-400">{t('rpt.detail.noResolver')}</p>
                     </div>
                   )}
                 </div>
-              </SectionCard>
 
-              {/* Nội dung đối tượng */}
-              {isReportSiteReviewTarget(data.target_content) ? (
-                <SectionCard icon={Target} title={t('rpt.detail.targetContent')} tone="gold">
-                  <div className="space-y-5">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-                        <p className="text-[11px] font-semibold uppercase text-slate-400">{t('rpt.detail.reviewRating')}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-3">
-                          <StarRating value={data.target_content.rating} />
-                          <span className="text-2xl font-bold tabular-nums text-slate-900">{data.target_content.rating}</span>
-                          <span className="text-sm font-semibold text-slate-500">/5</span>
+                {/* ── Target content ── */}
+                {data.target_content && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[#8a6d1c]">
+                      <Target className="w-4 h-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.targetContent')}</span>
+                    </div>
+
+                    {/* site_review */}
+                    {isReportSiteReviewTarget(data.target_content) && (
+                      <div className="space-y-3">
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase text-slate-400 mb-2">{t('rpt.detail.reviewRating')}</p>
+                              <div className="flex items-center gap-2">
+                                <StarRating value={data.target_content.rating} />
+                                <span className="text-xl font-bold tabular-nums text-slate-800">{data.target_content.rating}</span>
+                                <span className="text-xs font-semibold text-slate-400">/5</span>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase text-slate-400 mb-2">{t('rpt.detail.reviewVerified')}</p>
+                              <Badge variant="outline" className={`gap-1 rounded-full text-xs font-semibold ${data.target_content.verified_visit ? 'bg-green-100 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                {data.target_content.verified_visit ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                {data.target_content.verified_visit ? t('common.yes') : t('common.no')}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <PersonCard
+                          name={data.target_content.reviewer.full_name}
+                          email={data.target_content.reviewer.email}
+                          avatarUrl={data.target_content.reviewer.avatar_url}
+                          roleLabel={t('rpt.detail.reviewReviewer')}
+                        />
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.reviewFeedback')}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{data.target_content.feedback}</p>
+                        </div>
+                        <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
+                      </div>
+                    )}
+
+                    {/* post */}
+                    {isReportPostTarget(data.target_content) && (
+                      <div className="space-y-3">
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {data.target_content.author.avatar_url ? (
+                                <img src={data.target_content.author.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#d4af37]/30" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shrink-0">
+                                  <span className="text-sm font-bold text-white">{data.target_content.author.full_name.charAt(0)}</span>
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('rpt.detail.postAuthor')}</p>
+                                <p className="font-medium text-gray-900 truncate text-sm">{data.target_content.author.full_name}</p>
+                                <p className="text-xs text-gray-500 truncate">{data.target_content.author.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-white rounded-full border border-[#d4af37]/20 px-2.5 py-1 text-xs font-semibold text-[#8a6d1c] shrink-0">
+                              <ThumbsUp className="w-3 h-3" />
+                              {data.target_content.likes_count}
+                            </div>
+                          </div>
+                        </div>
+
+                        {data.target_content.title && (
+                          <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                            <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postTitle')}</p>
+                            <p className="text-sm font-bold text-slate-900">{data.target_content.title}</p>
+                          </div>
+                        )}
+
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.postContent')}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{data.target_content.content}</p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2.5">
+                          <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10">
+                            <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postStatus')}</p>
+                            <p className="text-xs font-bold text-slate-800 capitalize">{data.target_content.status}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10">
+                            <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postActive')}</p>
+                            <Badge variant="outline" className={`gap-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full ${data.target_content.is_active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                              {data.target_content.is_active ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+                              {data.target_content.is_active ? t('common.active') : t('common.inactive')}
+                            </Badge>
+                          </div>
+                          <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10">
+                            <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">Media</p>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-600">
+                              <ImageIcon className="w-3 h-3" />{data.target_content.image_urls?.length || 0}
+                              {data.target_content.audio_url && <Volume2 className="w-3 h-3 ml-1" />}
+                              {data.target_content.video_url && <Video className="w-3 h-3 ml-1" />}
+                            </div>
+                          </div>
+                        </div>
+
+                        <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
+                      </div>
+                    )}
+
+                    {/* comment */}
+                    {isReportCommentTarget(data.target_content) && (
+                      <div className="space-y-3">
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-3">
+                            {data.target_content.author.avatar_url ? (
+                              <img src={data.target_content.author.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#d4af37]/30" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shrink-0">
+                                <span className="text-sm font-bold text-white">{data.target_content.author.full_name.charAt(0)}</span>
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('rpt.detail.commentAuthor')}</p>
+                              <p className="font-medium text-gray-900 truncate text-sm">{data.target_content.author.full_name}</p>
+                              <p className="text-xs text-gray-500 truncate">{data.target_content.author.email}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                            <MessageSquare className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.commentContent')}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{data.target_content.content}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10 inline-flex items-center gap-2">
+                          <p className="text-[10px] font-semibold uppercase text-slate-400">{t('rpt.detail.postActive')}:</p>
+                          <Badge variant="outline" className={`gap-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full ${data.target_content.is_active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                            {data.target_content.is_active ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+                            {data.target_content.is_active ? t('common.active') : t('common.inactive')}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-                        <p className="text-[11px] font-semibold uppercase text-slate-400">{t('rpt.detail.reviewVerified')}</p>
-                        <p className="mt-2 text-sm font-semibold text-slate-800">
-                          {data.target_content.verified_visit ? t('common.yes') : t('common.no')}
-                        </p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="rounded-xl border border-slate-100 bg-white p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-400">{t('rpt.detail.reviewReviewer')}</p>
-                      <p className="mt-1.5 font-semibold text-slate-900">{data.target_content.reviewer.full_name}</p>
-                      <p className="text-xs text-slate-500">{data.target_content.reviewer.email}</p>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm ring-1 ring-slate-100">
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{t('rpt.detail.reviewFeedback')}</p>
-                      <p className="mt-2 whitespace-pre-wrap text-base font-medium leading-relaxed text-slate-900">
-                        {data.target_content.feedback}
-                      </p>
-                    </div>
-
-                    {data.target_content.image_urls?.length > 0 ? (
-                      <div>
-                        <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase text-slate-400">
-                          <ImageIcon className="h-3.5 w-3.5" />
-                          {t('rpt.detail.reviewImages')}
-                        </p>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
-                          {data.target_content.image_urls.map((url) => (
-                            <button
-                              key={url}
-                              type="button"
-                              onClick={() => setPreviewImageUrl(url)}
-                              className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-100 text-left shadow-sm transition hover:border-[#d4af37]/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2"
-                              title={t('media.view')}
-                            >
-                              <img src={url} alt="" className="pointer-events-none h-full w-full object-cover transition group-hover:scale-[1.02]" />
-                            </button>
-                          ))}
+                    {/* journal */}
+                    {isReportJournalTarget(data.target_content) && (
+                      <div className="space-y-3">
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {data.target_content.author.avatar_url ? (
+                                <img src={data.target_content.author.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#d4af37]/30" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center shrink-0">
+                                  <span className="text-sm font-bold text-white">{data.target_content.author.full_name.charAt(0)}</span>
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-[#8a6d1c] uppercase tracking-wider">{t('rpt.detail.journalAuthor')}</p>
+                                <p className="font-medium text-gray-900 truncate text-sm">{data.target_content.author.full_name}</p>
+                                <p className="text-xs text-gray-500 truncate">{data.target_content.author.email}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className={`gap-1 rounded-full text-xs font-semibold shrink-0 ${data.target_content.visibility === 'public' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                              {data.target_content.visibility === 'public' ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                              {data.target_content.visibility === 'public' ? t('rpt.detail.journalPublic') : t('rpt.detail.journalPrivate')}
+                            </Badge>
+                          </div>
                         </div>
+
+                        {data.target_content.title && (
+                          <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                            <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postTitle')}</p>
+                            <p className="text-sm font-bold text-slate-900">{data.target_content.title}</p>
+                          </div>
+                        )}
+
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                            <BookOpen className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.journalContent')}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{data.target_content.content}</p>
+                        </div>
+
+                        <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
                       </div>
-                    ) : null}
+                    )}
+
+                    {/* nearby_place_review */}
+                    {isReportNearbyPlaceReviewTarget(data.target_content) && (
+                      <div className="space-y-3">
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase text-slate-400 mb-2">{t('rpt.detail.reviewRating')}</p>
+                              <div className="flex items-center gap-2">
+                                <StarRating value={data.target_content.rating} />
+                                <span className="text-xl font-bold tabular-nums text-slate-800">{data.target_content.rating}</span>
+                                <span className="text-xs font-semibold text-slate-400">/5</span>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase text-slate-400 mb-2">{t('rpt.detail.postActive')}</p>
+                              <Badge variant="outline" className={`gap-1 rounded-full text-xs font-semibold ${data.target_content.is_active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                                {data.target_content.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                {data.target_content.is_active ? t('common.active') : t('common.inactive')}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <PersonCard
+                          name={data.target_content.reviewer.full_name}
+                          email={data.target_content.reviewer.email}
+                          avatarUrl={data.target_content.reviewer.avatar_url}
+                          roleLabel={t('rpt.detail.reviewReviewer')}
+                        />
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                            <MapPin className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.nearbyComment')}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{data.target_content.comment}</p>
+                        </div>
+                        <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
+                      </div>
+                    )}
+
+                    {/* Fallback: unknown target types */}
+                    {!isReportSiteReviewTarget(data.target_content)
+                      && !isReportPostTarget(data.target_content)
+                      && !isReportCommentTarget(data.target_content)
+                      && !isReportJournalTarget(data.target_content)
+                      && !isReportNearbyPlaceReviewTarget(data.target_content)
+                      && (
+                        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                          <pre className="max-h-40 overflow-auto text-xs text-slate-600 leading-relaxed whitespace-pre-wrap break-words">
+                            {JSON.stringify(data.target_content, null, 2)}
+                          </pre>
+                        </div>
+                      )}
                   </div>
-                </SectionCard>
-              ) : null}
+                )}
 
-              {data.target_content && !isReportSiteReviewTarget(data.target_content) ? (
-                <SectionCard icon={Target} title={t('rpt.detail.targetContent')}>
-                  <pre className="max-h-56 overflow-auto rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
-                    {JSON.stringify(data.target_content, null, 2)}
-                  </pre>
-                </SectionCard>
-              ) : null}
+                {/* ── Timestamps ── */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#f5f3ee] rounded-xl p-3.5">
+                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span className="text-xs font-medium">{t('rpt.col.date')}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700">{formatDate(data.created_at)}</p>
+                  </div>
+                  <div className="bg-[#f5f3ee] rounded-xl p-3.5">
+                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="text-xs font-medium">{t('rpt.detail.updatedAt')}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700">{formatDate(data.updated_at)}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ─── Footer ─── */}
+          {!loading && data && (
+            <div className="p-4 border-t border-slate-200 flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                {t('rpt.detail.close')}
+              </Button>
             </div>
-          ) : (
-            <div className="py-14 text-center text-sm text-slate-500">{t('rpt.detail.loadError')}</div>
           )}
-        </div>
+        </DialogContent>
+      </Dialog>
 
-        <DialogFooter className="shrink-0 border-t border-slate-200/90 bg-slate-50/90 px-5 py-4 sm:px-6">
-          <Button
-            type="button"
-            className="w-full bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] font-semibold text-white shadow-sm hover:from-[#735a18] hover:to-[#c9a227] sm:w-auto"
-            onClick={handleClose}
-          >
-            {t('rpt.detail.close')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <ImagePreviewDialog
-      open={!!previewImageUrl}
-      onOpenChange={(next) => {
-        if (!next) setPreviewImageUrl(null);
-      }}
-      src={previewImageUrl}
-    />
+      {/* Image preview overlay */}
+      <ImagePreviewDialog
+        open={!!previewImageUrl}
+        onOpenChange={(o) => { if (!o) setPreviewImageUrl(null); }}
+        src={previewImageUrl}
+      />
     </>
   );
 };

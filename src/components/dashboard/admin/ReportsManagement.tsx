@@ -199,6 +199,7 @@ export const ReportsManagement: React.FC = () => {
                   <SelectItem value="pending">{t('rpt.status.pending')}</SelectItem>
                   <SelectItem value="resolved">{t('rpt.status.resolved')}</SelectItem>
                   <SelectItem value="reject">{t('rpt.status.reject')}</SelectItem>
+                  <SelectItem value="cancelled">{t('rpt.status.cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

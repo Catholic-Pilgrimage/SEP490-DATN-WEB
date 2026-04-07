@@ -948,9 +948,9 @@ export interface WalletEscrowListData {
 // ============ REPORT TYPES ============
 
 /** Trạng thái trên từng báo cáo (có thể có dismissed từ dữ liệu cũ) */
-export type ReportStatus = 'pending' | 'resolved' | 'dismissed' | 'reject';
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed' | 'reject' | 'cancelled';
 /** GET /api/reports — query `status` (theo BE) */
-export type ReportQueryStatus = 'pending' | 'resolved' | 'reject';
+export type ReportQueryStatus = 'pending' | 'resolved' | 'reject' | 'cancelled';
 export type ReportTargetType =
     | 'post'
     | 'comment'
@@ -1005,6 +1005,84 @@ export interface ReportSiteReviewTargetContent {
     reviewer: Reporter;
 }
 
+/** Tác giả nội dung bị báo cáo */
+export interface ReportContentAuthor {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url: string | null;
+}
+
+/** Nội dung bài viết khi target_type = post (GET /api/reports/:id) */
+export interface ReportPostTargetContent {
+    id: string;
+    user_id: string;
+    content: string;
+    title: string | null;
+    image_urls: string[];
+    audio_url: string | null;
+    video_url: string | null;
+    likes_count: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    journal_id: string | null;
+    site_id: string | null;
+    planner_id: string | null;
+    is_active: boolean;
+    author: ReportContentAuthor;
+}
+
+/** Nội dung bình luận khi target_type = comment (GET /api/reports/:id) */
+export interface ReportCommentTargetContent {
+    id: string;
+    user_id: string;
+    post_id: string;
+    content: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    author: ReportContentAuthor;
+}
+
+/** Nội dung nhật ký khi target_type = journal (GET /api/reports/:id) */
+export interface ReportJournalTargetContent {
+    id: string;
+    user_id: string;
+    title: string | null;
+    content: string;
+    image_urls: string[];
+    visibility: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    author: ReportContentAuthor;
+}
+
+/** Nội dung đánh giá điểm lân cận khi target_type = nearby_place_review (GET /api/reports/:id) */
+export interface ReportNearbyPlaceReviewTargetContent {
+    id: string;
+    nearby_place_id: string;
+    user_id: string;
+    rating: number;
+    comment: string;
+    image_urls: string[];
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    reviewer: Reporter;
+}
+
+/** Union type cho tất cả target_content */
+export type ReportTargetContent =
+    | ReportSiteReviewTargetContent
+    | ReportPostTargetContent
+    | ReportCommentTargetContent
+    | ReportJournalTargetContent
+    | ReportNearbyPlaceReviewTargetContent
+    | Record<string, unknown>
+    | null;
+
 /** GET /api/reports/:id — data */
 export interface ReportDetail {
     id: string;
@@ -1017,21 +1095,71 @@ export interface ReportDetail {
     status: string;
     admin_note: string | null;
     resolved_by: string | null;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
     reporter: Reporter;
     resolver: Resolver | null;
-    target_content: ReportSiteReviewTargetContent | Record<string, unknown> | null;
+    target_content: ReportTargetContent;
 }
 
 export function isReportSiteReviewTarget(
-    content: ReportSiteReviewTargetContent | Record<string, unknown> | null | undefined
+    content: ReportTargetContent | undefined
 ): content is ReportSiteReviewTargetContent {
     return (
         !!content &&
         typeof content === 'object' &&
         'rating' in content &&
         'feedback' in content &&
+        'reviewer' in content
+    );
+}
+
+export function isReportPostTarget(
+    content: ReportTargetContent | undefined
+): content is ReportPostTargetContent {
+    return (
+        !!content &&
+        typeof content === 'object' &&
+        'content' in content &&
+        'likes_count' in content &&
+        'author' in content
+    );
+}
+
+export function isReportCommentTarget(
+    content: ReportTargetContent | undefined
+): content is ReportCommentTargetContent {
+    return (
+        !!content &&
+        typeof content === 'object' &&
+        'post_id' in content &&
+        'content' in content &&
+        'author' in content
+    );
+}
+
+export function isReportJournalTarget(
+    content: ReportTargetContent | undefined
+): content is ReportJournalTargetContent {
+    return (
+        !!content &&
+        typeof content === 'object' &&
+        'visibility' in content &&
+        'content' in content &&
+        'author' in content
+    );
+}
+
+export function isReportNearbyPlaceReviewTarget(
+    content: ReportTargetContent | undefined
+): content is ReportNearbyPlaceReviewTargetContent {
+    return (
+        !!content &&
+        typeof content === 'object' &&
+        'nearby_place_id' in content &&
+        'rating' in content &&
+        'comment' in content &&
         'reviewer' in content
     );
 }
