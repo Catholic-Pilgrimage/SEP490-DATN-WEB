@@ -668,6 +668,9 @@ export class AdminService {
         if (params.status) {
             queryParams.append('status', params.status);
         }
+        if (params.time_state) {
+            queryParams.append('time_state', params.time_state);
+        }
 
         const queryString = queryParams.toString();
         const endpoint = queryString

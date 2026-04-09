@@ -181,7 +181,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
     // ============ HELPERS ============
     const getReviewerInfo = () => {
-        if (currentEvent?.reviewer) return currentEvent.reviewer;
+        if (currentEvent?.eventReviewer) return currentEvent.eventReviewer;
         try {
             const userStr = localStorage.getItem('user');
             if (userStr) {

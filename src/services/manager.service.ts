@@ -579,6 +579,7 @@ export class ManagerService {
         if (params.page) queryParams.append('page', params.page.toString());
         if (params.limit) queryParams.append('limit', params.limit.toString());
         if (params.status) queryParams.append('status', params.status);
+        if (params.time_state) queryParams.append('time_state', params.time_state);
         if (params.is_active !== undefined) {
             queryParams.append('is_active', params.is_active.toString());
         }

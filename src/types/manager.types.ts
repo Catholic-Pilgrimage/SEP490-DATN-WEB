@@ -415,6 +415,9 @@ export type ToggleScheduleActiveResponse = Schedule;
 // EVENT MANAGEMENT TYPES
 // =====================================================================
 
+// Trạng thái thời gian của sự kiện
+export type TimeState = 'upcoming' | 'ongoing' | 'ended';
+
 // GET /api/manager/content/events - Response item
 // Mỗi event là một sự kiện của site
 export interface Event {
@@ -429,14 +432,18 @@ export interface Event {
     end_time: string;         // "22:00:00"
     location: string;
     banner_url: string | null;
+    category: string;         // 'solemn_feast' | 'sacrament_mass' | 'course' | ...
+    time_state: TimeState;    // 'upcoming' | 'ongoing' | 'ended'
     status: ContentStatus;
     rejection_reason: string | null;
     is_active: boolean;
     created_by: string;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
     created_at: string;
     updated_at: string;
     creator?: ContentCreator;
-    reviewer?: ContentCreator;
+    eventReviewer?: ContentCreator | null;
 }
 
 // GET /api/manager/content/events - Query params
@@ -444,6 +451,7 @@ export interface EventListParams {
     page?: number;
     limit?: number;
     status?: ContentStatus;
+    time_state?: TimeState;   // Lọc theo trạng thái thời gian
     is_active?: boolean;
 }
 

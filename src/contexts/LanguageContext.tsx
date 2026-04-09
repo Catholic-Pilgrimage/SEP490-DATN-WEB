@@ -497,6 +497,10 @@ const translations: Record<Language, Record<string, string>> = {
         'event.location': 'Địa điểm',
         'event.banner': 'Banner',
         'event.openBanner': 'Mở banner trong tab mới',
+        'event.allTimeState': 'Tất cả thời gian',
+        'event.upcoming': 'Sắp diễn ra',
+        'event.ongoing': 'Đang diễn ra',
+        'event.ended': 'Đã kết thúc',
 
         // Nearby Place Content
         'nearby.title': 'Địa điểm lân cận',
@@ -1606,6 +1610,10 @@ const translations: Record<Language, Record<string, string>> = {
         'event.location': 'Location',
         'event.banner': 'Banner',
         'event.openBanner': 'Open banner in new tab',
+        'event.allTimeState': 'All time states',
+        'event.upcoming': 'Upcoming',
+        'event.ongoing': 'Ongoing',
+        'event.ended': 'Ended',
 
         // Nearby Place Content
         'nearby.title': 'Nearby Places',

@@ -410,6 +410,7 @@ export interface SiteSchedulesResponse {
 
 // Event status
 export type EventStatus = 'pending' | 'approved' | 'rejected';
+export type EventTimeState = 'upcoming' | 'ongoing' | 'ended';
 
 // Event item in site
 export interface SiteEvent {
@@ -424,10 +425,14 @@ export interface SiteEvent {
     end_time: string; // HH:mm:ss
     location: string | null;
     banner_url: string | null;
+    category: string; // 'solemn_feast' | 'sacrament_mass' | 'retreat' | ...
+    time_state: EventTimeState; // 'upcoming' | 'ongoing' | 'ended'
     status: EventStatus;
     rejection_reason: string | null;
     is_active: boolean;
     created_by: string;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
     created_at: string;
     updated_at: string;
     creator: MediaCreator;
@@ -438,6 +443,7 @@ export interface SiteEventsParams {
     page?: number;
     limit?: number;
     status?: EventStatus;
+    time_state?: EventTimeState;
 }
 
 // GET /api/admin/sites/{siteId}/events - Response

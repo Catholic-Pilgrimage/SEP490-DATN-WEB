@@ -17,7 +17,7 @@ import {
     Sparkles
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
-import { Event, ContentStatus } from '../../../types/manager.types';
+import { Event, ContentStatus, TimeState } from '../../../types/manager.types';
 import { EventDetailModal } from './EventDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
@@ -55,6 +55,7 @@ export const EventContent: React.FC = () => {
     // Filters
     const [statusFilter, setStatusFilter] = useState<ContentStatus | ''>('');
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
+    const [timeStateFilter, setTimeStateFilter] = useState<TimeState | ''>('');
 
     // Selected event for detail modal
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -70,6 +71,7 @@ export const EventContent: React.FC = () => {
                 page: currentPage,
                 limit,
                 status: statusFilter || undefined,
+                time_state: timeStateFilter || undefined,
                 is_active: activeFilter
             });
 
@@ -87,7 +89,7 @@ export const EventContent: React.FC = () => {
             setLoading(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage, limit, statusFilter, activeFilter]);
+    }, [currentPage, limit, statusFilter, timeStateFilter, activeFilter]);
 
     useEffect(() => {
         fetchEventList();
@@ -183,6 +185,24 @@ export const EventContent: React.FC = () => {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    <Select
+                        value={timeStateFilter === '' ? 'all' : timeStateFilter}
+                        onValueChange={(v) => {
+                            setTimeStateFilter(v === 'all' ? '' : (v as TimeState));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="h-9 w-[min(100vw-4rem,200px)] rounded-xl border-[#d4af37]/30 bg-[#f5f3ee] text-slate-700 focus:ring-[#d4af37] sm:w-[200px]">
+                            <SelectValue placeholder={t('event.allTimeState')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('event.allTimeState')}</SelectItem>
+                            <SelectItem value="upcoming">{t('event.upcoming')}</SelectItem>
+                            <SelectItem value="ongoing">{t('event.ongoing')}</SelectItem>
+                            <SelectItem value="ended">{t('event.ended')}</SelectItem>
+                        </SelectContent>
+                    </Select>
 
                     <Select
                         value={activeFilter === undefined ? 'all' : activeFilter ? 'true' : 'false'}
