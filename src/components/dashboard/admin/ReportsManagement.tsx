@@ -54,7 +54,7 @@ export const ReportsManagement: React.FC = () => {
   const limit = 10;
 
   const [resolvingReport, setResolvingReport] = useState<Report | null>(null);
-  const [resolveAction, setResolveAction] = useState<'resolved' | 'dismissed'>('resolved');
+  const [resolveAction, setResolveAction] = useState<'resolved' | 'reject'>('resolved');
   const [resolveNote, setResolveNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -115,6 +115,13 @@ export const ReportsManagement: React.FC = () => {
 
   const handleResolveSubmit = async () => {
     if (!resolvingReport) return;
+    
+    // Validate: note is required when rejecting
+    if (resolveAction === 'reject' && !resolveNote.trim()) {
+      showToast('error', tRef.current('rpt.title'), 'Note is required when rejecting a report');
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const response = await AdminService.resolveReport(resolvingReport.id, {
@@ -448,12 +455,12 @@ export const ReportsManagement: React.FC = () => {
                       type="radio"
                       className="peer sr-only"
                       name="resolveAction"
-                      checked={resolveAction === 'dismissed'}
-                      onChange={() => setResolveAction('dismissed')}
+                      checked={resolveAction === 'reject'}
+                      onChange={() => setResolveAction('reject')}
                     />
-                    <div className="p-3 text-center border rounded-xl cursor-pointer transition-all peer-checked:border-slate-500 peer-checked:bg-slate-50 peer-checked:text-slate-700 text-slate-600 hover:bg-slate-50">
+                    <div className="p-3 text-center border rounded-xl cursor-pointer transition-all peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 text-slate-600 hover:bg-slate-50">
                       <XCircle className="w-5 h-5 mx-auto mb-1 opacity-70" />
-                      <span className="text-sm font-medium">{t('rpt.modal.actionDismissed')}</span>
+                      <span className="text-sm font-medium">{t('rpt.modal.actionRejected')}</span>
                     </div>
                   </label>
                 </div>

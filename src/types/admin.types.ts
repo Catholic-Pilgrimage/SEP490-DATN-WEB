@@ -1191,6 +1191,7 @@ export interface ReportListData {
 
 // PATCH /api/reports/:id/resolve - Request Body
 export interface ResolveReportBody {
-    action: 'resolved' | 'dismissed';
+    action: 'resolved' | 'reject';
     note?: string;
+    penalty?: any;
 }
