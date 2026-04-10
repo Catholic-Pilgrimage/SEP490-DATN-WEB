@@ -19,6 +19,7 @@ import { UserDetailModal } from './UserDetailModal';
 import { UserEditModal } from './UserEditModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 // shadcn/ui components
 import {
@@ -115,10 +116,10 @@ export const UserManagement: React.FC = () => {
         setUsers(response.data.users);
         setPagination(response.data.pagination);
       } else {
-        setError(response.message || 'Failed to load users');
+        setError(response.message || t('users.loadFailed'));
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load users';
+      const message = extractErrorMessage(error, t('users.loadFailed'));
       setError(message);
     } finally {
       setLoading(false);
@@ -189,13 +190,12 @@ export const UserManagement: React.FC = () => {
         showToast('success', newStatus === 'active' ? t('toast.unbanUserSuccess') : t('toast.banUserSuccess'));
         fetchUsers(); // Refresh list
       } else {
-        showToast('error', newStatus === 'active' ? t('toast.unbanUserFailed') : t('toast.banUserFailed'), response.message);
-        setError(response.message || 'Failed to update status');
+        const errorMsg = response.message || t('users.statusUpdateFailed');
+        showToast('error', newStatus === 'active' ? t('toast.unbanUserFailed') : t('toast.banUserFailed'), errorMsg);
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update status';
+      const message = extractErrorMessage(error, t('users.statusUpdateFailed'));
       showToast('error', t('common.error'), message);
-      setError(message);
     } finally {
       setStatusLoading(false);
       setIsConfirmOpen(false);

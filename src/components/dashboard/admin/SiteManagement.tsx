@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { extractErrorMessage } from '../../../lib/utils';
 import {
   Search,
   Filter,
@@ -504,12 +505,10 @@ export const SiteManagement: React.FC = () => {
                                   fetchSites();
                                 } else {
                                   showToast('error', t('toast.restoreSiteFailed'), response.message || t('toast.restoreSiteFailedMsg'));
-                                  setError(response.message || 'Failed to restore site');
                                 }
                               } catch (error) {
-                                const message = error instanceof Error ? error.message : t('toast.restoreSiteFailedMsg');
+                                const message = extractErrorMessage(error, t('toast.restoreSiteFailedMsg'));
                                 showToast('error', t('toast.restoreSiteFailed'), message);
-                                setError(message);
                               } finally {
                                 setRestoreLoading(null);
                               }
@@ -689,12 +688,10 @@ export const SiteManagement: React.FC = () => {
                           fetchSites();
                         } else {
                           showToast('error', t('toast.deleteSiteFailed'), response.message || t('toast.deleteSiteFailedMsg'));
-                          setError(response.message || 'Failed to delete site');
                         }
                       } catch (error) {
-                        const message = error instanceof Error ? error.message : t('toast.deleteSiteFailedMsg');
+                        const message = extractErrorMessage(error, t('toast.deleteSiteFailedMsg'));
                         showToast('error', t('toast.deleteSiteFailed'), message);
-                        setError(message);
                       } finally {
                         setDeleteLoading(false);
                         setIsDeleteConfirmOpen(false);

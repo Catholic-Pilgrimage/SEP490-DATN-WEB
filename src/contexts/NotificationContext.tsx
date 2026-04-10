@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import type { Notification } from '../types/notification.types';
 import { WebSocketService } from '../services/websocket.service';
 import { NotificationService } from '../services/notification.service';
@@ -83,6 +83,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         audio.play().catch(e => console.log('Cannot play notification sound:', e));
     }, []);
 
+    // Track previous connection status to avoid spam logs
+    const prevConnectedRef = useRef<boolean | null>(null);
+
     // Initialize WebSocket connection
     useEffect(() => {
         console.log('🔌 Initializing WebSocket connection...');
@@ -90,10 +93,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         // Connect to WebSocket
         WebSocketService.connect();
 
-        // Check connection status periodically
+        // Check connection status periodically — only log on change
         const checkConnection = () => {
             const connected = WebSocketService.isConnected();
-            console.log('WebSocket status:', connected ? 'Connected' : 'Disconnected');
+            if (prevConnectedRef.current !== connected) {
+                console.log('WebSocket status:', connected ? 'Connected' : 'Disconnected');
+                prevConnectedRef.current = connected;
+            }
             setIsConnected(connected);
         };
 

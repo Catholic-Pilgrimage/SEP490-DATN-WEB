@@ -165,7 +165,6 @@ export const LocalGuides: React.FC = () => {
         try {
             setTogglingId(guideToToggle.id);
             setIsConfirmOpen(false);
-            setError(null);
 
             const response = await ManagerService.updateLocalGuideStatus(
                 guideToToggle.id,
@@ -176,11 +175,11 @@ export const LocalGuides: React.FC = () => {
                 showToast('success', t('localGuides.updateSuccess'));
                 fetchLocalGuides();
             } else {
-                setError(response.message || t('localGuides.updateError'));
+                showToast('error', t('localGuides.updateError'), response.message || t('localGuides.updateError'));
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : t('localGuides.updateError');
-            setError(message);
+            showToast('error', t('localGuides.updateError'), message);
         } finally {
             setTogglingId(null);
             setGuideToToggle(null);

@@ -118,6 +118,8 @@ const translations: Record<Language, Record<string, string>> = {
         'users.to': 'đến',
         'users.of': 'trong tổng số',
         'users.users': 'người dùng',
+        'users.loadFailed': 'Không thể tải danh sách người dùng',
+        'users.statusUpdateFailed': 'Không thể cập nhật trạng thái người dùng',
 
         // Verification Requests
         'verification.title': 'Yêu cầu xác thực',
@@ -1231,6 +1233,8 @@ const translations: Record<Language, Record<string, string>> = {
         'users.to': 'to',
         'users.of': 'of',
         'users.users': 'users',
+        'users.loadFailed': 'Failed to load users',
+        'users.statusUpdateFailed': 'Failed to update user status',
 
         // Verification Requests
         'verification.title': 'Verification Requests',
