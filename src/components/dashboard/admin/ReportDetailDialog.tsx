@@ -260,6 +260,44 @@ function ImageGrid({ urls, onPreview, viewLabel }: {
   );
 }
 
+/** Audio/Video component */
+function AudioVideoGrid({ audioUrl, videoUrl }: {
+  audioUrl?: string | null;
+  videoUrl?: string | null;
+}) {
+  if (!audioUrl && !videoUrl) return null;
+  return (
+    <div className="space-y-2.5">
+      {audioUrl && (
+        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+          <div className="flex items-center gap-2 text-[#8a6d1c] mb-3">
+            <Volume2 className="w-4 h-4" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Audio</span>
+          </div>
+          <audio
+            src={audioUrl}
+            controls
+            className="w-full rounded-lg"
+          />
+        </div>
+      )}
+      {videoUrl && (
+        <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+          <div className="flex items-center gap-2 text-[#8a6d1c] mb-3">
+            <Video className="w-4 h-4" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Video</span>
+          </div>
+          <video
+            src={videoUrl}
+            controls
+            className="w-full rounded-lg bg-black"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────
 
 export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
@@ -525,6 +563,7 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
                         </div>
 
                         <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
+                        <AudioVideoGrid audioUrl={data.target_content.audio_url} videoUrl={data.target_content.video_url} />
                       </div>
                     )}
 
@@ -606,6 +645,7 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
                         </div>
 
                         <ImageGrid urls={data.target_content.image_urls} onPreview={setPreviewImageUrl} viewLabel={t('rpt.detail.reviewImages')} />
+                        <AudioVideoGrid audioUrl={data.target_content.audio_url} videoUrl={data.target_content.video_url} />
                       </div>
                     )}
 
