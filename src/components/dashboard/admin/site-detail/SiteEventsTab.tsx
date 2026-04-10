@@ -67,7 +67,7 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
         } finally {
             setLoading(false);
         }
-    }, [siteId, currentPage, limit, statusFilter, timeStateFilter]);
+    }, [siteId, currentPage, limit, statusFilter, timeStateFilter, t]);
 
     useEffect(() => {
         fetchData();

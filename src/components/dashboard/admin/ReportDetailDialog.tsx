@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import {
   Loader2,
   X,
-  Hash,
   CalendarDays,
   Clock,
   FileText,
@@ -151,6 +150,10 @@ export function getReportReasonLabel(reason: string, t: (k: string) => string) {
     inappropriate: t('rpt.reason.inappropriate'),
     harassment: t('rpt.reason.harassment'),
     misinformation: t('rpt.reason.misinformation'),
+    hate_speech: t('rpt.reason.hate_speech'),
+    scam: t('rpt.reason.scam'),
+    violence: t('rpt.reason.violence'),
+    false_information: t('rpt.reason.false_information'),
     other: t('rpt.reason.other'),
   };
   return labels[reason] || reason;
@@ -180,24 +183,7 @@ function StarRating({ value }: { value: number }) {
   );
 }
 
-/** Reusable info row — icon box + label/value */
-function InfoRow({ icon: Icon, label, children }: {
-  icon: React.ElementType;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3 py-2.5">
-      <div className="p-2 bg-[#f5f3ee] rounded-lg mt-0.5 shrink-0">
-        <Icon className="w-4 h-4 text-[#8a6d1c]" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs text-slate-500">{label}</p>
-        <div className="text-sm font-semibold text-slate-800 mt-0.5">{children}</div>
-      </div>
-    </div>
-  );
-}
+
 
 /** User / person card matching project gold style */
 function PersonCard({ name, email, avatarUrl, roleLabel, roleColor = 'text-[#8a6d1c]', bgClass = 'bg-[#f5f3ee]' }: {
@@ -324,7 +310,7 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogChange}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden border-[#d4af37]/20 rounded-2xl p-0 gap-0 [&>button]:hidden">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden border-[#d4af37]/20 rounded-2xl p-0 gap-0 [&>button]:hidden">
           {/* ─── Header ─── */}
           <DialogHeader className="px-6 py-4 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] shrink-0">
             <div className="flex items-center justify-between gap-4">
@@ -362,62 +348,64 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
 
             {!loading && data && (
               <div className="space-y-5">
-                {/* ── Status badges hero ── */}
-                <div className="bg-gradient-to-br from-[#f5f3ee] to-[#ede8db] rounded-2xl p-5 text-center border border-[#d4af37]/15">
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                {/* ── Status bar + Code ── */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge
                       variant="outline"
-                      className={`gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${getReportStatusStyle(data.status)}`}
+                      className={`gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${getReportStatusStyle(data.status)}`}
                     >
                       {getReportStatusIcon(data.status)}
                       {getReportStatusLabel(data.status, t)}
                     </Badge>
                     <Badge
                       variant="outline"
-                      className={`gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${getReportTargetTypeStyle(data.target_type)}`}
+                      className={`gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${getReportTargetTypeStyle(data.target_type)}`}
                     >
                       {getReportTargetTypeIcon(data.target_type)}
                       {getReportTargetTypeLabel(data.target_type, t)}
                     </Badge>
                     <Badge
                       variant="outline"
-                      className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-rose-50 text-rose-700 border-rose-200"
+                      className="gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold bg-rose-50 text-rose-700 border-rose-200"
                     >
                       <Flag className="w-3 h-3" />
                       {getReportReasonLabel(data.reason, t)}
                     </Badge>
                   </div>
+                  <span className="font-mono text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                    {data.code}
+                  </span>
                 </div>
 
-                {/* ── Report info ── */}
-                <div className="space-y-0.5">
-                  <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
-                    {t('rpt.detail.metaSection')}
-                  </h4>
-
-                  <InfoRow icon={Hash} label={t('rpt.detail.code')}>
-                    <span className="font-mono">{data.code}</span>
-                  </InfoRow>
-                  <hr className="border-slate-100" />
-
-                  <InfoRow icon={CalendarDays} label={t('rpt.col.date')}>
-                    {formatDate(data.created_at)}
-                  </InfoRow>
-                  <hr className="border-slate-100" />
-
-                  <InfoRow icon={Clock} label={t('rpt.detail.updatedAt')}>
-                    {formatDate(data.updated_at)}
-                  </InfoRow>
-
-                  {data.description?.trim() && (
-                    <>
-                      <hr className="border-slate-100" />
-                      <InfoRow icon={FileText} label={t('rpt.col.description')}>
-                        <p className="break-words leading-relaxed whitespace-pre-wrap">{data.description}</p>
-                      </InfoRow>
-                    </>
-                  )}
+                {/* ── Meta grid ── */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#f5f3ee] rounded-xl p-3.5 border border-[#d4af37]/10">
+                    <div className="flex items-center gap-1.5 text-[#8a6d1c] mb-1">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">{t('rpt.col.date')}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800">{formatDate(data.created_at)}</p>
+                  </div>
+                  <div className="bg-[#f5f3ee] rounded-xl p-3.5 border border-[#d4af37]/10">
+                    <div className="flex items-center gap-1.5 text-[#8a6d1c] mb-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">{t('rpt.detail.updatedAt')}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800">{formatDate(data.updated_at)}</p>
+                  </div>
                 </div>
+
+                {/* ── Description ── */}
+                {data.description?.trim() && (
+                  <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                      <FileText className="w-4 h-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.col.description')}</span>
+                    </div>
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.description}</p>
+                  </div>
+                )}
 
                 {/* ── Admin note ── */}
                 {data.admin_note != null && data.admin_note !== '' && (
@@ -431,33 +419,41 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
                 )}
 
                 {/* ── People ── */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <PersonCard
-                    name={data.reporter.full_name}
-                    email={data.reporter.email}
-                    avatarUrl={data.reporter.avatar_url}
-                    roleLabel={t('rpt.col.reporter')}
-                  />
-                  {data.resolver ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="w-4 h-4 text-[#8a6d1c]" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">{t('rpt.col.reporter')} & {t('rpt.col.resolver')}</span>
+                    <div className="flex-1 border-t border-[#d4af37]/15" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <PersonCard
-                      name={data.resolver.full_name}
-                      email={data.resolver.email}
-                      roleLabel={t('rpt.col.resolver')}
-                      bgClass="bg-[#d4af37]/10"
+                      name={data.reporter.full_name}
+                      email={data.reporter.email}
+                      avatarUrl={data.reporter.avatar_url}
+                      roleLabel={t('rpt.col.reporter')}
                     />
-                  ) : (
-                    <div className="flex items-center justify-center rounded-xl border border-dashed border-[#d4af37]/30 bg-[#faf8f4]/50 p-4 text-center">
-                      <p className="text-xs text-slate-400">{t('rpt.detail.noResolver')}</p>
-                    </div>
-                  )}
+                    {data.resolver ? (
+                      <PersonCard
+                        name={data.resolver.full_name}
+                        email={data.resolver.email}
+                        roleLabel={t('rpt.col.resolver')}
+                        bgClass="bg-[#d4af37]/10"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center rounded-xl border border-dashed border-[#d4af37]/30 bg-[#faf8f4]/50 p-4 text-center">
+                        <p className="text-xs text-slate-400">{t('rpt.detail.noResolver')}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* ── Target content ── */}
                 {data.target_content && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-[#8a6d1c]">
-                      <Target className="w-4 h-4" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">{t('rpt.detail.targetContent')}</span>
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-[#8a6d1c]" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-[#8a6d1c]">{t('rpt.detail.targetContent')}</span>
+                      <div className="flex-1 border-t border-[#d4af37]/15" />
                     </div>
 
                     {/* site_review */}
@@ -543,7 +539,17 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
                         <div className="grid grid-cols-3 gap-2.5">
                           <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10">
                             <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postStatus')}</p>
-                            <p className="text-xs font-bold text-slate-800 capitalize">{data.target_content.status}</p>
+                            <p className="text-xs font-bold text-slate-800 capitalize">
+                              {(() => {
+                                const statusLabels: Record<string, string> = {
+                                  published: t('rpt.detail.postStatusPublished'),
+                                  draft: t('rpt.detail.postStatusDraft'),
+                                  archived: t('rpt.detail.postStatusArchived'),
+                                  hidden: t('rpt.detail.postStatusHidden'),
+                                };
+                                return statusLabels[data.target_content.status] || data.target_content.status;
+                              })()}
+                            </p>
                           </div>
                           <div className="bg-white rounded-lg p-2.5 border border-[#d4af37]/10">
                             <p className="text-[10px] font-semibold uppercase text-slate-400 mb-1">{t('rpt.detail.postActive')}</p>
@@ -704,22 +710,16 @@ export const ReportDetailDialog: React.FC<ReportDetailDialogProps> = ({
                   </div>
                 )}
 
-                {/* ── Timestamps ── */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#f5f3ee] rounded-xl p-3.5">
-                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
-                      <CalendarDays className="w-3.5 h-3.5" />
-                      <span className="text-xs font-medium">{t('rpt.col.date')}</span>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-700">{formatDate(data.created_at)}</p>
-                  </div>
-                  <div className="bg-[#f5f3ee] rounded-xl p-3.5">
-                    <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className="text-xs font-medium">{t('rpt.detail.updatedAt')}</span>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-700">{formatDate(data.updated_at)}</p>
-                  </div>
+                {/* ── Footer timestamps ── */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <CalendarDays className="w-3 h-3" />
+                    {t('rpt.col.date')}: {formatDate(data.created_at)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" />
+                    {t('rpt.detail.updatedAt')}: {formatDate(data.updated_at)}
+                  </span>
                 </div>
               </div>
             )}

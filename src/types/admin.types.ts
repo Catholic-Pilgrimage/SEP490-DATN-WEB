@@ -1058,6 +1058,8 @@ export interface ReportJournalTargetContent {
     title: string | null;
     content: string;
     image_urls: string[];
+    audio_url: string | null;
+    video_url: string | null;
     visibility: string;
     is_active: boolean;
     created_at: string;
@@ -1193,5 +1195,5 @@ export interface ReportListData {
 export interface ResolveReportBody {
     action: 'resolved' | 'reject';
     note?: string;
-    penalty?: any;
+    penalty?: unknown;
 }

@@ -239,108 +239,125 @@ export const ReportsManagement: React.FC = () => {
       </div>
 
       {/* Table Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#d4af37]/20 overflow-hidden">
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-[#f5f3ee]/50">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.reporter')}</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.targetType')}</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.reason')}</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.description')}</th>
-                <th className="text-center px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.status')}</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.resolver')}</th>
-                <th className="text-center px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('rpt.col.actions')}</th>
+              <tr className="bg-gradient-to-r from-[#f5f3ee] to-[#ede8db] border-b-2 border-[#d4af37]/20">
+                <th className="text-left px-5 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.reporter')}</th>
+                <th className="text-left px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.targetType')}</th>
+                <th className="text-left px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.reason')}</th>
+                <th className="text-left px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.description')}</th>
+                <th className="text-center px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.status')}</th>
+                <th className="text-left px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.resolver')}</th>
+                <th className="text-center px-4 py-3.5 text-[11px] font-bold text-[#8a6d1c] uppercase tracking-widest">{t('rpt.col.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 [...Array(5)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(7)].map((__, j) => (
-                      <td key={j} className="px-6 py-4">
-                        <div className="h-4 bg-slate-100 rounded animate-pulse" style={{ width: `${50 + Math.random() * 50}%` }} />
-                      </td>
-                    ))}
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-slate-100 rounded-full" />
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 bg-slate-100 rounded w-20" />
+                          <div className="h-2.5 bg-slate-50 rounded w-28" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4"><div className="h-6 bg-slate-100 rounded-full w-16" /></td>
+                    <td className="px-4 py-4"><div className="h-6 bg-slate-100 rounded-full w-20" /></td>
+                    <td className="px-4 py-4"><div className="h-3.5 bg-slate-100 rounded w-32" /></td>
+                    <td className="px-4 py-4 text-center"><div className="h-6 bg-slate-100 rounded-full w-16 mx-auto" /></td>
+                    <td className="px-4 py-4"><div className="h-3.5 bg-slate-100 rounded w-24" /></td>
+                    <td className="px-4 py-4"><div className="h-7 bg-slate-100 rounded-lg w-20 mx-auto" /></td>
                   </tr>
                 ))
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <Flag className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-                    <p className="text-sm font-medium text-slate-500">{t('rpt.noData')}</p>
+                  <td colSpan={7} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full bg-[#f5f3ee] flex items-center justify-center mb-4">
+                        <Flag className="w-7 h-7 text-[#d4af37]/60" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-500">{t('rpt.noData')}</p>
+                      <p className="text-xs text-slate-400 mt-1">{statusFilter || targetTypeFilter ? t('common.adjustFilters') || 'Thử thay đổi bộ lọc' : ''}</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 reports.map((rpt) => (
-                  <tr key={rpt.id} className="hover:bg-[#f5f3ee]/50 transition-colors">
+                  <tr key={rpt.id} className="group hover:bg-[#f5f3ee]/40 transition-all duration-200 border-l-2 border-l-transparent hover:border-l-[#d4af37]">
                     {/* Reporter */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
                         {rpt.reporter.avatar_url ? (
-                          <img src={rpt.reporter.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                          <img src={rpt.reporter.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#d4af37]/20 group-hover:border-[#d4af37]/40 transition-colors" />
                         ) : (
-                          <div className="w-7 h-7 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8a6d1c]/20 to-[#d4af37]/20 border border-[#d4af37]/20 flex items-center justify-center group-hover:from-[#8a6d1c]/30 group-hover:to-[#d4af37]/30 transition-all">
                             <span className="text-xs font-bold text-[#8a6d1c]">{rpt.reporter.full_name.charAt(0)}</span>
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate max-w-[120px]">{rpt.reporter.full_name}</p>
-                          <p className="text-xs text-slate-400 truncate max-w-[120px]">{rpt.reporter.email}</p>
+                          <p className="text-sm font-medium text-slate-900 truncate max-w-[140px]">{rpt.reporter.full_name}</p>
+                          <p className="text-[11px] text-slate-400 truncate max-w-[140px]">{rpt.reporter.email}</p>
                         </div>
                       </div>
                     </td>
                     {/* Target Type */}
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${getReportTargetTypeStyle(rpt.target_type)}`}>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-full border ${getReportTargetTypeStyle(rpt.target_type)}`}>
                         {getReportTargetTypeIcon(rpt.target_type)}
                         {getReportTargetTypeLabel(rpt.target_type, t)}
                       </span>
                     </td>
                     {/* Reason */}
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 rounded-full">
+                    <td className="px-4 py-3.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 rounded-full">
                         <Flag className="w-3 h-3" />
                         {getReportReasonLabel(rpt.reason, t)}
                       </span>
                     </td>
                     {/* Description */}
-                    <td className="px-6 py-4">
-                      <p className="text-xs text-slate-600 max-w-[180px] truncate" title={rpt.description || '—'}>
-                        {rpt.description || <span className="text-slate-400">—</span>}
+                    <td className="px-4 py-3.5">
+                      <p className="text-xs text-slate-600 max-w-[200px] truncate" title={rpt.description || '—'}>
+                        {rpt.description || <span className="text-slate-300 italic">—</span>}
                       </p>
                     </td>
                     {/* Status */}
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border ${getReportStatusStyle(rpt.status)}`}>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-full border ${getReportStatusStyle(rpt.status)}`}>
                         {getReportStatusIcon(rpt.status)}
                         {getReportStatusLabel(rpt.status, t)}
                       </span>
                     </td>
                     {/* Resolver */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3.5">
                       {rpt.resolver ? (
-                        <div className="flex min-w-[10rem] items-start gap-2">
-                          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                        <div className="flex min-w-[9rem] items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                            <Shield className="h-3 w-3 text-emerald-600" />
+                          </div>
                           <p
-                            className="break-words text-sm font-medium leading-snug text-slate-900"
+                            className="text-sm font-medium text-slate-800 truncate"
                             title={rpt.resolver.full_name}
                           >
                             {rpt.resolver.full_name}
                           </p>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-400">—</span>
+                        <span className="text-xs text-slate-300">—</span>
                       )}
                     </td>
                     {/* Actions */}
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                    <td className="px-4 py-3.5 text-center">
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => openReportDetail(rpt.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all whitespace-nowrap"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap shadow-sm"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           {t('rpt.action.view')}
@@ -353,7 +370,7 @@ export const ReportsManagement: React.FC = () => {
                               setResolveAction('resolved');
                               setResolveNote('');
                             }}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-lg hover:bg-[#d4af37]/20 transition-all whitespace-nowrap"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium text-white bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] rounded-lg hover:brightness-110 transition-all whitespace-nowrap shadow-sm shadow-[#d4af37]/20"
                           >
                             {t('rpt.action.resolve')}
                           </button>
@@ -369,15 +386,15 @@ export const ReportsManagement: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-            <p className="text-sm text-slate-500">
-              {t('txn.showing')} {((currentPage - 1) * limit) + 1}–{Math.min(currentPage * limit, totalItems)} {t('txn.of')} {totalItems}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#d4af37]/10 bg-[#faf8f4]/50">
+            <p className="text-xs text-slate-500">
+              {t('txn.showing')} <span className="font-semibold text-slate-700">{((currentPage - 1) * limit) + 1}–{Math.min(currentPage * limit, totalItems)}</span> {t('txn.of')} <span className="font-semibold text-slate-700">{totalItems}</span>
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4 text-slate-600" />
               </button>
@@ -386,14 +403,14 @@ export const ReportsManagement: React.FC = () => {
                 .map((page, idx, arr) => (
                   <React.Fragment key={page}>
                     {idx > 0 && arr[idx - 1] !== page - 1 && (
-                      <span className="px-1 text-slate-400">…</span>
+                      <span className="px-1 text-slate-400 text-xs">…</span>
                     )}
                     <button
                       onClick={() => handlePageChange(page)}
-                      className={`w-8 h-8 text-sm font-medium rounded-lg transition-colors ${
+                      className={`w-8 h-8 text-xs font-semibold rounded-lg transition-all ${
                         page === currentPage
-                          ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm'
-                          : 'text-slate-600 hover:bg-slate-100'
+                          ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white shadow-sm shadow-[#d4af37]/20'
+                          : 'text-slate-600 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200'
                       }`}
                     >
                       {page}
@@ -403,7 +420,7 @@ export const ReportsManagement: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-4 h-4 text-slate-600" />
               </button>
