@@ -124,7 +124,7 @@ export const UserManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, limit, searchDebounce, roleFilter, statusFilter]);
+  }, [currentPage, limit, searchDebounce, roleFilter, statusFilter, t]);
 
   useEffect(() => {
     fetchUsers();
