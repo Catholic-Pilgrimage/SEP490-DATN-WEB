@@ -21,6 +21,7 @@ import { Event, ContentStatus, TimeState } from '../../../types/manager.types';
 import { EventDetailModal } from './EventDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -83,7 +84,7 @@ export const EventContent: React.FC = () => {
                 setError(response.message || t('event.loadError'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('event.loadError');
+            const message = extractErrorMessage(err, t('event.loadError'));
             setError(message);
         } finally {
             setLoading(false);

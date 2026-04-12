@@ -23,6 +23,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Model3DViewer } from '../../shared/Model3DViewer';
 
 interface MediaDetailModalProps {
@@ -133,7 +134,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                 }
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);
@@ -169,7 +170,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                 setActionError(response.message || t('common.error'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);
@@ -218,7 +219,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                 setActionError(response.message || t('common.error'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);
@@ -315,34 +316,34 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     </button>
 
                     {/* Media Preview */}
-                    <div className="relative isolate">
+                    <div className="relative isolate w-full h-[240px] sm:h-[280px] bg-black/20 flex items-center justify-center">
                         {currentMedia.type === 'video' && isYoutubeUrl(currentMedia.url) ? (
-                            <div className="aspect-video relative z-0">
-                                <iframe
-                                    src={getYoutubeEmbedUrl(currentMedia.url) || ''}
-                                    className="w-full h-full"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            </div>
+                            <iframe
+                                src={getYoutubeEmbedUrl(currentMedia.url) || ''}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        ) : currentMedia.type === 'video' && !isYoutubeUrl(currentMedia.url) ? (
+                            <video
+                                src={currentMedia.url}
+                                className="w-full h-full object-contain"
+                                preload="metadata"
+                            />
                         ) : currentMedia.type === 'image' ? (
                             <img
                                 src={currentMedia.url}
                                 alt={currentMedia.caption}
-                                className="relative z-0 w-full max-h-80 object-contain bg-black/20"
+                                className="w-full h-full object-contain"
                             />
                         ) : currentMedia.type === 'model_3d' ? (
-                            <div className="relative z-0">
-                                <Model3DViewer
-                                    src={currentMedia.url}
-                                    alt={currentMedia.caption || '3D Model'}
-                                    className="w-full h-[300px] sm:h-[400px] bg-black/40"
-                                />
-                            </div>
+                            <Model3DViewer
+                                src={currentMedia.url}
+                                alt={currentMedia.caption || '3D Model'}
+                                className="w-full h-full"
+                            />
                         ) : (
-                            <div className="relative z-0 aspect-video flex items-center justify-center">
-                                <Video className="w-16 h-16 text-white/30" />
-                            </div>
+                            <Video className="w-16 h-16 text-white/30" />
                         )}
 
                         {/* Overlay: z-[2] so badges stay above iframe/canvas; extra pb so pills are not clipped */}

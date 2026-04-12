@@ -47,6 +47,7 @@ import {
 import { VerificationDetailModal } from './VerificationDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 export const VerificationRequests: React.FC = () => {
     const { t } = useLanguage();
@@ -98,7 +99,7 @@ export const VerificationRequests: React.FC = () => {
                 setError(response.message || 'Failed to load verification requests');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to load verification requests';
+            const message = extractErrorMessage(error, 'Failed to load verification requests');
             setError(message);
         } finally {
             setLoading(false);

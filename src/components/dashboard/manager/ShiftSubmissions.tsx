@@ -25,6 +25,7 @@ import {
 import { ShiftSubmissionDetailModal } from './ShiftSubmissionDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -245,8 +246,8 @@ export const ShiftSubmissions: React.FC = () => {
 
             setSubmissions(merged);
         } catch (err) {
-            const message = err instanceof Error ? err.message : t('shifts.errorLoad');
-            setError(message);
+            setError(extractErrorMessage(err));
+            setSubmissions([]);
             setSubmissions([]);
         } finally {
             setLoading(false);

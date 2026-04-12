@@ -22,6 +22,7 @@ import { AdminService } from '../../../services/admin.service';
 import { VerificationRequestDetail, VerificationStatus, SiteType, SiteRegion } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 interface VerificationDetailModalProps {
     requestId: string | null;
@@ -70,8 +71,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                 showToast('error', t('common.error'), response.message);
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
-            showToast('error', t('common.error'), message);
+            showToast('error', t('common.error'), extractErrorMessage(error));
         } finally {
             setLoading(false);
         }
@@ -92,8 +92,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                 showToast('error', t('toast.approveFailed'), response.message);
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('toast.approveFailed');
-            showToast('error', t('toast.approveFailed'), message);
+            showToast('error', t('toast.approveFailed'), extractErrorMessage(error));
         } finally {
             setActionLoading(false);
         }
@@ -120,8 +119,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                 showToast('error', t('toast.rejectFailed'), response.message);
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('toast.rejectFailed');
-            showToast('error', t('toast.rejectFailed'), message);
+            showToast('error', t('toast.rejectFailed'), extractErrorMessage(error));
         } finally {
             setActionLoading(false);
         }

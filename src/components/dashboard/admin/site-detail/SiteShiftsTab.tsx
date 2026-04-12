@@ -3,6 +3,7 @@ import { Loader2, Clock, Calendar, User, AlertCircle, Filter } from 'lucide-reac
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteShiftSubmission, SiteShiftsResponse, ShiftSubmissionStatus } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import {
     Select,
     SelectContent,
@@ -55,7 +56,7 @@ export const SiteShiftsTab: React.FC<SiteShiftsTabProps> = ({ siteId }) => {
                 setError(response.message || 'Không thể tải danh sách lịch trực');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách lịch trực';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách lịch trực');
             setError(message);
         } finally {
             setLoading(false);

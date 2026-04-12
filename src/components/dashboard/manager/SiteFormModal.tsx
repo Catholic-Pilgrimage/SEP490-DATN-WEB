@@ -19,6 +19,7 @@ import {
 import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
 import { geocodeAddress } from '@/services/vietmap.service';
 import { ManagerService } from '../../../services/manager.service';
+import { extractErrorMessage } from '../../../lib/utils';
 import { ManagerSite, CreateManagerSiteData, UpdateManagerSiteData } from '../../../types/manager.types';
 import { SiteType, SiteRegion, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -306,7 +307,7 @@ export const SiteFormModal: React.FC<SiteFormModalProps> = ({
                 );
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             showToast('error',
                 mode === 'create' ? t('toast.createSiteFailed') : t('toast.updateSiteFailed'),
                 message

@@ -21,6 +21,7 @@ import { LocalGuide, LocalGuideStatus } from '../../../types/manager.types';
 import { LocalGuideFormModal } from './LocalGuideFormModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -111,8 +112,7 @@ export const LocalGuides: React.FC = () => {
             if (is400) {
                 setError(t('localGuides.errorNoSite'));
             } else {
-                const message = error instanceof Error ? error.message : t('localGuides.errorLoad');
-                setError(message);
+                setError(extractErrorMessage(error));
             }
         } finally {
             setLoading(false);
@@ -178,8 +178,7 @@ export const LocalGuides: React.FC = () => {
                 showToast('error', t('localGuides.updateError'), response.message || t('localGuides.updateError'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('localGuides.updateError');
-            showToast('error', t('localGuides.updateError'), message);
+            showToast('error', t('localGuides.updateError'), extractErrorMessage(error));
         } finally {
             setTogglingId(null);
             setGuideToToggle(null);

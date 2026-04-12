@@ -25,6 +25,8 @@ import { ManagerService } from '../../../services/manager.service';
 import { NearbyPlace, ContentStatus, NearbyPlaceCategory } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
+
 
 interface NearbyPlaceDetailModalProps {
     isOpen: boolean;
@@ -106,7 +108,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                 }
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);
@@ -142,8 +144,7 @@ export const NearbyPlaceDetailModal: React.FC<NearbyPlaceDetailModalProps> = ({
                 setActionError(response.message || t('common.error'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
-            setActionError(message);
+            setActionError(extractErrorMessage(error));
         } finally {
             setActionLoading(false);
         }

@@ -25,6 +25,7 @@ import { MediaViewerModal } from './MediaViewerModal';
 import VietMapView from '../../shared/VietMapView';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 export const MySite: React.FC = () => {
     const { t } = useLanguage();
@@ -69,8 +70,7 @@ export const MySite: React.FC = () => {
                 setSite(null);
                 setHasSite(false);
             } else {
-                const message = error instanceof Error ? error.message : 'Failed to load site';
-                setError(message);
+                setError(extractErrorMessage(error));
             }
         } finally {
             setLoading(false);

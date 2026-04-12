@@ -40,6 +40,7 @@ import {
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { TransactionDetailModal } from './TransactionDetailModal';
 
 export const TransactionsTable: React.FC = () => {
@@ -107,7 +108,7 @@ export const TransactionsTable: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
-      showToast('error', tRef.current('txn.title'), tRef.current('txn.loadError'));
+      showToast('error', tRef.current('txn.title'), extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

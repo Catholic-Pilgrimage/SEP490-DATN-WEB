@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { ManagerService } from '../../../services/manager.service';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Shift, ShiftSubmission } from '../../../types/manager.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -87,7 +88,7 @@ export const TodayShifts: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching today shifts:', err);
-      const msg = err instanceof Error ? err.message : 'Không thể kết nối đến server';
+      const msg = extractErrorMessage(err, 'Không thể kết nối đến server');
       setError(msg);
       showToast('error', 'Lỗi kết nối', 'Không thể tải lịch trực hôm nay. Vui lòng thử lại.');
     } finally {

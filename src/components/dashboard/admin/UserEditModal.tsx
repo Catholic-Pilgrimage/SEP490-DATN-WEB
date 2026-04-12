@@ -9,6 +9,7 @@ import { AdminService } from '../../../services/admin.service';
 import { AdminUser, UpdateUserData } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -123,8 +124,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             }
         } catch (error) {
             console.error('Update user error:', error);
-            const message = error instanceof Error ? error.message : t('common.error');
-            showToast('error', t('common.error'), message);
+            showToast('error', t('common.error'), extractErrorMessage(error));
         } finally {
             setLoading(false);
         }

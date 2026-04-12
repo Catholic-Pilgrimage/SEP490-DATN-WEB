@@ -23,6 +23,7 @@ import { NearbyPlace, ContentStatus, NearbyPlaceCategory } from '../../../types/
 import { NearbyPlaceDetailModal } from './NearbyPlaceDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -85,8 +86,7 @@ export const NearbyPlaceContent: React.FC = () => {
                 setError(response.message || t('nearby.loadError'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('nearby.loadError');
-            setError(message);
+            setError(extractErrorMessage(err));
         } finally {
             setLoading(false);
         }

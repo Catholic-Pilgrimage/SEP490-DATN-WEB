@@ -3,6 +3,7 @@ import { Loader2, X, Image, AlertCircle, Filter, Play, Box } from 'lucide-react'
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteMedia, SiteMediaResponse, MediaStatus, MediaType } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -60,7 +61,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                 setError(response.message || 'Không thể tải danh sách media');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách media';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách media');
             setError(message);
         } finally {
             setLoading(false);

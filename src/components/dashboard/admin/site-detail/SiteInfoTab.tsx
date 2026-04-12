@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, Clock, Calendar, User, BookOpen, Navigation, Exter
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { AdminService } from '../../../../services/admin.service';
 import { SiteDetail, SiteNearbyPlace } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import VietMapView from '../../../../components/shared/VietMapView';
 
 interface SiteInfoTabProps {
@@ -55,7 +56,7 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
                 }
             } catch (error) {
                 if (!cancelled) {
-                    const message = error instanceof Error ? error.message : 'Không thể tải địa điểm lân cận';
+                    const message = extractErrorMessage(error, 'Không thể tải địa điểm lân cận');
                     setNearbyError(message);
                 }
             } finally {

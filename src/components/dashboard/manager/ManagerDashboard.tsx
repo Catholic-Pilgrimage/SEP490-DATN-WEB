@@ -31,6 +31,7 @@ import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TodayShifts } from './TodayShifts';
 import { ManagerChartsSection } from './ManagerChartsSection';
+import { extractErrorMessage } from '../../../lib/utils';
 
 // ─── Period Selector ─────────────────────────────────────────────────────────
 
@@ -319,9 +320,9 @@ export const ManagerDashboard: React.FC = () => {
         }
       } catch (error) {
         console.error('Error fetching manager dashboard:', error);
-        const msg = 'Không thể kết nối đến server. Vui lòng thử lại.';
+        const msg = extractErrorMessage(error);
         if (notifyUser) {
-          showToast('error', 'Lỗi kết nối', msg);
+          showToast('error', 'Lỗi tải dữ liệu', msg);
         } else {
           setFetchError(msg);
         }

@@ -4,6 +4,7 @@
  */
 
 import { VIETMAP_CONFIG } from '@/config/vietmap.config';
+import { extractErrorMessage } from '../lib/utils';
 
 export interface RoutePoint {
   latitude: number;
@@ -83,7 +84,7 @@ export const calculateRoute = async (
     };
   } catch (error) {
     console.error('Calculate route error:', error);
-    const message = error instanceof Error ? error.message : 'Không thể tính toán lộ trình';
+    const message = extractErrorMessage(error, 'Không thể tính toán lộ trình');
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Yêu cầu bị hết thời gian chờ');
     }

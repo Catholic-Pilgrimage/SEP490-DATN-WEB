@@ -1,4 +1,5 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
+import { extractErrorMessage } from '../lib/utils';
 
 // Flag to prevent multiple refresh attempts at the same time
 let isRefreshing = false;
@@ -40,7 +41,7 @@ export class ApiService {
 
                 return false;
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Token refresh failed';
+                const message = extractErrorMessage(error, 'Token refresh failed');
                 console.error('Token refresh failed:', message);
                 return false;
             } finally {

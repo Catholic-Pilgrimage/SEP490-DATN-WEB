@@ -19,6 +19,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
 import { Schedule, ContentStatus } from '../../../types/manager.types';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 interface ScheduleDetailModalProps {
     isOpen: boolean;
@@ -98,8 +99,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 }
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('common.error');
-            setActionError(message);
+            setActionError(extractErrorMessage(err));
         } finally {
             setActionLoading(false);
             setConfirmAction(null);
@@ -134,8 +134,7 @@ export const ScheduleDetailModal: React.FC<ScheduleDetailModalProps> = ({
                 setActionError(response.message || t('common.error'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('common.error');
-            setActionError(message);
+            setActionError(extractErrorMessage(err));
         } finally {
             setActionLoading(false);
         }

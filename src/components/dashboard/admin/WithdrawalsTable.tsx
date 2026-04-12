@@ -24,6 +24,7 @@ import {
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import {
   Select,
   SelectContent,
@@ -72,7 +73,7 @@ export const WithdrawalsTable: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching withdrawals:', err);
-      showToast('error', tRef.current('wd.title'), tRef.current('wd.loadError'));
+      showToast('error', tRef.current('wd.title'), extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

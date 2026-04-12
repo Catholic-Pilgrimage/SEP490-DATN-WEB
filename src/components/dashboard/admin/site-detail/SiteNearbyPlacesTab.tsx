@@ -3,6 +3,7 @@ import { Loader2, MapPin, User, AlertCircle, Filter } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteNearbyPlace, SiteNearbyPlacesResponse, NearbyPlaceStatus, NearbyPlaceCategory } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import {
     Select,
     SelectContent,
@@ -52,7 +53,7 @@ export const SiteNearbyPlacesTab: React.FC<SiteNearbyPlacesTabProps> = ({ siteId
                 setError(response.message || 'Không thể tải danh sách địa điểm lân cận');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách địa điểm lân cận';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách địa điểm lân cận');
             setError(message);
         } finally {
             setLoading(false);

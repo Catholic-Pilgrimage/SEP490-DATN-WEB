@@ -9,12 +9,14 @@ import {
   RefreshCw,
   Filter,
   CalendarIcon,
+  Navigation,
   X
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSOSRequest, SOSStatus, AdminSite, AdminSOSStats } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
@@ -33,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import VietMapView from '@/components/shared/VietMapView';
 
 export const AdminSOSCenter: React.FC = () => {
   const { t } = useLanguage();
@@ -87,7 +90,7 @@ export const AdminSOSCenter: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch SOS data:', error);
       if (isManualRefresh) {
-        showToast('error', t('common.error') || 'Đã xảy ra lỗi');
+        showToast('error', t('common.error') || 'Đã xảy ra lỗi', extractErrorMessage(error));
       }
     } finally {
       setIsLoading(false);
@@ -444,15 +447,42 @@ export const AdminSOSCenter: React.FC = () => {
                         </div>
 
                         {/* Location Col */}
-                        <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
-                          <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
-                            <MapPin className="w-3.5 h-3.5" />
-                            <span>{t('sos.location')}</span>
+                        <div className="bg-[#fbfaf6] p-2 rounded-xl border border-[#d4af37]/15 overflow-hidden">
+                          <div className="flex items-center justify-between px-2 pt-2 mb-2">
+                            <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs">
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span>{t('sos.location')}</span>
+                            </div>
+                            <a
+                              href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-[10px] font-semibold text-[#8a6d1c] hover:text-[#d4af37] transition-colors"
+                            >
+                              <Navigation className="w-3 h-3" />
+                              {t('sos.mapView')}
+                            </a>
                           </div>
-                          <div className="font-bold text-slate-900 text-sm font-mono truncate">
-                            {Number(alert.latitude).toFixed(5)}, {Number(alert.longitude).toFixed(5)}
+                          <div className="rounded-lg overflow-hidden">
+                            <VietMapView
+                              latitude={Number(alert.latitude)}
+                              longitude={Number(alert.longitude)}
+                              zoom={15}
+                              interactive={false}
+                              className="!h-[120px] rounded-lg"
+                              markers={[{
+                                id: alert.id,
+                                lat: Number(alert.latitude),
+                                lng: Number(alert.longitude),
+                                title: alert.message || 'SOS',
+                                color: '#ef4444',
+                                icon: '🚨',
+                              }]}
+                            />
                           </div>
-                          <div className="text-sm text-slate-600 mt-1 truncate">{alert.site?.province || alert.site?.name}</div>
+                          {alert.site?.province && (
+                            <div className="text-xs text-slate-500 mt-1.5 px-2 pb-1 truncate">{alert.site.province}</div>
+                          )}
                         </div>
 
                         {/* Timeline Col */}

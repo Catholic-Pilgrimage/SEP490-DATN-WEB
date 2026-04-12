@@ -19,6 +19,7 @@ import {
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import {
   Select,
   SelectContent,
@@ -83,7 +84,7 @@ export const ReportsManagement: React.FC = () => {
       return false;
     } catch (err) {
       console.error('Error fetching reports:', err);
-      showToast('error', tRef.current('rpt.title'), tRef.current('rpt.loadError'));
+      showToast('error', tRef.current('rpt.title'), extractErrorMessage(err));
       return false;
     } finally {
       setLoading(false);
@@ -138,7 +139,7 @@ export const ReportsManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Error resolving report:', err);
-      showToast('error', tRef.current('rpt.title'), tRef.current('rpt.resolveError'));
+      showToast('error', tRef.current('rpt.title'), extractErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -156,8 +157,8 @@ export const ReportsManagement: React.FC = () => {
         showToast('error', tRef.current('rpt.detail.title'), response.message || tRef.current('rpt.detail.loadError'));
         setDetailOpen(false);
       }
-    } catch {
-      showToast('error', tRef.current('rpt.detail.title'), tRef.current('rpt.detail.loadError'));
+    } catch (err) {
+      showToast('error', tRef.current('rpt.detail.title'), extractErrorMessage(err));
       setDetailOpen(false);
     } finally {
       setDetailLoading(false);

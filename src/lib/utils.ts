@@ -20,12 +20,24 @@ export function cn(...inputs: ClassValue[]) {
  * @param fallback - Optional fallback message
  * @returns A user-friendly error message string
  */
-export function extractErrorMessage(error: unknown, fallback = 'An unexpected error occurred'): string {
-  if (!error) return fallback;
+export function extractErrorMessage(error: unknown, fallback?: string): string {
+  let defaultFallback = 'Đã xảy ra lỗi, vui lòng thử lại sau';
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (localStorage.getItem('language') === 'en') {
+        defaultFallback = 'An unexpected error occurred. Please try again later.';
+      }
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+  const actualFallback = fallback || defaultFallback;
+
+  if (!error) return actualFallback;
 
   // Handle standard Error instances
   if (error instanceof Error) {
-    return error.message || fallback;
+    return error.message || actualFallback;
   }
 
   // Handle API error objects (thrown by api.service.ts)
@@ -71,5 +83,5 @@ export function extractErrorMessage(error: unknown, fallback = 'An unexpected er
     return error;
   }
 
-  return fallback;
+  return actualFallback;
 }

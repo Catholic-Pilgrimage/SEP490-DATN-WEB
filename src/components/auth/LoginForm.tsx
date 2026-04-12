@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { useToast } from '../../contexts/ToastContext';
+import { extractErrorMessage } from '../../lib/utils';
 
 interface LoginFormProps {
   onLogin: (profile: UserProfile) => void;
@@ -54,34 +55,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-
-      const err = error as Record<string, unknown>;
-      const status = typeof err?.status === 'number' ? err.status : undefined;
-      const nested = err?.error as Record<string, unknown> | undefined;
-      const details = nested?.details;
-      const errorTitle = language === 'vi' ? 'Đăng nhập thất bại' : 'Login Failed';
-
-      if (status === 401) {
-        triggerError(errorTitle, language === 'vi' ? 'Email hoặc mật khẩu không đúng.' : 'Invalid email or password.');
-      } else if (status === 403) {
-        triggerError(errorTitle, language === 'vi' ? 'Tài khoản của bạn đã bị khóa.' : 'Your account has been locked.');
-      } else if (status === 500) {
-        triggerError(language === 'vi' ? 'Lỗi hệ thống' : 'System Error', language === 'vi' ? 'Lỗi server. Vui lòng thử lại sau.' : 'Server error. Please try again later.');
-      } else if (Array.isArray(details) && details.length > 0) {
-        const messages = details
-          .map((d: unknown) => {
-            const detail = d as Record<string, unknown>;
-            return typeof detail?.message === 'string' ? detail.message : null;
-          })
-          .filter(Boolean);
-        triggerError(errorTitle, messages.length > 0 ? messages.join('. ') : (typeof nested?.message === 'string' ? nested.message : (language === 'vi' ? 'Vui lòng thử lại.' : 'Please try again.')));
-      } else if (typeof nested?.message === 'string') {
-        triggerError(errorTitle, nested.message);
-      } else if (error instanceof Error && error.message) {
-        triggerError(errorTitle, error.message);
-      } else {
-        triggerError(language === 'vi' ? 'Lỗi kết nối' : 'Connection Error', language === 'vi' ? 'Không thể kết nối đến server.' : 'Cannot connect to server.');
-      }
+      triggerError(
+        language === 'vi' ? 'Đăng nhập thất bại' : 'Login Failed',
+        extractErrorMessage(error)
+      );
     } finally {
       setLoading(false);
     }

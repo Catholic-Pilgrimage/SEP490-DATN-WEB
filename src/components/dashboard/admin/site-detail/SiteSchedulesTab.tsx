@@ -3,6 +3,7 @@ import { Loader2, Calendar, User, AlertCircle, Filter } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteSchedule, SiteSchedulesResponse, ScheduleStatus } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import {
     Select,
     SelectContent,
@@ -50,7 +51,7 @@ export const SiteSchedulesTab: React.FC<SiteSchedulesTabProps> = ({ siteId }) =>
                 setError(response.message || 'Không thể tải danh sách lịch lễ');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách lịch lễ';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách lịch lễ');
             setError(message);
         } finally {
             setLoading(false);

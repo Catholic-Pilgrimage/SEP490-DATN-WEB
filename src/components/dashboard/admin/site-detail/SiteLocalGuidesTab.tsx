@@ -3,6 +3,7 @@ import { Loader2, Mail, Phone, User, Users, AlertCircle } from 'lucide-react';
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteLocalGuide, SiteLocalGuidesResponse } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import {
     Pagination as ShadcnPagination,
     PaginationContent,
@@ -36,7 +37,7 @@ export const SiteLocalGuidesTab: React.FC<SiteLocalGuidesTabProps> = ({ siteId }
                 setError(response.message || 'Không thể tải danh sách Local Guides');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách Local Guides';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách Local Guides');
             setError(message);
         } finally {
             setLoading(false);

@@ -1,6 +1,7 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
 import { ApiResponse, LoginRequest, LoginResponseData, UserProfile, UpdateProfileRequest, ChangePasswordRequest, RefreshTokenResponse, ForgotPasswordRequest, VerifyOtpRequest, ResetPasswordRequest } from '../types/auth.types';
 import { ApiService } from './api.service';
+import { extractErrorMessage } from '../lib/utils';
 
 export class AuthService {
     /**
@@ -88,7 +89,7 @@ export class AuthService {
             await ApiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
         } catch (error) {
             // Even if API fails, still clear local tokens
-            const message = error instanceof Error ? error.message : 'Logout API error';
+            const message = extractErrorMessage(error, 'Logout API error');
             console.error('Logout API error:', message);
         } finally {
             // Always clear local tokens

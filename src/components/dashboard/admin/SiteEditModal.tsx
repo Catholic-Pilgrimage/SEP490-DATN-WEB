@@ -17,6 +17,7 @@ import { AdminService } from '../../../services/admin.service';
 import { SiteDetail, UpdateSiteData, SiteOpeningHours, SiteContactInfo } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -217,8 +218,7 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                 showToast('error', t('toast.editSiteFailed'), response.message || t('toast.editSiteFailedMsg'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('toast.editSiteFailedMsg');
-            showToast('error', t('toast.editSiteFailed'), message);
+            showToast('error', t('toast.editSiteFailed'), extractErrorMessage(error));
         } finally {
             setSubmitting(false);
         }

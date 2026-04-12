@@ -6,6 +6,7 @@ import { AdminService } from '../../../services/admin.service';
 import { DashboardOverviewData, AdminDashboardPeriod } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -45,7 +46,7 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      showToast('error', t('common.error'), t('dashboard.loadError') || 'Failed to load dashboard data');
+      showToast('error', t('common.error'), extractErrorMessage(error));
     } finally {
       setLoading(false);
     }

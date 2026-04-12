@@ -3,6 +3,7 @@ import { Lock, Eye, EyeOff, Save, Loader2, Shield } from 'lucide-react';
 import { AuthService } from '../../../services/auth.service';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 export const SettingsPage: React.FC = () => {
     const { t } = useLanguage();
@@ -51,8 +52,7 @@ export const SettingsPage: React.FC = () => {
                 showToast('error', t('settings.title'), response.error?.message || t('settings.errorFailed'));
             }
         } catch (err) {
-            const message = err instanceof Error ? err.message : t('settings.errorFailed');
-            showToast('error', t('settings.title'), message);
+            showToast('error', t('settings.title'), extractErrorMessage(err));
         } finally {
             setSaving(false);
         }

@@ -7,6 +7,7 @@ import {
 } from '../../../types/manager.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { format } from 'date-fns';
 
 interface ManagerChartsSectionProps {
@@ -130,7 +131,7 @@ export const ManagerChartsSection: React.FC<ManagerChartsSectionProps> = ({
       }
     } catch (err) {
       console.error('Error fetching checkins analytics:', err);
-      showToast('error', 'Lỗi kết nối', t('managerDash.chartEmpty'));
+      showToast('error', t('managerDash.chartTitle'), extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

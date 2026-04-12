@@ -19,6 +19,7 @@ import { Schedule, ContentStatus } from '../../../types/manager.types';
 import { ScheduleDetailModal } from './ScheduleDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -81,8 +82,7 @@ export const ScheduleContent: React.FC = () => {
                 setError(response.message || t('schedule.loadError'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('schedule.loadError');
-            setError(message);
+            setError(extractErrorMessage(err));
         } finally {
             setLoading(false);
         }

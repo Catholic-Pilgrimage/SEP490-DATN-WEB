@@ -19,6 +19,7 @@ import {
 import { AdminService } from '../../../services/admin.service';
 import { AdminUser } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -78,7 +79,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                 setError(response.message || 'Failed to load user details');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to load user details';
+            const message = extractErrorMessage(error, 'Failed to load user details');
             setError(message);
         } finally {
             setLoading(false);

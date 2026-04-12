@@ -4,6 +4,7 @@ import { AdminService } from '../../../services/admin.service';
 import { CheckinsAnalyticsData, PopularSiteData, SOSBySiteData, AdminDashboardPeriod, UsersGrowthData } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { format } from 'date-fns';
 
 interface ChartsSectionProps {
@@ -41,7 +42,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       }
     } catch (error) {
       console.error('Error fetching check-ins:', error);
-      showToast('error', 'Failed to load check-ins data');
+      showToast('error', 'Failed to load check-ins data', extractErrorMessage(error));
     } finally {
       setLoadingCheckins(false);
     }
@@ -63,7 +64,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       }
     } catch (error) {
       console.error('Error fetching users growth:', error);
-      showToast('error', 'Failed to load users growth data');
+      showToast('error', 'Failed to load users growth data', extractErrorMessage(error));
     } finally {
       setLoadingUsersGrowth(false);
     }
@@ -86,7 +87,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       }
     } catch (error) {
       console.error('Error fetching popular sites:', error);
-      showToast('error', 'Failed to load popular sites data');
+      showToast('error', 'Failed to load popular sites data', extractErrorMessage(error));
     } finally {
       setLoadingPopularSites(false);
     }
@@ -109,7 +110,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ period, fromDate, 
       }
     } catch (error) {
       console.error('Error fetching SOS by site:', error);
-      showToast('error', 'Failed to load SOS data');
+      showToast('error', 'Failed to load SOS data', extractErrorMessage(error));
     } finally {
       setLoadingSOSBySite(false);
     }

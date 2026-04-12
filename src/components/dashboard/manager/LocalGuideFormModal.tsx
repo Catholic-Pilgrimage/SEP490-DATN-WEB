@@ -12,6 +12,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { CreateLocalGuideData } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -100,7 +101,7 @@ export const LocalGuideFormModal: React.FC<LocalGuideFormModalProps> = ({
         } catch (error) {
             const err = error as { error?: { statusCode?: number } };
             const statusCode = err?.error?.statusCode;
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage = extractErrorMessage(error);
 
             if (errorMessage?.includes('đã tồn tại') || statusCode === 409) {
                 showToast('error', t('toast.createGuideFailed'), t('localGuideForm.emailExists'));

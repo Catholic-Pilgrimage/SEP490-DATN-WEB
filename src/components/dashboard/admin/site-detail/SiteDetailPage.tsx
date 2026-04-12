@@ -21,6 +21,7 @@ import {
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteDetail, SiteType, SiteRegion } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import { Button } from '@/components/ui/button';
 
 const SiteInfoTab = lazy(() => import('./SiteInfoTab').then(m => ({ default: m.SiteInfoTab })));
@@ -82,7 +83,7 @@ export const SiteDetailPage: React.FC = () => {
                 setError(response.message || 'Failed to load site details');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to load site details';
+            const message = extractErrorMessage(error, 'Failed to load site details');
             setError(message);
         } finally {
             setLoading(false);

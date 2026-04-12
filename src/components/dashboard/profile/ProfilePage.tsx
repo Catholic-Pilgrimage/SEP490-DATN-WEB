@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { UserProfile } from '../../../types/auth.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 interface ProfilePageProps {
     /** Cập nhật user toàn cục (TopBar, Sidebar) sau khi lưu hồ sơ thành công */
@@ -49,8 +50,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onProfileUpdated }) =>
                 setError(msg);
                 showToast('error', t('profile.title'), msg);
             }
-        } catch {
-            const msg = t('profile.loadError');
+        } catch (err) {
+            const msg = extractErrorMessage(err);
             setError(msg);
             showToast('error', t('profile.title'), msg);
         } finally {
@@ -93,8 +94,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onProfileUpdated }) =>
                 showToast('error', t('profile.title'), response.message || t('profile.error'));
             }
         } catch (err) {
-            const message = err instanceof Error ? err.message : t('profile.error');
-            showToast('error', t('profile.title'), message);
+            showToast('error', t('profile.title'), extractErrorMessage(err));
         } finally {
             setSaving(false);
         }

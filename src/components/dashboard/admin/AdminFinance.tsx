@@ -17,6 +17,7 @@ import { AdminService } from '../../../services/admin.service';
 import { FinanceOverviewData } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { TransactionsTable } from './TransactionsTable';
 import { WithdrawalsTable } from './WithdrawalsTable';
 import { EscrowTable } from './EscrowTable';
@@ -52,7 +53,7 @@ export const AdminFinance: React.FC = () => {
     } catch (err) {
       console.error('Error fetching finance:', err);
       setError(tRef.current('finance.loadError'));
-      showToast('error', tRef.current('finance.title'), tRef.current('finance.loadError'));
+      showToast('error', tRef.current('finance.title'), extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

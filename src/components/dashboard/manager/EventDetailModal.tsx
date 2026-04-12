@@ -22,6 +22,7 @@ import { ManagerService } from '../../../services/manager.service';
 import { Event, ContentStatus } from '../../../types/manager.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { ImagePreviewDialog } from '../../shared/ImagePreviewDialog';
 
 interface EventDetailModalProps {
@@ -103,7 +104,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 }
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);
@@ -139,7 +140,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 setActionError(response.message || t('common.error'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setActionError(message);
         } finally {
             setActionLoading(false);

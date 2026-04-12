@@ -5,6 +5,7 @@ import { AdminService } from '../../../services/admin.service';
 import { WalletEscrowPlannerItem } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 /** Backend may return total/totalPages as 0 while escrow[] is populated. */
 function normalizeEscrowPagination(
@@ -71,7 +72,7 @@ export const EscrowTable: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching escrow:', err);
-      showToast('error', tRef.current('esc.title'), tRef.current('esc.loadError'));
+      showToast('error', tRef.current('esc.title'), extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

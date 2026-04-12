@@ -20,6 +20,7 @@ import {
 import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteEvent, SiteEventsResponse, EventStatus, EventTimeState } from '../../../../types/admin.types';
+import { extractErrorMessage } from '../../../../lib/utils';
 import {
     Select,
     SelectContent,
@@ -62,7 +63,7 @@ export const SiteEventsTab: React.FC<SiteEventsTabProps> = ({ siteId }) => {
                 setError(response.message || t('event.loadError'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('event.loadError');
+            const message = extractErrorMessage(error, t('event.loadError'));
             setError(message);
         } finally {
             setLoading(false);

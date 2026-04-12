@@ -21,6 +21,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { ManagerService } from '../../../services/manager.service';
 import { ShiftChange, ShiftSubmissionDetail, ShiftSubmissionStatus } from '../../../types/manager.types';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -97,8 +98,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 setError(response.message || t('modal.errorLoading'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('modal.errorLoading');
-            setError(message);
+            setError(extractErrorMessage(err));
         } finally {
             setLoading(false);
         }
@@ -135,8 +135,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 setActionError(response.message || t('localGuides.updateError'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('localGuides.updateError');
-            setActionError(message);
+            setActionError(extractErrorMessage(err));
         } finally {
             setActionLoading(false);
         }
@@ -169,8 +168,7 @@ export const ShiftSubmissionDetailModal: React.FC<ShiftSubmissionDetailModalProp
                 setActionError(response.message || t('localGuides.updateError'));
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : t('localGuides.updateError');
-            setActionError(message);
+            setActionError(extractErrorMessage(err));
         } finally {
             setActionLoading(false);
         }

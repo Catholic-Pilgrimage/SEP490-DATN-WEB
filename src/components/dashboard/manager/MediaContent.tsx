@@ -13,7 +13,6 @@ import {
     CheckCircle,
     XCircle,
     Trash2,
-    ExternalLink,
     Box,
     Upload,
     AlertCircle,
@@ -21,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
+import { extractErrorMessage } from '../../../lib/utils';
 import { Media, MediaType, ContentStatus } from '../../../types/manager.types';
 import { MediaDetailModal } from './MediaDetailModal';
 import { MediaViewerModal } from './MediaViewerModal';
@@ -97,7 +97,7 @@ export const MediaContent: React.FC = () => {
                 setError(response.message || 'Không thể tải danh sách media');
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể tải danh sách media';
+            const message = extractErrorMessage(error, 'Không thể tải danh sách media');
             setError(message);
         } finally {
             setLoading(false);
@@ -328,7 +328,10 @@ export const MediaContent: React.FC = () => {
                                             }`}
                                     >
                                         {/* Media Preview */}
-                                        <div className="relative aspect-video bg-slate-100 flex-shrink-0">
+                                        <div 
+                                            className="relative aspect-video bg-slate-100 flex-shrink-0 cursor-pointer group/preview"
+                                            onClick={() => setViewerMedia(media)}
+                                        >
                                             {media.type === 'image' ? (
                                                 <img
                                                     src={media.url}
@@ -340,6 +343,12 @@ export const MediaContent: React.FC = () => {
                                                     <Box className="w-12 h-12 text-[#d4af37] mb-2" />
                                                     <span className="text-sm font-medium text-[#8a6d1c]">3D Model</span>
                                                 </div>
+                                            ) : media.type === 'video' && !isYoutubeUrl(media.url) ? (
+                                                <video
+                                                    src={media.url}
+                                                    className="w-full h-full object-cover"
+                                                    preload="metadata"
+                                                />
                                             ) : thumbnailUrl ? (
                                                 <img
                                                     src={thumbnailUrl}
@@ -377,9 +386,9 @@ export const MediaContent: React.FC = () => {
 
                                             {/* Video Play Button */}
                                             {media.type === 'video' && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-12 h-12 bg-white/80 rounded-full flex items-center justify-center">
-                                                        <Video className="w-6 h-6 text-red-600" />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/5 group-hover/preview:bg-black/20 transition-colors">
+                                                    <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover/preview:scale-110 transition-transform">
+                                                        <Video className="w-5 h-5 text-red-600" />
                                                     </div>
                                                 </div>
                                             )}
@@ -424,20 +433,10 @@ export const MediaContent: React.FC = () => {
                                             <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-3">
                                                 <Button
                                                     type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setViewerMedia(media)}
-                                                    className="h-8 flex-1 gap-1 rounded-lg border-[#d4af37]/25 text-xs text-slate-600 hover:border-[#d4af37]/45 hover:bg-[#f5f3ee] hover:text-[#8a6d1c]"
-                                                >
-                                                    <ExternalLink className="h-3.5 w-3.5" />
-                                                    {t('media.view')}
-                                                </Button>
-                                                <Button
-                                                    type="button"
                                                     variant="secondary"
                                                     size="sm"
                                                     onClick={() => setSelectedMedia(media)}
-                                                    className="h-8 flex-1 gap-1 rounded-lg bg-[#f5f3ee] text-xs text-[#8a6d1c] hover:bg-[#ece8dc]"
+                                                    className="h-8 w-full gap-1 rounded-lg bg-[#f5f3ee] text-xs text-[#8a6d1c] hover:bg-[#ece8dc]"
                                                 >
                                                     <Eye className="h-3.5 w-3.5" />
                                                     {t('common.details')}

@@ -33,6 +33,7 @@ import { AdminService } from '../../../services/admin.service';
 import { WalletTransaction, TransactionType, TransactionStatus, TransactionReferenceType } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { extractErrorMessage } from '../../../lib/utils';
 
 interface TransactionDetailModalProps {
   transactionId: string | null;
@@ -71,7 +72,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       }
     } catch (err) {
       console.error('Error fetching transaction detail:', err);
-      showToast('error', t('txn.title'), 'Lỗi hệ thống khi tải chi tiết');
+      showToast('error', t('txn.title'), extractErrorMessage(err));
       onClose();
     } finally {
       setLoading(false);

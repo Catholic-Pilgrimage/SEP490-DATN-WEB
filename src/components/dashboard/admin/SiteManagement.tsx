@@ -115,7 +115,7 @@ export const SiteManagement: React.FC = () => {
         setError(response.message || 'Failed to load sites');
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load sites';
+      const message = extractErrorMessage(error, 'Failed to load sites');
       setError(message);
     } finally {
       setLoading(false);

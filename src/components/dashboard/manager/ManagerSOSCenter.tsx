@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { extractErrorMessage } from '../../../lib/utils';
 import { ManagerService } from '../../../services/manager.service';
 import { AdminSOSRequest, SOSStatus } from '../../../types/admin.types';
 import { ManagerSOSStats } from '../../../types/manager.types';
@@ -31,6 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import VietMapView from '@/components/shared/VietMapView';
 
 export const ManagerSOSCenter: React.FC = () => {
     const { t } = useLanguage();
@@ -82,7 +84,7 @@ export const ManagerSOSCenter: React.FC = () => {
         } catch (error) {
             console.error('Failed to fetch SOS data:', error);
             if (isManualRefresh) {
-                showToast('error', t('common.error') || 'Đã xảy ra lỗi');
+                showToast('error', t('common.error') || 'Đã xảy ra lỗi', extractErrorMessage(error));
             }
         } finally {
             setIsLoading(false);
@@ -374,7 +376,7 @@ export const ManagerSOSCenter: React.FC = () => {
                                                             {alert.message || t('sos.emergencyRequest')}
                                                         </h3>
                                                         <p className="text-slate-600 text-sm mt-1">
-                                                            <span className="font-semibold text-slate-800">{alert.site?.name}</span> <span className="mx-2 text-[#d4af37]">•</span> Code: <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{alert.code}</span>
+                                                            Code: <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs ml-1">{alert.code}</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -422,15 +424,39 @@ export const ManagerSOSCenter: React.FC = () => {
                                                 </div>
 
                                                 {/* Location Col */}
-                                                <div className="bg-[#fbfaf6] p-4 rounded-xl border border-[#d4af37]/15">
-                                                    <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs mb-2">
-                                                        <MapPin className="w-3.5 h-3.5" />
-                                                        <span>{t('sos.location')}</span>
+                                                <div className="bg-[#fbfaf6] p-2 rounded-xl border border-[#d4af37]/15 overflow-hidden">
+                                                    <div className="flex items-center justify-between px-2 pt-2 mb-2">
+                                                        <div className="flex items-center gap-2 text-[#8a6d1c]/70 font-semibold uppercase tracking-wider text-xs">
+                                                            <MapPin className="w-3.5 h-3.5" />
+                                                            <span>{t('sos.location')}</span>
+                                                        </div>
+                                                        <a
+                                                            href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-1 text-[10px] font-semibold text-[#8a6d1c] hover:text-[#d4af37] transition-colors"
+                                                        >
+                                                            <Navigation className="w-3 h-3" />
+                                                            {t('sos.mapView')}
+                                                        </a>
                                                     </div>
-                                                    <div className="font-bold text-slate-900 text-sm font-mono truncate">
-                                                        {Number(alert.latitude).toFixed(5)}, {Number(alert.longitude).toFixed(5)}
+                                                    <div className="rounded-lg overflow-hidden">
+                                                        <VietMapView
+                                                            latitude={Number(alert.latitude)}
+                                                            longitude={Number(alert.longitude)}
+                                                            zoom={15}
+                                                            interactive={false}
+                                                            className="!h-[120px] rounded-lg"
+                                                            markers={[{
+                                                                id: alert.id,
+                                                                lat: Number(alert.latitude),
+                                                                lng: Number(alert.longitude),
+                                                                title: alert.message || 'SOS',
+                                                                color: '#ef4444',
+                                                                icon: '🚨',
+                                                            }]}
+                                                        />
                                                     </div>
-                                                    <div className="text-sm text-slate-600 mt-1 truncate">{alert.site?.province || alert.site?.name}</div>
                                                 </div>
 
                                                 {/* Timeline Col */}
@@ -452,18 +478,6 @@ export const ManagerSOSCenter: React.FC = () => {
                                             <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
                                                 {alert.status === 'pending' && (
                                                     <>
-                                                        {alert.contact_phone && (
-                                                            <Button
-                                                                asChild
-                                                                className="h-auto rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20"
-                                                            >
-                                                                <a href={`tel:${alert.contact_phone}`}>
-                                                                    <Phone className="w-4 h-4" />
-                                                                    {t('sos.callPilgrim')}
-                                                                </a>
-                                                            </Button>
-                                                        )}
-
                                                         <Button
                                                             type="button"
                                                             className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
@@ -489,21 +503,7 @@ export const ManagerSOSCenter: React.FC = () => {
                                                     </>
                                                 )}
 
-                                                {alert.status === 'accepted' && (
-                                                    <>
-                                                        {alert.assignedGuide?.phone && (
-                                                            <Button
-                                                                asChild
-                                                                className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
-                                                            >
-                                                                <a href={`tel:${alert.assignedGuide.phone}`}>
-                                                                    <Phone className="w-4 h-4" />
-                                                                    {t('sos.contactGuide')}
-                                                                </a>
-                                                            </Button>
-                                                        )}
-                                                    </>
-                                                )}
+
 
                                                 {alert.status === 'resolved' && (
                                                     <div className="flex items-center gap-2 text-green-700 bg-green-50/80 px-4 py-2.5 rounded-xl border border-green-200">

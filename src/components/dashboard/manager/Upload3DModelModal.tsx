@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Loader2, AlertCircle, Box } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ManagerService } from '../../../services/manager.service';
+import { extractErrorMessage } from '../../../lib/utils';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface Upload3DModelModalProps {
@@ -117,7 +118,7 @@ export const Upload3DModelModal: React.FC<Upload3DModelModalProps> = ({
                 setError(response.message || t('common.error'));
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t('common.error');
+            const message = extractErrorMessage(error, t('common.error'));
             setError(message);
         } finally {
             setIsSubmitting(false);
