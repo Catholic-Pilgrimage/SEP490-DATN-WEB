@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     AlertTriangle,
     Phone,
@@ -10,14 +10,17 @@ import {
     Navigation,
     RefreshCw,
     Filter,
-    X
+    X,
+    Search,
+    UserCheck,
+    Loader2,
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { extractErrorMessage } from '../../../lib/utils';
 import { ManagerService } from '../../../services/manager.service';
 import { AdminSOSRequest, SOSStatus } from '../../../types/admin.types';
-import { ManagerSOSStats } from '../../../types/manager.types';
+import { ManagerSOSStats, LocalGuide } from '../../../types/manager.types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
@@ -32,6 +35,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import VietMapView from '@/components/shared/VietMapView';
 
 export const ManagerSOSCenter: React.FC = () => {
@@ -45,6 +55,15 @@ export const ManagerSOSCenter: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<SOSStatus | ''>('');
     const [fromDate, setFromDate] = useState<string>('');
     const [toDate, setToDate] = useState<string>('');
+
+    // Assign Guide Modal state
+    const [assignModalOpen, setAssignModalOpen] = useState(false);
+    const [assigningSosAlert, setAssigningSosAlert] = useState<AdminSOSRequest | null>(null);
+    const [guides, setGuides] = useState<LocalGuide[]>([]);
+    const [guidesLoading, setGuidesLoading] = useState(false);
+    const [guideSearch, setGuideSearch] = useState('');
+    const [selectedGuideId, setSelectedGuideId] = useState<string>('');
+    const [isAssigning, setIsAssigning] = useState(false);
 
     const fetchSOSData = async (isManualRefresh = false) => {
         if (isManualRefresh) {
@@ -103,6 +122,69 @@ export const ManagerSOSCenter: React.FC = () => {
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [statusFilter, fromDate, toDate]);
+
+    // ====== Assign Guide Modal Logic ======
+
+    const fetchGuides = useCallback(async () => {
+        setGuidesLoading(true);
+        try {
+            const res = await ManagerService.getLocalGuides({ status: 'active', limit: 100 });
+            if (res.success && res.data) {
+                setGuides(res.data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch guides:', error);
+            setGuides([]);
+        } finally {
+            setGuidesLoading(false);
+        }
+    }, []);
+
+    const handleOpenAssignModal = (alert: AdminSOSRequest) => {
+        setAssigningSosAlert(alert);
+        setSelectedGuideId('');
+        setGuideSearch('');
+        setAssignModalOpen(true);
+        fetchGuides();
+    };
+
+    const handleCloseAssignModal = () => {
+        setAssignModalOpen(false);
+        setAssigningSosAlert(null);
+        setSelectedGuideId('');
+        setGuideSearch('');
+    };
+
+    const handleAssignGuide = async () => {
+        if (!assigningSosAlert || !selectedGuideId) return;
+
+        setIsAssigning(true);
+        try {
+            const res = await ManagerService.assignGuideToSOS(assigningSosAlert.id, selectedGuideId);
+            if (res.success) {
+                showToast('success', t('sos.assignSuccess'), t('sos.assignSuccessMsg'));
+                handleCloseAssignModal();
+                // Refresh data to reflect the change
+                fetchSOSData(false);
+            } else {
+                showToast('error', t('sos.assignFailed'), extractErrorMessage(res));
+            }
+        } catch (error) {
+            showToast('error', t('sos.assignFailed'), extractErrorMessage(error));
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
+    const filteredGuides = guides.filter((g) => {
+        if (!guideSearch.trim()) return true;
+        const q = guideSearch.toLowerCase();
+        return (
+            g.full_name.toLowerCase().includes(q) ||
+            g.email.toLowerCase().includes(q) ||
+            (g.phone || '').toLowerCase().includes(q)
+        );
+    });
 
     const getSeverityColor = (severity: string) => {
         switch (severity) {
@@ -349,13 +431,13 @@ export const ManagerSOSCenter: React.FC = () => {
                                 >
                                     <Card
                                         className={`
-                      relative overflow-hidden shadow-sm border-0 border-l-[6px] transition-all hover:shadow-md
+                      relative shadow-sm border-0 border-l-[6px] transition-all hover:shadow-md
                       ${getSeverityColor(severity)}
                     `}
                                     >
                                         <CardContent className="p-6">
                                             {alert.status === 'pending' && (
-                                                <span className="absolute top-0 right-0 -mt-2 -mr-2 flex h-5 w-5">
+                                                <span className="absolute top-0 right-0 -mt-2 -mr-2 flex h-5 w-5 z-10">
                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                                     <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white"></span>
                                                 </span>
@@ -468,6 +550,12 @@ export const ManagerSOSCenter: React.FC = () => {
                                                     <div className="font-bold text-slate-900 text-[15px] truncate">
                                                         {alert.assignedGuide ? alert.assignedGuide.full_name : t('sos.unassigned')}
                                                     </div>
+                                                    {alert.assignedGuide?.phone && (
+                                                        <div className="text-sm text-slate-600 flex items-center gap-1.5 mt-1">
+                                                            <Phone className="w-3.5 h-3.5 text-slate-400" />
+                                                            {alert.assignedGuide.phone}
+                                                        </div>
+                                                    )}
                                                     <div className="text-sm text-slate-600 mt-1">
                                                         <span className="text-slate-400 mr-1">{t('sos.created')}</span> {new Date(alert.created_at).toLocaleTimeString()}
                                                     </div>
@@ -477,30 +565,14 @@ export const ManagerSOSCenter: React.FC = () => {
                                             {/* Actions */}
                                             <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
                                                 {alert.status === 'pending' && (
-                                                    <>
-                                                        <Button
-                                                            type="button"
-                                                            className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
-                                                        >
-                                                            <User className="w-4 h-4" />
-                                                            {t('sos.assignGuide')}
-                                                        </Button>
-
-                                                        <Button
-                                                            asChild
-                                                            variant="outline"
-                                                            className="h-auto rounded-xl border-[#d4af37]/40 bg-white px-5 py-2.5 text-sm font-medium text-[#8a6d1c] shadow-sm hover:bg-[#fbfaf6] hover:border-[#d4af37] hover:text-[#8a6d1c]"
-                                                        >
-                                                            <a
-                                                                href={`https://www.google.com/maps/dir/?api=1&destination=${alert.latitude},${alert.longitude}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                            >
-                                                                <Navigation className="w-4 h-4" />
-                                                                {t('sos.mapView')}
-                                                            </a>
-                                                        </Button>
-                                                    </>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => handleOpenAssignModal(alert)}
+                                                        className="h-auto rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/20"
+                                                    >
+                                                        <UserCheck className="w-4 h-4" />
+                                                        {t('sos.assignGuide')}
+                                                    </Button>
                                                 )}
 
 
@@ -529,7 +601,149 @@ export const ManagerSOSCenter: React.FC = () => {
                     </AnimatePresence>
                 )}
             </div>
+
+            {/* ====== Assign Guide Dialog ====== */}
+            <Dialog open={assignModalOpen} onOpenChange={(open) => { if (!open) handleCloseAssignModal(); }}>
+                <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden rounded-2xl border border-[#d4af37]/20">
+                    {/* Header */}
+                    <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-br from-[#fdfbf7] to-white border-b border-[#d4af37]/10">
+                        <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center border border-amber-200">
+                                <UserCheck className="w-5 h-5 text-amber-600" />
+                            </div>
+                            {t('sos.assignGuideTitle')}
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-600 mt-2">
+                            {t('sos.assignGuideSubtitle')}
+                        </DialogDescription>
+                        {assigningSosAlert && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs font-semibold">
+                                    {t('sos.sosCode')}: {assigningSosAlert.code}
+                                </Badge>
+                                <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs">
+                                    {assigningSosAlert.pilgrim?.full_name}
+                                </Badge>
+                            </div>
+                        )}
+                    </DialogHeader>
+
+                    {/* Content */}
+                    <div className="px-6 py-4 space-y-4">
+                        {/* Search input */}
+                        <div className="relative">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                value={guideSearch}
+                                onChange={(e) => setGuideSearch(e.target.value)}
+                                placeholder={t('sos.searchGuide')}
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none text-sm transition-all bg-white"
+                            />
+                        </div>
+
+                        {/* Guide list */}
+                        <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+                            {guidesLoading ? (
+                                <div className="flex items-center justify-center py-10 text-slate-500">
+                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                    <span className="text-sm">{t('sos.loadingGuides')}</span>
+                                </div>
+                            ) : filteredGuides.length === 0 ? (
+                                <div className="text-center py-10">
+                                    <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <User className="w-6 h-6 text-slate-400" />
+                                    </div>
+                                    <p className="text-slate-500 text-sm font-medium">{t('sos.noGuidesAvailable')}</p>
+                                </div>
+                            ) : (
+                                filteredGuides.map((guide) => {
+                                    const isSelected = selectedGuideId === guide.id;
+                                    return (
+                                        <button
+                                            key={guide.id}
+                                            type="button"
+                                            onClick={() => setSelectedGuideId(guide.id)}
+                                            className={`
+                                                w-full p-3.5 rounded-xl border-2 text-left transition-all duration-200 cursor-pointer
+                                                ${isSelected
+                                                    ? 'border-[#d4af37] bg-[#fdfbf7] shadow-md shadow-[#d4af37]/10 ring-1 ring-[#d4af37]/30'
+                                                    : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/80'
+                                                }
+                                            `}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {/* Avatar / Initials */}
+                                                <div className={`
+                                                    w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold uppercase
+                                                    ${isSelected
+                                                        ? 'bg-[#d4af37] text-white'
+                                                        : 'bg-slate-100 text-slate-600'
+                                                    }
+                                                `}>
+                                                    {guide.full_name.charAt(0)}
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className={`font-semibold text-sm truncate ${isSelected ? 'text-[#8a6d1c]' : 'text-slate-900'}`}>
+                                                            {guide.full_name}
+                                                        </span>
+                                                        {isSelected && (
+                                                            <CheckCircle className="w-5 h-5 text-[#d4af37] shrink-0" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-0.5">
+                                                        <span className="text-xs text-slate-500 truncate">{guide.email}</span>
+                                                        {guide.phone && (
+                                                            <span className="text-xs text-slate-400 flex items-center gap-1 shrink-0">
+                                                                <Phone className="w-3 h-3" />
+                                                                {guide.phone}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-6 py-4 bg-[#fdfbf7] border-t border-[#d4af37]/10 flex items-center justify-end gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCloseAssignModal}
+                            disabled={isAssigning}
+                            className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
+                        >
+                            {t('common.close')}
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleAssignGuide}
+                            disabled={!selectedGuideId || isAssigning}
+                            className="rounded-xl bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white hover:brightness-110 shadow-md shadow-[#d4af37]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isAssigning ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    {t('sos.assigning')}
+                                </>
+                            ) : (
+                                <>
+                                    <UserCheck className="w-4 h-4" />
+                                    {t('sos.confirmAssign')}
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
-

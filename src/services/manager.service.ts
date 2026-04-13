@@ -1,5 +1,6 @@
 import { API_CONFIG } from '../config/api';
 import { ApiResponse } from '../types/auth.types';
+import { AdminSOSRequest } from '../types/admin.types';
 import {
     ManagerSite,
     CreateManagerSiteData,
@@ -741,6 +742,22 @@ export class ManagerService {
         return ApiService.get<ApiResponse<ManagerSOSStats>>(endpoint);
     }
 
+    /**
+     * Assign a Local Guide to handle a pending SOS request
+     * PATCH /api/sos/manager/{id}/assign-guide
+     *
+     * @param sosId - ID of the SOS request
+     * @param guideId - ID of the Local Guide to assign
+     */
+    static async assignGuideToSOS(
+        sosId: string,
+        guideId: string
+    ): Promise<ApiResponse<AdminSOSRequest>> {
+        return ApiService.patch<ApiResponse<AdminSOSRequest>>(
+            API_CONFIG.ENDPOINTS.MANAGER.SOS_ASSIGN_GUIDE(sosId),
+            { guide_id: guideId }
+        );
+    }
 
     // =====================================================================
     // AI ARTICLE WRITER

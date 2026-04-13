@@ -73,6 +73,7 @@ export const API_CONFIG = {
             },
             SOS_LIST: '/api/sos/manager/list',
             SOS_STATS: '/api/sos/manager/stats',
+            SOS_ASSIGN_GUIDE: (id: string) => `/api/sos/manager/${id}/assign-guide`,
             // AI Article Writer
             AI_GENERATE_ARTICLE: '/api/ai/generate-article',
         },
