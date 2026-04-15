@@ -51,6 +51,8 @@ import {
     ManagerCheckinsAnalyticsData,
     GenerateArticleRequest,
     GenerateArticleData,
+    ReviewListParams,
+    ReviewListResponseData,
 } from '../types/manager.types';
 import { ApiService } from './api.service';
 
@@ -776,5 +778,44 @@ export class ManagerService {
             API_CONFIG.ENDPOINTS.MANAGER.AI_GENERATE_ARTICLE,
             data
         );
+    }
+
+    // =====================================================================
+    // REVIEWS MANAGEMENT
+    // =====================================================================
+
+    /**
+     * Get list of reviews for manager's site
+     * GET /api/manager/reviews
+     *
+     * @param params - { type, has_reply, page, limit, sort }
+     */
+    static async getReviews(
+        params: ReviewListParams = {}
+    ): Promise<ApiResponse<ReviewListResponseData>> {
+        const queryParams = new URLSearchParams();
+
+        if (params.type) {
+            queryParams.append('type', params.type);
+        }
+        if (params.has_reply) {
+            queryParams.append('has_reply', params.has_reply);
+        }
+        if (params.page) {
+            queryParams.append('page', params.page.toString());
+        }
+        if (params.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
+        if (params.sort) {
+            queryParams.append('sort', params.sort);
+        }
+
+        const queryString = queryParams.toString();
+        const url = queryString
+            ? `${API_CONFIG.ENDPOINTS.MANAGER.REVIEWS}?${queryString}`
+            : API_CONFIG.ENDPOINTS.MANAGER.REVIEWS;
+
+        return ApiService.get<ApiResponse<ReviewListResponseData>>(url);
     }
 }

@@ -693,3 +693,82 @@ export interface GenerateArticleData {
         topic: string;
     };
 }
+
+// =====================================================================
+// REVIEWS MANAGEMENT TYPES
+// =====================================================================
+
+/** Người đánh giá */
+export interface ReviewReviewer {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+}
+
+/** Người phản hồi đánh giá */
+export interface ReviewReplier {
+    id: string;
+    full_name: string;
+}
+
+/** Phản hồi của Manager/Guide cho review */
+export interface ReviewReply {
+    id: string;
+    content: string;
+    created_at: string;
+    replier: ReviewReplier;
+}
+
+/** Một đánh giá */
+export interface Review {
+    id: string;
+    type: string;                    // 'site'
+    rating: number;                  // 1 - 5
+    feedback: string;
+    image_urls: string[];
+    has_reply: boolean;
+    created_at: string;
+    updated_at: string;
+    site_id: string;
+    verified_visit: boolean;
+    reviewer: ReviewReviewer;
+    reply: ReviewReply | null;
+}
+
+/** Thống kê tóm tắt đánh giá */
+export interface ReviewSummary {
+    avg_rating: number;
+    total_reviews: number;
+}
+
+/** Pagination cho reviews */
+export interface ReviewPagination {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+}
+
+/** Dữ liệu site_reviews trong response */
+export interface SiteReviewsData {
+    summary: ReviewSummary;
+    reviews: Review[];
+    pagination: ReviewPagination;
+}
+
+/** GET /api/manager/reviews - Response data */
+export interface ReviewListResponseData {
+    site_reviews?: SiteReviewsData;
+}
+
+/** Sắp xếp review */
+export type ReviewSort = 'newest' | 'oldest' | 'highest' | 'lowest';
+
+/** GET /api/manager/reviews - Query params */
+export interface ReviewListParams {
+    type?: string;                   // 'site'
+    has_reply?: string;              // 'true' | 'false'
+    page?: number;
+    limit?: number;
+    sort?: ReviewSort;
+}

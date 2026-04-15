@@ -13,6 +13,7 @@ import {
   Calendar,
   Wallet,
   Flag,
+  Star,
 } from 'lucide-react';
 import { User } from '../../../App';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -46,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'guides', path: '/dashboard/guides', label: t('menu.guides'), icon: UserCheck },
     { id: 'shifts', path: '/dashboard/shifts', label: t('menu.shifts'), icon: Calendar },
     { id: 'content', path: '/dashboard/content', label: t('menu.content'), icon: FileText },
+    { id: 'reviews', path: '/dashboard/reviews', label: t('menu.reviews'), icon: Star },
     { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
   ];
 

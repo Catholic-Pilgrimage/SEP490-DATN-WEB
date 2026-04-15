@@ -25,6 +25,7 @@ const translations: Record<Language, Record<string, string>> = {
         'menu.settings': 'Cài đặt',
         'menu.shifts': 'Lịch trực',
         'menu.finance': 'Tài chính',
+        'menu.reviews': 'Đánh giá',
 
         // TopBar
         'search.placeholder': 'Tìm kiếm sites, users, nội dung...',
@@ -1108,6 +1109,33 @@ const translations: Record<Language, Record<string, string>> = {
         'ai.error502Msg': 'AI trả kết quả không hợp lệ. Vui lòng thử lại.',
         'ai.error503Title': 'AI chưa sẵn sàng',
         'ai.error503Msg': 'Dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.',
+
+        // Reviews Management
+        'reviews.title': 'Đánh giá',
+        'reviews.subtitle': 'Quản lý đánh giá từ khách hành hương',
+        'reviews.avgRating': 'Đánh giá trung bình',
+        'reviews.totalReviews': 'Tổng đánh giá',
+        'reviews.reviewsLabel': 'đánh giá',
+        'reviews.allReply': 'Tất cả',
+        'reviews.hasReply': 'Đã phản hồi',
+        'reviews.noReply': 'Chưa phản hồi',
+        'reviews.filterReply': 'Lọc phản hồi',
+        'reviews.sortLabel': 'Sắp xếp',
+        'reviews.sortNewest': 'Mới nhất',
+        'reviews.sortOldest': 'Cũ nhất',
+        'reviews.sortHighest': 'Cao nhất',
+        'reviews.sortLowest': 'Thấp nhất',
+        'reviews.verifiedVisit': 'Đã xác minh',
+        'reviews.unverifiedVisit': 'Chưa xác minh',
+        'reviews.replyLabel': 'Phản hồi',
+        'reviews.repliedBy': 'Trả lời bởi',
+        'reviews.noReviews': 'Chưa có đánh giá nào',
+        'reviews.noReviewsDesc': 'Hiện chưa có khách hành hương nào đánh giá địa điểm này.',
+        'reviews.loadError': 'Không thể tải danh sách đánh giá',
+        'reviews.showing': 'Hiển thị',
+        'reviews.of': 'trong tổng số',
+        'reviews.outOf5': '/ 5',
+        'reviews.stars': 'sao',
     },
     en: {
         // Sidebar
@@ -1125,6 +1153,7 @@ const translations: Record<Language, Record<string, string>> = {
         'menu.settings': 'Settings',
         'menu.shifts': 'Shift Submissions',
         'menu.finance': 'Finance',
+        'menu.reviews': 'Reviews',
 
         // TopBar
         'search.placeholder': 'Search sites, users, content...',
@@ -2204,6 +2233,33 @@ const translations: Record<Language, Record<string, string>> = {
         'ai.error502Msg': 'AI returned an invalid result. Please try again.',
         'ai.error503Title': 'AI not ready',
         'ai.error503Msg': 'AI service is not configured. Please contact the administrator.',
+
+        // Reviews Management
+        'reviews.title': 'Reviews',
+        'reviews.subtitle': 'Manage reviews from pilgrims',
+        'reviews.avgRating': 'Average Rating',
+        'reviews.totalReviews': 'Total Reviews',
+        'reviews.reviewsLabel': 'reviews',
+        'reviews.allReply': 'All',
+        'reviews.hasReply': 'Replied',
+        'reviews.noReply': 'Not replied',
+        'reviews.filterReply': 'Filter replies',
+        'reviews.sortLabel': 'Sort by',
+        'reviews.sortNewest': 'Newest',
+        'reviews.sortOldest': 'Oldest',
+        'reviews.sortHighest': 'Highest rated',
+        'reviews.sortLowest': 'Lowest rated',
+        'reviews.verifiedVisit': 'Verified visit',
+        'reviews.unverifiedVisit': 'Unverified',
+        'reviews.replyLabel': 'Reply',
+        'reviews.repliedBy': 'Replied by',
+        'reviews.noReviews': 'No reviews yet',
+        'reviews.noReviewsDesc': 'No pilgrims have reviewed this site yet.',
+        'reviews.loadError': 'Could not load reviews',
+        'reviews.showing': 'Showing',
+        'reviews.of': 'of',
+        'reviews.outOf5': '/ 5',
+        'reviews.stars': 'stars',
     },
 };
 
