@@ -15,6 +15,7 @@ import { ContentManagement } from './manager/ContentManagement';
 import { AdminSOSCenter } from './admin/AdminSOSCenter';
 import { AdminFinance } from './admin/AdminFinance';
 import { ReportsManagement } from './admin/ReportsManagement';
+import { AIPromptsManagement } from './admin/AIPromptsManagement';
 import { ManagerSOSCenter } from './manager/ManagerSOSCenter';
 import { ManagerReviews } from './manager/ManagerReviews';
 import { ProfilePage } from './profile/ProfilePage';
@@ -74,6 +75,7 @@ const DashboardContent: React.FC<DashboardProps> = ({ user, onLogout, onUserProf
                 <Route path="sos" element={<AdminSOSCenter />} />
                 <Route path="finance" element={<AdminFinance />} />
                 <Route path="reports" element={<ReportsManagement />} />
+                <Route path="ai-prompts" element={<AIPromptsManagement />} />
                 <Route path="profile" element={<ProfilePage onProfileUpdated={onUserProfileUpdated} />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

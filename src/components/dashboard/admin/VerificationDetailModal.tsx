@@ -46,14 +46,52 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
     const [actionLoading, setActionLoading] = useState(false);
     const [showRejectForm, setShowRejectForm] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
-    const [showFullImage, setShowFullImage] = useState(false);
+    const [showCertificateViewer, setShowCertificateViewer] = useState(false);
+    const [certificateLoadError, setCertificateLoadError] = useState(false);
+
+    // Detect file type from URL
+    const getFileType = (url: string | null): 'image' | 'pdf' | 'doc' | 'unknown' => {
+        if (!url) return 'unknown';
+        const lowerUrl = url.toLowerCase();
+        
+        // PRIORITY 1: Check by Cloudinary resource type in URL (most reliable for files without extensions)
+        // If URL contains '/raw/upload/', it's a document (PDF/DOCX)
+        if (lowerUrl.includes('/raw/upload/')) return 'pdf';
+        
+        // If URL contains '/image/upload/', it's an image
+        if (lowerUrl.includes('/image/upload/')) return 'image';
+        
+        // PRIORITY 2: Check by file extension (fallback for non-Cloudinary URLs)
+        if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/)) return 'image';
+        if (lowerUrl.match(/\.pdf$/)) return 'pdf';
+        if (lowerUrl.match(/\.(doc|docx)$/)) return 'doc';
+        
+        return 'unknown';
+    };
+
+    const handleViewCertificate = () => {
+        if (!request?.certificate_url) {
+            console.log('No certificate URL');
+            return;
+        }
+        
+        console.log('Certificate URL:', request.certificate_url);
+        const fileType = getFileType(request.certificate_url);
+        console.log('File type:', fileType);
+        
+        // Show all file types in modal viewer
+        console.log('Showing in modal...');
+        setCertificateLoadError(false);
+        setShowCertificateViewer(true);
+    };
 
     useEffect(() => {
         if (isOpen && requestId) {
             fetchRequestDetail();
             setShowRejectForm(false);
             setRejectionReason('');
-            setShowFullImage(false);
+            setShowCertificateViewer(false);
+            setCertificateLoadError(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, requestId]);
@@ -257,7 +295,7 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                             {/* Certificate */}
                             {request.certificate_url && (
                                 <button
-                                    onClick={() => setShowFullImage(true)}
+                                    onClick={handleViewCertificate}
                                     className="w-full flex items-center justify-between p-4 bg-[#f5f3ee] rounded-xl border border-[#d4af37]/20 hover:border-[#d4af37]/50 hover:shadow-md transition-all group text-left"
                                 >
                                     <div className="flex items-center gap-3">
@@ -266,7 +304,15 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-[#8a6d1c]">{t('verificationDetail.certificate')}</p>
-                                            <p className="text-xs text-gray-500">{t('verificationDetail.viewCertificate')}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {(() => {
+                                                    const fileType = getFileType(request.certificate_url);
+                                                    if (fileType === 'image') return t('verificationDetail.clickToViewImage');
+                                                    if (fileType === 'pdf') return t('verificationDetail.clickToOpenPDF');
+                                                    if (fileType === 'doc') return t('verificationDetail.clickToOpenDoc');
+                                                    return t('verificationDetail.clickToView');
+                                                })()}
+                                            </p>
                                         </div>
                                     </div>
                                     <ExternalLink className="w-4 h-4 text-[#d4af37] group-hover:scale-110 transition-transform" />
@@ -411,24 +457,76 @@ export const VerificationDetailModal: React.FC<VerificationDetailModalProps> = (
                 </div>
             </div>
 
-            {/* Full Image Overlay */}
-            {showFullImage && request?.certificate_url && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="relative max-w-lg w-full flex flex-col items-center justify-center">
-                        <button
-                            onClick={() => setShowFullImage(false)}
-                            className="absolute -top-12 right-0 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors z-10"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                        <img
-                            src={request.certificate_url}
-                            alt="Certificate Full Size"
-                            className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl bg-white"
-                        />
+            {/* Certificate Viewer Overlay - For all file types */}
+            {showCertificateViewer && request?.certificate_url && (() => {
+                const fileType = getFileType(request.certificate_url);
+                return (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+                        <div className="relative w-full max-w-5xl h-[90vh] flex flex-col bg-white rounded-2xl overflow-hidden shadow-2xl">
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] border-b border-[#d4af37]/20">
+                                <div className="flex items-center gap-3">
+                                    <FileText className="w-5 h-5 text-white" />
+                                    <div className="text-white">
+                                        <h3 className="font-semibold">{t('verificationDetail.certificate')}</h3>
+                                        <p className="text-xs opacity-80">
+                                            {fileType === 'image' && 'Image'}
+                                            {fileType === 'pdf' && 'PDF Document'}
+                                            {fileType === 'doc' && 'Word Document'}
+                                            {fileType === 'unknown' && 'Document'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowCertificateViewer(false)}
+                                    className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-hidden bg-gray-100">
+                                {certificateLoadError ? (
+                                    <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+                                        <XCircle className="w-16 h-16 text-red-400 mb-4" />
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('verificationDetail.cannotLoadDocument')}</h3>
+                                        <p className="text-gray-600 mb-6">{t('verificationDetail.documentError')}</p>
+                                        <a
+                                            href={request.certificate_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-6 py-3 bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white rounded-xl hover:brightness-110 transition-all inline-flex items-center gap-2"
+                                        >
+                                            <ExternalLink className="w-4 h-4" />
+                                            {t('verificationDetail.tryOpenNewTab')}
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-full">
+                                        {fileType === 'image' ? (
+                                            <div className="w-full h-full flex items-center justify-center p-4">
+                                                <img
+                                                    src={request.certificate_url}
+                                                    alt="Certificate"
+                                                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                                                    onError={() => setCertificateLoadError(true)}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <iframe
+                                                src={`${request.certificate_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                                                className="w-full h-full border-0"
+                                                title="Certificate Document"
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 };

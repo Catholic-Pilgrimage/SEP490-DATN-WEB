@@ -309,7 +309,16 @@ export const VerificationRequests: React.FC = () => {
                                                                 <TypeIcon className="w-3 h-3 text-[#d4af37]" />
                                                                 {t('table.site') || 'Cơ sở'}
                                                             </p>
-                                                            <p className="text-sm font-medium text-slate-700 truncate">{request.site_name}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                {request.site_cover_image && (
+                                                                    <img
+                                                                        src={request.site_cover_image}
+                                                                        alt={request.site_name}
+                                                                        className="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                                                                    />
+                                                                )}
+                                                                <p className="text-sm font-medium text-slate-700 truncate flex-1">{request.site_name}</p>
+                                                            </div>
                                                         </div>
 
                                                         <div className="px-5 py-3.5">

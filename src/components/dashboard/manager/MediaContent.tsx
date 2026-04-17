@@ -327,9 +327,9 @@ export const MediaContent: React.FC = () => {
                                         className={`group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-[#d4af37]/10 ${!media.is_active ? 'border-red-200 opacity-60' : 'border-[#d4af37]/20 hover:border-[#d4af37]/50'
                                             }`}
                                     >
-                                        {/* Media Preview */}
+                                        {/* Media Preview - Fixed height */}
                                         <div 
-                                            className="relative aspect-video bg-slate-100 flex-shrink-0 cursor-pointer group/preview"
+                                            className="relative h-48 bg-slate-100 flex-shrink-0 cursor-pointer group/preview"
                                             onClick={() => setViewerMedia(media)}
                                         >
                                             {media.type === 'image' ? (

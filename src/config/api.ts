@@ -42,6 +42,9 @@ export const API_CONFIG = {
             REPORTS: '/api/reports',
             REPORT_DETAIL: (id: string) => `/api/reports/${id}`,
             REPORT_RESOLVE: (id: string) => `/api/reports/${id}/resolve`,
+            // AI Prompts
+            AI_PROMPTS_LIST: '/api/admin/ai-prompts',
+            AI_PROMPT_DETAIL: (key: string) => `/api/admin/ai-prompts/${key}`,
         },
         MANAGER: {
             DASHBOARD_OVERVIEW: '/api/manager/dashboard/overview',

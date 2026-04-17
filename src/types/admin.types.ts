@@ -149,6 +149,24 @@ export interface UpdateSiteData {
     contact_info?: SiteContactInfo;
 }
 
+// POST /api/admin/sites - Request Body (Create new site)
+export interface CreateSiteData {
+    name: string;  // Required: 2-255 characters
+    province: string;  // Required
+    region: SiteRegion;  // Required: 'Bac' | 'Trung' | 'Nam'
+    type: SiteType;  // Required: 'church' | 'shrine' | 'monastery' | 'center' | 'other'
+    description?: string;
+    history?: string;
+    address?: string;
+    district?: string;
+    latitude?: number;
+    longitude?: number;
+    patron_saint?: string;
+    cover_image?: File;
+    opening_hours?: SiteOpeningHours;
+    contact_info?: SiteContactInfo;
+}
+
 // ============ VERIFICATION REQUEST TYPES ============
 
 // Verification request status
@@ -170,6 +188,7 @@ export interface VerificationRequest {
     site_province: string;
     site_type: SiteType;
     site_region: SiteRegion;
+    site_cover_image: string | null;
     status: VerificationStatus;
     created_at: string;
     applicant: VerificationApplicant;
@@ -1196,4 +1215,38 @@ export interface ResolveReportBody {
     action: 'resolved' | 'reject';
     note?: string;
     penalty?: unknown;
+}
+
+// ============ AI PROMPTS TYPES ============
+
+export type AIPromptKey = 
+    | 'route' 
+    | 'article' 
+    | 'review_summary' 
+    | 'events' 
+    | 'prayer' 
+    | 'translation_post_vi_en' 
+    | 'translation_comment_vi_en';
+
+export interface AIPrompt {
+    prompt_key: AIPromptKey;
+    description: string;
+    instruction_text: string;
+    version: number;
+    source: 'db' | 'default';
+    updated_at: string;
+}
+
+// GET /api/admin/ai-prompts - Response Data
+export type AIPromptsListData = AIPrompt[];
+
+// GET /api/admin/ai-prompts/{key} - Response Data
+export interface AIPromptDetailData {
+    prompt: AIPrompt;
+}
+
+// PUT /api/admin/ai-prompts/{key} - Request Body
+export interface UpdateAIPromptData {
+    instruction_text: string;
+    description?: string;
 }

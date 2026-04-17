@@ -21,11 +21,13 @@ import {
   CheckCircle,
   XCircle,
   Map as MapIcon,
-  List
+  List,
+  Plus
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSite, Pagination, SiteListParams, SiteRegion, SiteType, SiteDetail } from '../../../types/admin.types';
 import { SiteEditModal } from './SiteEditModal';
+import { SiteCreateModal } from './SiteCreateModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../contexts/ToastContext';
 import VietMapView from '../../../components/shared/VietMapView';
@@ -79,6 +81,8 @@ export const SiteManagement: React.FC = () => {
   const [siteForEdit, setSiteForEdit] = useState<SiteDetail | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [siteToDelete, setSiteToDelete] = useState<AdminSite | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -224,14 +228,23 @@ export const SiteManagement: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">{t('sites.title')}</h1>
           <p className="text-gray-500 mt-1">{t('sites.subtitle')}</p>
         </div>
-        <Button
-          onClick={handleManualRefresh}
-          disabled={loading}
-          className="flex items-center gap-2 h-[46px] px-6 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {t('common.refresh')}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 h-[46px] px-6 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-medium rounded-xl hover:brightness-110 transition-all shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-5 h-5" />
+            {t('sites.addSite')}
+          </Button>
+          <Button
+            onClick={handleManualRefresh}
+            disabled={loading}
+            className="flex items-center gap-2 h-[46px] px-6 bg-gradient-to-r from-[#8a6d1c] via-[#d4af37] to-[#8a6d1c] text-white font-medium rounded-xl hover:brightness-110 transition-all disabled:opacity-50 shadow-lg shadow-[#d4af37]/20"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            {t('common.refresh')}
+          </Button>
+        </div>
       </div>
 
       {/* Filters & View Toggle */}
@@ -625,6 +638,12 @@ export const SiteManagement: React.FC = () => {
         site={siteForEdit}
         isOpen={isEditModalOpen}
         onClose={() => { setIsEditModalOpen(false); setSiteForEdit(null); }}
+        onSuccess={() => fetchSites()}
+      />
+
+      <SiteCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => fetchSites()}
       />
 

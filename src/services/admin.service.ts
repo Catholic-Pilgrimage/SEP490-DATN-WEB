@@ -9,6 +9,7 @@ import {
     SiteListData,
     SiteListParams,
     SiteDetail,
+    CreateSiteData,
     UpdateSiteData,
     VerificationListData,
     VerificationListParams,
@@ -52,6 +53,10 @@ import {
     ReportListData,
     ReportDetail,
     ResolveReportBody,
+    AIPromptKey,
+    AIPromptsListData,
+    AIPromptDetailData,
+    UpdateAIPromptData,
 } from '../types/admin.types';
 import { ApiService } from './api.service';
 
@@ -426,6 +431,42 @@ export class AdminService {
     }
 
     /**
+     * Create new site (Admin only - placeholder/pre-create)
+     * Creates site with is_active=false and no manager assigned
+     * @param data - Site data to create
+     */
+    static async createSite(data: CreateSiteData): Promise<ApiResponse<SiteDetail>> {
+        const endpoint = API_CONFIG.ENDPOINTS.ADMIN.SITES;
+
+        // Tạo FormData từ data object
+        const formData = new FormData();
+
+        // Required fields
+        formData.append('name', data.name);
+        formData.append('province', data.province);
+        formData.append('region', data.region);
+        formData.append('type', data.type);
+
+        // Optional fields
+        if (data.description) formData.append('description', data.description);
+        if (data.history) formData.append('history', data.history);
+        if (data.address) formData.append('address', data.address);
+        if (data.district) formData.append('district', data.district);
+        if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
+        if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
+        if (data.patron_saint) formData.append('patron_saint', data.patron_saint);
+
+        // Upload file ảnh nếu có
+        if (data.cover_image) formData.append('cover_image', data.cover_image);
+
+        // opening_hours và contact_info gửi dạng JSON string
+        if (data.opening_hours) formData.append('opening_hours', JSON.stringify(data.opening_hours));
+        if (data.contact_info) formData.append('contact_info', JSON.stringify(data.contact_info));
+
+        return ApiService.postFormData<ApiResponse<SiteDetail>>(endpoint, formData);
+    }
+
+    /**
      * Update site information (Admin only)
      * Dùng FormData vì API nhận multipart/form-data để upload ảnh
      * @param id - Site ID (UUID)
@@ -771,5 +812,44 @@ export class AdminService {
             : API_CONFIG.ENDPOINTS.ADMIN.SOS_STATS;
 
         return ApiService.get<ApiResponse<AdminSOSStats>>(endpoint);
+    }
+
+    // ============ AI PROMPTS APIs ============
+
+    /**
+     * Get list of all AI prompts
+     * GET /api/admin/ai-prompts
+     */
+    static async getAIPrompts(): Promise<ApiResponse<AIPromptsListData>> {
+        return ApiService.get<ApiResponse<AIPromptsListData>>(
+            API_CONFIG.ENDPOINTS.ADMIN.AI_PROMPTS_LIST
+        );
+    }
+
+    /**
+     * Get a specific AI prompt by key
+     * GET /api/admin/ai-prompts/{key}
+     * @param key - Prompt key (route, article, review_summary, etc.)
+     */
+    static async getAIPrompt(key: AIPromptKey): Promise<ApiResponse<AIPromptDetailData>> {
+        return ApiService.get<ApiResponse<AIPromptDetailData>>(
+            API_CONFIG.ENDPOINTS.ADMIN.AI_PROMPT_DETAIL(key)
+        );
+    }
+
+    /**
+     * Update an AI prompt
+     * PUT /api/admin/ai-prompts/{key}
+     * @param key - Prompt key
+     * @param data - { instruction_text, description? }
+     */
+    static async updateAIPrompt(
+        key: AIPromptKey,
+        data: UpdateAIPromptData
+    ): Promise<ApiResponse<AIPromptDetailData>> {
+        return ApiService.put<ApiResponse<AIPromptDetailData>>(
+            API_CONFIG.ENDPOINTS.ADMIN.AI_PROMPT_DETAIL(key),
+            data
+        );
     }
 }
