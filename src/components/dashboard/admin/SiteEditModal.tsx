@@ -460,9 +460,62 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
 
                         {/* Opening Hours Section */}
                         <div className="space-y-4 pt-4 border-t border-slate-200">
-                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <Clock className="w-4 h-4" /> {t('edit.openingHours')}
-                            </h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <Clock className="w-4 h-4" /> {t('edit.openingHours')}
+                                </h3>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const firstValue = (openingHours as Record<string, string>)[days[0]] || '';
+                                            if (firstValue) {
+                                                const allDays: Record<string, string> = {};
+                                                days.forEach(day => {
+                                                    allDays[day] = firstValue;
+                                                });
+                                                setOpeningHours(allDays);
+                                            }
+                                        }}
+                                        className="px-2.5 py-1 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-lg transition-colors border border-[#d4af37]/30"
+                                    >
+                                        {t('openingHours.applyAll')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const firstValue = (openingHours as Record<string, string>)[days[0]] || '';
+                                            if (firstValue) {
+                                                const weekdays: (keyof SiteOpeningHours)[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                                                const updated = { ...openingHours };
+                                                weekdays.forEach(day => {
+                                                    updated[day] = firstValue;
+                                                });
+                                                setOpeningHours(updated);
+                                            }
+                                        }}
+                                        className="px-2.5 py-1 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-lg transition-colors border border-[#d4af37]/30"
+                                    >
+                                        {t('openingHours.applyWeekdays')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const firstValue = (openingHours as Record<string, string>)[days[0]] || '';
+                                            if (firstValue) {
+                                                setOpeningHours(prev => ({
+                                                    ...prev,
+                                                    saturday: firstValue,
+                                                    sunday: firstValue
+                                                }));
+                                            }
+                                        }}
+                                        className="px-2.5 py-1 text-xs font-medium text-[#8a6d1c] bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-lg transition-colors border border-[#d4af37]/30"
+                                    >
+                                        {t('openingHours.applyWeekend')}
+                                    </button>
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {days.map(day => (

@@ -14,6 +14,7 @@ import {
   Wallet,
   Flag,
   Star,
+  Sparkles,
 } from 'lucide-react';
 import { User } from '../../../App';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -39,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'verifications', path: '/dashboard/verifications', label: t('menu.verifications'), icon: ClipboardCheck },
     { id: 'sos', path: '/dashboard/sos', label: t('menu.sos'), icon: AlertTriangle },
     { id: 'reports', path: '/dashboard/reports', label: t('menu.reports'), icon: Flag },
+    { id: 'ai-prompts', path: '/dashboard/ai-prompts', label: 'AI Prompts', icon: Sparkles },
   ];
 
   const managerMenuItems = [
