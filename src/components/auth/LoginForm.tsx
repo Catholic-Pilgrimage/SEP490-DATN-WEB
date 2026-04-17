@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Eye, EyeOff, Mail, Lock, LogIn, Check } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Mail, Lock, LogIn } from 'lucide-react';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../types/auth.types';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
@@ -130,15 +130,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <p className="text-xl font-serif italic opacity-90 leading-relaxed text-[#fdf5e6]" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
               {t.quote}
             </p>
-            <footer className="text-sm mt-2 text-[#d4af37] font-medium">{t.quoteSource}</footer>
           </blockquote>
           <h2 className="text-4xl font-serif font-bold tracking-tight text-white mb-2" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             Catholic Pilgrimage Guide
           </h2>
-          <div className="flex items-center gap-2 text-[#d4af37]/80">
-            <Check className="w-4 h-4" />
-            <p className="text-sm font-medium tracking-wide uppercase">Web Administration Portal v2.4</p>
-          </div>
         </div>
       </div>
 

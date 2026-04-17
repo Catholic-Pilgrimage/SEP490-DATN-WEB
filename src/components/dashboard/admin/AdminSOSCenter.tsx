@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   AlertTriangle,
   Phone,
@@ -9,8 +9,9 @@ import {
   RefreshCw,
   Filter,
   CalendarIcon,
-  Navigation,
-  X
+  X,
+  UserCheck,
+  FileText,
 } from 'lucide-react';
 import { AdminService } from '../../../services/admin.service';
 import { AdminSOSRequest, SOSStatus, AdminSite, AdminSOSStats } from '../../../types/admin.types';
@@ -36,6 +37,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import VietMapView from '@/components/shared/VietMapView';
+import {
+  Pagination as ShadcnPagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export const AdminSOSCenter: React.FC = () => {
   const { t } = useLanguage();
@@ -50,6 +60,11 @@ export const AdminSOSCenter: React.FC = () => {
   const [sites, setSites] = useState<AdminSite[]>([]);
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const hasNavigated = useRef(false);
 
   const fetchSOSData = async (isManualRefresh = false) => {
     if (isManualRefresh) {
@@ -61,11 +76,12 @@ export const AdminSOSCenter: React.FC = () => {
     try {
       const [listRes, statsRes] = await Promise.all([
         AdminService.getSOSRequests({
+          page: currentPage,
+          limit: 10,
           status: statusFilter === '' ? undefined : statusFilter,
           site_id: siteFilter === 'all' ? undefined : (siteFilter || undefined),
           from_date: fromDate || undefined,
           to_date: toDate || undefined,
-          limit: 100 // Load up to 100 alerts for the view
         }),
         AdminService.getSOSStats({
           site_id: siteFilter === 'all' ? undefined : (siteFilter || undefined),
@@ -75,7 +91,11 @@ export const AdminSOSCenter: React.FC = () => {
       ]);
 
       if (listRes.success && listRes.data) {
-        setSosAlerts(listRes.data.sosRequests);
+        const data = listRes.data as { sosRequests: AdminSOSRequest[]; pagination?: { total: number; totalPages: number } };
+        setSosAlerts(data.sosRequests);
+        if (data.pagination) {
+          setTotalPages(data.pagination.totalPages);
+        }
       }
 
       if (statsRes.success && statsRes.data) {
@@ -108,7 +128,15 @@ export const AdminSOSCenter: React.FC = () => {
     const interval = setInterval(() => fetchSOSData(false), 300000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, siteFilter, fromDate, toDate]);
+  }, [statusFilter, siteFilter, fromDate, toDate, currentPage]);
+
+  // Smooth scroll to top of list when page changes
+  useEffect(() => {
+    if (hasNavigated.current && listRef.current) {
+      listRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    hasNavigated.current = true;
+  }, [currentPage]);
 
   useEffect(() => {
     // Fetch sites for dropdown
@@ -168,7 +196,7 @@ export const AdminSOSCenter: React.FC = () => {
 
             {/* Site Dropdown */}
             <div className="relative">
-              <Select value={siteFilter} onValueChange={setSiteFilter}>
+              <Select value={siteFilter} onValueChange={(v) => { setSiteFilter(v); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[150px] h-[38px] bg-[#f5f3ee] hover:bg-[#d4af37]/10 transition-colors rounded-xl text-slate-700 font-medium focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] border border-[#d4af37]/30 hover:border-[#d4af37]/50 cursor-pointer">
                   <SelectValue placeholder={t('sos.allSites')} />
                 </SelectTrigger>
@@ -204,6 +232,7 @@ export const AdminSOSCenter: React.FC = () => {
                     onSelect={(date) => {
                       setFromDate(date ? format(date, "yyyy-MM-dd") : '');
                       if (date && toDate && date > new Date(toDate)) setToDate('');
+                      setCurrentPage(1);
                     }}
                     disabled={toDate ? { after: new Date(toDate) } : undefined}
                     initialFocus
@@ -213,7 +242,7 @@ export const AdminSOSCenter: React.FC = () => {
               {fromDate && (
                 <button
                   type="button"
-                  onClick={() => setFromDate('')}
+                  onClick={() => { setFromDate(''); setCurrentPage(1); }}
                   className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -241,6 +270,7 @@ export const AdminSOSCenter: React.FC = () => {
                     onSelect={(date) => {
                       setToDate(date ? format(date, "yyyy-MM-dd") : '');
                       if (date && fromDate && date < new Date(fromDate)) setFromDate('');
+                      setCurrentPage(1);
                     }}
                     disabled={fromDate ? { before: new Date(fromDate) } : undefined}
                     initialFocus
@@ -250,7 +280,7 @@ export const AdminSOSCenter: React.FC = () => {
               {toDate && (
                 <button
                   type="button"
-                  onClick={() => setToDate('')}
+                  onClick={() => { setToDate(''); setCurrentPage(1); }}
                   className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -260,7 +290,7 @@ export const AdminSOSCenter: React.FC = () => {
 
             {/* Status Dropdown */}
             <div className="relative">
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value === 'all' ? '' : value as SOSStatus)}>
+              <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value === 'all' ? '' : value as SOSStatus); setCurrentPage(1); }}>
                 <SelectTrigger className="w-[150px] h-[38px] bg-[#f5f3ee] hover:bg-[#d4af37]/10 transition-colors rounded-xl text-slate-700 font-medium focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] border border-[#d4af37]/30 hover:border-[#d4af37]/50 cursor-pointer">
                   <SelectValue placeholder={t('sos.allStatuses')} />
                 </SelectTrigger>
@@ -346,7 +376,7 @@ export const AdminSOSCenter: React.FC = () => {
       </div>
 
       {/* SOS Alerts List */}
-      <div className="space-y-4">
+      <div ref={listRef} className={`space-y-4 transition-opacity duration-300 ${isLoading && sosAlerts.length > 0 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
         {isLoading && sosAlerts.length === 0 ? (
           <div className="text-center py-12 text-[#8a6d1c]">
             <RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4" />
@@ -361,7 +391,15 @@ export const AdminSOSCenter: React.FC = () => {
             <p className="text-slate-500">{t('sos.noAlerts')}</p>
           </div>
         ) : (
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`page-${currentPage}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
             {sosAlerts.map((alert) => {
               const statusInfo = getStatusInfo(alert.status);
               const StatusIcon = statusInfo.icon;
@@ -369,13 +407,8 @@ export const AdminSOSCenter: React.FC = () => {
               const severity = alert.status === 'pending' ? 'high' : alert.status === 'accepted' ? 'medium' : 'low';
 
               return (
-                <motion.div
+                <div
                   key={alert.id}
-                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -15 }}
-                  transition={{ duration: 0.25 }}
-                  layout
                 >
                   <Card
                     className={`
@@ -453,15 +486,6 @@ export const AdminSOSCenter: React.FC = () => {
                               <MapPin className="w-3.5 h-3.5" />
                               <span>{t('sos.location')}</span>
                             </div>
-                            <a
-                              href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-[10px] font-semibold text-[#8a6d1c] hover:text-[#d4af37] transition-colors"
-                            >
-                              <Navigation className="w-3 h-3" />
-                              {t('sos.mapView')}
-                            </a>
                           </div>
                           <div className="rounded-lg overflow-hidden">
                             <VietMapView
@@ -494,11 +518,30 @@ export const AdminSOSCenter: React.FC = () => {
                           <div className="font-bold text-slate-900 text-[15px] truncate">
                             {alert.assignedGuide ? alert.assignedGuide.full_name : t('sos.unassigned')}
                           </div>
+                          {alert.assigned_at && (
+                            <div className="text-sm text-slate-600 flex items-center gap-1.5 mt-1">
+                              <UserCheck className="w-3.5 h-3.5 text-amber-500" />
+                              <span className="text-slate-400">{t('sos.assignedAt') || 'Phân công lúc'}</span>{' '}
+                              {new Date(alert.assigned_at).toLocaleString('vi-VN')}
+                            </div>
+                          )}
                           <div className="text-sm text-slate-600 mt-1">
-                            <span className="text-slate-400 mr-1">{t('sos.created')}</span> {new Date(alert.created_at).toLocaleTimeString()}
+                            <span className="text-slate-400 mr-1">{t('sos.created')}</span>{' '}
+                            {new Date(alert.created_at).toLocaleString('vi-VN')}
                           </div>
                         </div>
                       </div>
+
+                      {/* Notes */}
+                      {alert.notes && (
+                        <div className="bg-blue-50/80 p-4 rounded-xl border border-blue-100 mb-2">
+                          <div className="flex items-center gap-2 text-blue-700/70 font-semibold uppercase tracking-wider text-xs mb-1.5">
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>{t('sos.notes') || 'Ghi chú xử lý'}</span>
+                          </div>
+                          <p className="text-sm text-blue-900 leading-relaxed">{alert.notes}</p>
+                        </div>
+                      )}
 
                       {/* Actions */}
                       {(alert.status === 'resolved' || alert.status === 'cancelled') && (
@@ -521,12 +564,68 @@ export const AdminSOSCenter: React.FC = () => {
                       )}
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               );
             })}
+            </motion.div>
           </AnimatePresence>
         )}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4">
+          <p className="text-sm text-slate-500">
+            {t('pagination.page') || 'Trang'} {currentPage} / {totalPages}
+          </p>
+          <ShadcnPagination className="justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => currentPage > 1 && setCurrentPage(p => Math.max(1, p - 1))}
+                  className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === 1 ? "pointer-events-none opacity-40" : ""}`}
+                />
+              </PaginationItem>
+
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) pageNum = i + 1;
+                else if (currentPage <= 3) pageNum = i + 1;
+                else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                else pageNum = currentPage - 2 + i;
+
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className={`cursor-pointer rounded-lg border border-[#d4af37]/30 text-sm px-3 py-2 ${currentPage === pageNum
+                        ? 'bg-gradient-to-r from-[#8a6d1c] to-[#d4af37] text-white hover:text-white hover:brightness-110'
+                        : 'text-[#8a6d1c] bg-white hover:bg-[#d4af37]/10'
+                        }`}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationEllipsis className="text-[#8a6d1c]" />
+                </PaginationItem>
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => currentPage < totalPages && setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={`cursor-pointer text-[#8a6d1c] hover:text-[#8a6d1c] hover:bg-[#d4af37]/10 ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}`}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </ShadcnPagination>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { X, Save, Loader2, MapPin, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Save, Loader2, MapPin, Upload, Map } from 'lucide-react';
+import MapLocationPicker, { LocationResult } from '@/components/shared/MapLocationPicker';
+import { geocodeAddress } from '@/services/vietmap.service';
 import { AdminService } from '../../../services/admin.service';
 import { CreateSiteData, SiteRegion, SiteType, SiteOpeningHours } from '../../../types/admin.types';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -51,6 +53,54 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
     const [latitude, setLatitude] = useState('');
     const [longitude, setLongitude] = useState('');
     const [patronSaint, setPatronSaint] = useState('');
+    const [showMapPicker, setShowMapPicker] = useState(false);
+
+    const addressGeocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const coordsRef = useRef<{ lat?: number; lng?: number }>({});
+
+    useEffect(() => {
+        coordsRef.current = {
+            lat: latitude ? parseFloat(latitude) : undefined,
+            lng: longitude ? parseFloat(longitude) : undefined,
+        };
+    }, [latitude, longitude]);
+
+    useEffect(() => {
+        const addr = address.trim();
+        if (!addr || addr.length < 3) return;
+
+        if (addressGeocodeTimerRef.current) {
+            clearTimeout(addressGeocodeTimerRef.current);
+        }
+
+        addressGeocodeTimerRef.current = setTimeout(async () => {
+            addressGeocodeTimerRef.current = null;
+            const focus = coordsRef.current.lat != null && coordsRef.current.lng != null
+                ? { lat: coordsRef.current.lat, lng: coordsRef.current.lng }
+                : undefined;
+            const result = await geocodeAddress(addr, focus);
+            if (result) {
+                setLatitude(result.latitude.toString());
+                setLongitude(result.longitude.toString());
+                if (result.district) setDistrict(result.district);
+                if (result.province) setProvince(result.province);
+            }
+        }, 600);
+
+        return () => {
+            if (addressGeocodeTimerRef.current) {
+                clearTimeout(addressGeocodeTimerRef.current);
+            }
+        };
+    }, [address]);
+
+    const handleLocationSelect = (location: LocationResult) => {
+        setLatitude(location.latitude.toString());
+        setLongitude(location.longitude.toString());
+        if (location.address) setAddress(location.address);
+        if (location.district) setDistrict(location.district);
+        if (location.province) setProvince(location.province);
+    };
 
     // Opening hours
     const [openingHours, setOpeningHours] = useState<SiteOpeningHours>({
@@ -158,6 +208,7 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
             setLatitude('');
             setLongitude('');
             setPatronSaint('');
+            setShowMapPicker(false);
             setOpeningHours({
                 monday: '',
                 tuesday: '',
@@ -289,13 +340,36 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
 
                     {/* Location */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wide flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {t('edit.location')}
-                        </h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-[#8a6d1c] uppercase tracking-wide flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                {t('edit.location')}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowMapPicker(prev => !prev)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all"
+                                style={showMapPicker
+                                    ? { background: 'linear-gradient(to right, #8a6d1c, #d4af37)', color: 'white', borderColor: 'transparent' }
+                                    : { background: 'transparent', color: '#8a6d1c', borderColor: '#d4af37' }
+                                }
+                            >
+                                <Map className="w-3.5 h-3.5" />
+                                {showMapPicker ? 'Ẩn bản đồ' : 'Chọn trên bản đồ'}
+                            </button>
+                        </div>
+
+                        {/* Map Picker */}
+                        {showMapPicker && (
+                            <MapLocationPicker
+                                initialLat={latitude ? parseFloat(latitude) : 10.7769}
+                                initialLng={longitude ? parseFloat(longitude) : 106.7009}
+                                onLocationSelect={handleLocationSelect}
+                            />
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     {t('edit.province')} <span className="text-red-500">*</span>
                                 </label>
@@ -307,7 +381,7 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
                                 />
                             </div>
 
-                            <div>
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     {t('edit.district')}
                                 </label>
@@ -340,6 +414,7 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
                                     step="any"
                                     value={latitude}
                                     onChange={(e) => setLatitude(e.target.value)}
+                                    disabled
                                     placeholder="10.7769"
                                     className="border-[#d4af37]/30 focus-visible:ring-[#d4af37]"
                                 />
@@ -354,6 +429,7 @@ export const SiteCreateModal: React.FC<SiteCreateModalProps> = ({
                                     step="any"
                                     value={longitude}
                                     onChange={(e) => setLongitude(e.target.value)}
+                                    disabled
                                     placeholder="106.7009"
                                     className="border-[#d4af37]/30 focus-visible:ring-[#d4af37]"
                                 />

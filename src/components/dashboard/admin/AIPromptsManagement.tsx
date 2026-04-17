@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Sparkles,
     Edit,
@@ -52,7 +52,7 @@ export const AIPromptsManagement: React.FC = () => {
     const [originalInstructionText, setOriginalInstructionText] = useState('');
 
     // Fetch prompts
-    const fetchPrompts = async () => {
+    const fetchPrompts = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -67,11 +67,11 @@ export const AIPromptsManagement: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t]);
 
     useEffect(() => {
         fetchPrompts();
-    }, []);
+    }, [fetchPrompts]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
