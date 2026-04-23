@@ -837,7 +837,7 @@ export interface FinanceOverviewData {
 // ============ WALLET TRANSACTION TYPES ============
 
 export type TransactionType = 'escrow_lock' | 'escrow_refund' | 'withdraw' | 'penalty_applied' | 'penalty_received' | 'penalty_refunded' | 'deposit' | 'topup';
-export type TransactionStatus = 'completed' | 'pending' | 'failed';
+export type TransactionStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
 export type TransactionReferenceType = 'planner_deposit' | 'planner' | 'planner_penalty' | 'payos_payout' | 'payos_topup' | 'wallet';
 
 export interface WalletTransactionUser {

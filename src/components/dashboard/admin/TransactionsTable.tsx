@@ -184,6 +184,7 @@ export const TransactionsTable: React.FC = () => {
       case 'completed': return <CheckCircle className="w-3.5 h-3.5" />;
       case 'pending': return <Clock className="w-3.5 h-3.5" />;
       case 'failed': return <XCircle className="w-3.5 h-3.5" />;
+      case 'cancelled': return <XCircle className="w-3.5 h-3.5" />;
     }
   };
 
@@ -192,6 +193,7 @@ export const TransactionsTable: React.FC = () => {
       case 'completed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'failed': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'cancelled': return 'bg-slate-50 text-slate-500 border-slate-200';
     }
   };
 
@@ -200,6 +202,7 @@ export const TransactionsTable: React.FC = () => {
       completed: t('txn.status.completed'),
       pending: t('txn.status.pending'),
       failed: t('txn.status.failed'),
+      cancelled: t('txn.status.cancelled'),
     };
     return labels[status] || status;
   };
@@ -294,6 +297,7 @@ export const TransactionsTable: React.FC = () => {
                   <SelectItem value="completed">{t('txn.status.completed')}</SelectItem>
                   <SelectItem value="pending">{t('txn.status.pending')}</SelectItem>
                   <SelectItem value="failed">{t('txn.status.failed')}</SelectItem>
+                  <SelectItem value="cancelled">{t('txn.status.cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
 

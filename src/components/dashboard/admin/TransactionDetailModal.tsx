@@ -137,6 +137,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'completed': return <CheckCircle className="w-4 h-4" />;
       case 'pending': return <Clock className="w-4 h-4" />;
       case 'failed': return <XCircle className="w-4 h-4" />;
+      case 'cancelled': return <XCircle className="w-4 h-4" />;
     }
   };
 
@@ -145,6 +146,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'completed': return 'bg-green-100 text-green-700 border-green-200';
       case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'failed': return 'bg-red-100 text-red-700 border-red-200';
+      case 'cancelled': return 'bg-slate-100 text-slate-500 border-slate-200';
     }
   };
 
@@ -153,6 +155,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       completed: t('txn.status.completed'),
       pending: t('txn.status.pending'),
       failed: t('txn.status.failed'),
+      cancelled: t('txn.status.cancelled'),
     };
     return labels[status] || status;
   };
