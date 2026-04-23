@@ -155,7 +155,7 @@ export const ScheduleContent: React.FC = () => {
     ];
 
     return (
-        <div className="flex h-full min-h-0 flex-col gap-6 p-6">
+        <div className="flex min-h-0 flex-col gap-6 p-6 pb-10">
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex gap-4">
@@ -253,7 +253,7 @@ export const ScheduleContent: React.FC = () => {
             )}
 
             {loading ? (
-                <Card className="flex min-h-[280px] flex-1 items-center justify-center rounded-2xl border-[#d4af37]/20">
+                <Card className="flex min-h-[280px] items-center justify-center rounded-2xl border-[#d4af37]/20">
                     <CardContent className="flex flex-col items-center gap-3 py-16">
                         <Loader2 className="h-9 w-9 animate-spin text-[#d4af37]" />
                         <p className="text-sm text-slate-500">{t('modal.loading')}</p>
@@ -262,8 +262,8 @@ export const ScheduleContent: React.FC = () => {
             ) : (
                 <>
                     {scheduleList.length === 0 ? (
-                        <Card className="flex min-h-[320px] flex-1 flex-col rounded-2xl border-[#d4af37]/20">
-                            <CardContent className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+                        <Card className="flex min-h-[320px] flex-col rounded-2xl border-[#d4af37]/20">
+                            <CardContent className="flex flex-col items-center justify-center px-6 py-16 text-center">
                                 <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f5f3ee] to-[#ece8dc] ring-1 ring-[#d4af37]/15">
                                     <Calendar className="h-9 w-9 text-[#d4af37]/50" />
                                 </div>
@@ -272,7 +272,7 @@ export const ScheduleContent: React.FC = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="min-h-0 flex-1 overflow-hidden rounded-2xl border-[#d4af37]/20 shadow-md shadow-[#d4af37]/5">
+                        <Card className="overflow-x-auto rounded-2xl border-[#d4af37]/20 shadow-md shadow-[#d4af37]/5">
                             <CardContent className="p-0">
                                 <Table>
                                     <TableHeader className="sticky top-0 z-10 bg-gradient-to-r from-[#f5f3ee] via-[#faf8f3] to-[#f5f3ee] shadow-[0_1px_0_0_rgba(212,175,55,0.2)]">

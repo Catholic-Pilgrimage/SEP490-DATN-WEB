@@ -532,20 +532,6 @@ export const SiteEditModal: React.FC<SiteEditModalProps> = ({
                                 ))}
                             </div>
                         </div>
-
-                        {/* Status */}
-                        <div className="pt-4 border-t border-[#d4af37]/20">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="is_active"
-                                    checked={formData.is_active || false}
-                                    onChange={handleInputChange}
-                                    className="w-5 h-5 rounded border-[#d4af37]/50 text-[#d4af37] focus:ring-[#d4af37]"
-                                />
-                                <span className="text-sm font-medium text-slate-700">{t('edit.siteActive')}</span>
-                            </label>
-                        </div>
                     </div>
 
                     {/* Actions */}
