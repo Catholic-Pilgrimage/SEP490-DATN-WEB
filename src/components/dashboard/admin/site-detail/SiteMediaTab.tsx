@@ -4,6 +4,7 @@ import { AdminService } from '../../../../services/admin.service';
 import { useLanguage } from '../../../../contexts/LanguageContext';
 import { SiteMedia, SiteMediaResponse, MediaStatus, MediaType } from '../../../../types/admin.types';
 import { extractErrorMessage } from '../../../../lib/utils';
+import { Model3DViewer } from '../../../shared/Model3DViewer';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -41,7 +42,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
     const [limit] = useState(12);
     const [statusFilter, setStatusFilter] = useState<MediaStatus | ''>('');
     const [typeFilter, setTypeFilter] = useState<MediaType | ''>('');
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewMedia, setPreviewMedia] = useState<SiteMedia | null>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -206,7 +207,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                                 <div
                                     key={media.id}
                                     className="relative group rounded-xl overflow-hidden bg-slate-100 aspect-video cursor-pointer"
-                                    onClick={() => setPreviewUrl(media.url)}
+                                    onClick={() => setPreviewMedia(media)}
                                 >
                                     {/* Thumbnail */}
                                     {thumbnailUrl ? (
@@ -318,8 +319,8 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
             )}
 
             {/* Preview Modal */}
-            <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) setPreviewUrl(null); }}>
-                <DialogContent className="p-0 overflow-hidden bg-black/90 border-white/10 max-w-5xl [&>button]:hidden">
+            <Dialog open={!!previewMedia} onOpenChange={(open) => { if (!open) setPreviewMedia(null); }}>
+                <DialogContent className={`p-0 overflow-hidden bg-black/90 border-white/10 [&>button]:hidden ${previewMedia?.type === 'model_3d' ? 'max-w-4xl' : 'max-w-5xl'}`}>
                     <DialogHeader className="sr-only">
                         <DialogTitle>Preview</DialogTitle>
                     </DialogHeader>
@@ -328,27 +329,47 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => setPreviewUrl(null)}
-                            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white shadow-none"
+                            onClick={() => setPreviewMedia(null)}
+                            className="absolute top-3 right-3 z-10 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white shadow-none"
                         >
                             <X className="w-5 h-5" />
                         </Button>
 
-                        {previewUrl && (isYouTubeUrl(previewUrl) ? (
-                            <iframe
-                                src={previewUrl.replace('watch?v=', 'embed/')}
-                                className="w-full aspect-video"
-                                allowFullScreen
-                            />
-                        ) : (
-                            <div className="w-full max-h-[85vh] flex items-center justify-center p-4">
-                                <img
-                                    src={previewUrl}
-                                    alt="Preview"
-                                    className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                        {previewMedia && (
+                            previewMedia.type === 'video' && isYouTubeUrl(previewMedia.url) ? (
+                                <iframe
+                                    src={previewMedia.url.replace('watch?v=', 'embed/')}
+                                    className="w-full aspect-video"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
                                 />
-                            </div>
-                        ))}
+                            ) : previewMedia.type === 'video' && !isYouTubeUrl(previewMedia.url) ? (
+                                <div className="w-full aspect-video bg-black flex items-center justify-center">
+                                    <video
+                                        src={previewMedia.url}
+                                        controls
+                                        autoPlay
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            ) : previewMedia.type === 'model_3d' ? (
+                                <div className="w-full aspect-video">
+                                    <Model3DViewer
+                                        src={previewMedia.url}
+                                        alt={previewMedia.caption || '3D Model Viewer'}
+                                        className="w-full h-full rounded-lg"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-full max-h-[85vh] flex items-center justify-center p-4">
+                                    <img
+                                        src={previewMedia.url}
+                                        alt="Preview"
+                                        className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                                    />
+                                </div>
+                            )
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
