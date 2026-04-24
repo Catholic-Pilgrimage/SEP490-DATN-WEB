@@ -344,6 +344,41 @@ export const SiteInfoTab: React.FC<SiteInfoTabProps> = ({ site, regionInfo, form
                 )}
             </div>
 
+            {/* Manager Info */}
+            {site.manager && (
+                <div className="pt-4 border-t border-slate-200">
+                    <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <User className="w-4 h-4 text-[#d4af37]" />
+                        Quản lý Site
+                    </h3>
+                    <div className="bg-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/10">
+                        <div className="flex items-center gap-3">
+                            {site.manager.avatar_url ? (
+                                <img 
+                                    src={site.manager.avatar_url} 
+                                    alt={site.manager.full_name}
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-[#d4af37]/30"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+                                    <User className="w-6 h-6 text-white" />
+                                </div>
+                            )}
+                            <div className="flex-1">
+                                <p className="font-semibold text-slate-900">{site.manager.full_name}</p>
+                                <p className="text-sm text-slate-600">{site.manager.email}</p>
+                                {site.manager.phone && (
+                                    <p className="text-sm text-slate-600 flex items-center gap-1 mt-1">
+                                        <Phone className="w-3 h-3" />
+                                        {site.manager.phone}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Created By & Dates */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
                 {site.created_by && (

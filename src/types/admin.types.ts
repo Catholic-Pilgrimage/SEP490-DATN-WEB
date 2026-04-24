@@ -121,12 +121,22 @@ export interface SiteCreatedBy {
     email: string;
 }
 
+// Manager info in site detail
+export interface SiteManager {
+    id: string;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    avatar_url: string | null;
+}
+
 // GET /api/admin/sites/{id} - Site Detail Response
 export interface SiteDetail extends AdminSite {
     history: string | null;
     opening_hours: SiteOpeningHours | null;
     contact_info: SiteContactInfo | null;
     created_by: SiteCreatedBy | null;
+    manager: SiteManager | null;
     updated_at: string;
 }
 
@@ -368,6 +378,10 @@ export interface SiteMedia {
     status: MediaStatus;
     rejection_reason: string | null;
     is_active: boolean;
+    audio_url: string | null;
+    narration_text: string | null;
+    narrative_status: string | null;
+    narrative_rejection_reason: string | null;
     created_by: string;
     created_at: string;
     updated_at: string;
@@ -901,6 +915,14 @@ export interface BankInfo {
     account_number: string;
     account_name: string;
     bank_code: string;
+}
+
+export interface BankInfo {
+  bin: string;
+  name: string;
+  short_name: string;
+  code: string;
+  logo: string;
 }
 
 export interface Withdrawal {

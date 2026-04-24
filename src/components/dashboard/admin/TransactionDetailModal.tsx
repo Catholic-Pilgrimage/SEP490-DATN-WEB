@@ -30,7 +30,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AdminService } from '../../../services/admin.service';
-import { WalletTransaction, TransactionType, TransactionStatus, TransactionReferenceType } from '../../../types/admin.types';
+import { ApiService } from '../../../services/api.service';
+import { WalletTransaction, TransactionType, TransactionStatus, TransactionReferenceType, BankInfo } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { extractErrorMessage } from '../../../lib/utils';
@@ -50,6 +51,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const { showToast } = useToast();
   const [detailData, setDetailData] = useState<WalletTransaction | null>(null);
   const [loading, setLoading] = useState(false);
+  const [banks, setBanks] = useState<BankInfo[]>([]);
 
   useEffect(() => {
     if (isOpen && transactionId) {
@@ -59,6 +61,21 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, transactionId]);
+
+  // Fetch banks on mount
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const response = await ApiService.getBanks();
+        if (response.success && response.data) {
+          setBanks(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching banks:', err);
+      }
+    };
+    fetchBanks();
+  }, []);
 
   const fetchDetail = async (id: string) => {
     setLoading(true);
@@ -170,6 +187,11 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       wallet: t('txn.refType.wallet'),
     };
     return labels[refType] || refType;
+  };
+
+  const getBankInfo = (bankCode: string) => {
+    // Try to match by bin first (e.g., "970423"), then by code (e.g., "VBA")
+    return banks.find(b => b.bin === bankCode || b.code === bankCode);
   };
 
   const handleDialogChange = (open: boolean) => {
@@ -323,16 +345,41 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
               {/* ── Bank info ── */}
               {detailData.bank_info && (
-                <div className="bg-[#f5f3ee] rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-[#8a6d1c] mb-2.5">
+                <div className="bg-gradient-to-br from-[#f5f3ee] via-white to-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/20">
+                  <div className="flex items-center gap-2 text-[#8a6d1c] mb-3">
                     <Landmark className="w-4 h-4" />
                     <span className="text-xs font-semibold uppercase tracking-wider">Thông tin ngân hàng</span>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-900">{detailData.bank_info.account_name}</p>
-                    <p className="text-xs text-slate-500 font-medium">
-                      {detailData.bank_info.bank_code} • {detailData.bank_info.account_number}
-                    </p>
+                  <div className="flex items-center gap-3 mb-3">
+                    {getBankInfo(detailData.bank_info.bank_code)?.logo && (
+                      <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 flex items-center justify-center p-2.5 shrink-0 shadow-md hover:shadow-lg transition-shadow">
+                        <img 
+                          src={getBankInfo(detailData.bank_info.bank_code)?.logo} 
+                          alt={detailData.bank_info.bank_code}
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-slate-100/20 pointer-events-none" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-bold text-slate-900 mb-0.5">
+                        {getBankInfo(detailData.bank_info.bank_code)?.name || detailData.bank_info.bank_code}
+                      </p>
+                      <p className="text-xs text-[#8a6d1c] font-medium">
+                        {getBankInfo(detailData.bank_info.bank_code)?.short_name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 bg-white/60 rounded-lg p-3 border border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-medium">Số tài khoản</span>
+                      <span className="text-sm text-slate-900 font-bold font-mono">{detailData.bank_info.account_number}</span>
+                    </div>
+                    <div className="h-px bg-slate-100" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-medium">Chủ tài khoản</span>
+                      <span className="text-sm text-slate-900 font-semibold">{detailData.bank_info.account_name}</span>
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import { API_CONFIG, STORAGE_KEYS } from '../config/api';
 import { extractErrorMessage } from '../lib/utils';
+import { BankInfo } from '../types/admin.types';
 
 // Flag to prevent multiple refresh attempts at the same time
 let isRefreshing = false;
@@ -251,5 +252,12 @@ export class ApiService {
         }
 
         return data as T;
+    }
+
+    /**
+     * Get list of banks
+     */
+    static async getBanks(): Promise<{ success: boolean; data: BankInfo[] }> {
+        return this.get<{ success: boolean; data: BankInfo[] }>('/api/wallet/banks');
     }
 }

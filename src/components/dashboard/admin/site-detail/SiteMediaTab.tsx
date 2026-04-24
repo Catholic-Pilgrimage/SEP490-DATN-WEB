@@ -358,6 +358,8 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
                                         src={previewMedia.url}
                                         alt={previewMedia.caption || '3D Model Viewer'}
                                         className="w-full h-full rounded-lg"
+                                        audioUrl={previewMedia.audio_url}
+                                        narrationText={previewMedia.narration_text}
                                     />
                                 </div>
                             ) : (

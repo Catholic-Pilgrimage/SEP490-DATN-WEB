@@ -12,15 +12,30 @@ import {
   Landmark,
   AlertTriangle,
   X,
+  Eye,
+  User,
+  CreditCard,
+  CalendarDays,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { AdminService } from '../../../services/admin.service';
+import { ApiService } from '../../../services/api.service';
 import {
   Withdrawal,
   TransactionStatus,
+  BankInfo,
 } from '../../../types/admin.types';
 import { useToast } from '../../../contexts/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -44,11 +59,36 @@ export const WithdrawalsTable: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [banks, setBanks] = useState<BankInfo[]>([]);
 
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | ''>('');
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const limit = 10;
+
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      setShowDetailModal(false);
+      setSelectedWithdrawal(null);
+    }
+  };
+
+  // Fetch banks on mount
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const response = await ApiService.getBanks();
+        if (response.success && response.data) {
+          setBanks(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching banks:', err);
+      }
+    };
+    fetchBanks();
+  }, []);
 
   const fetchWithdrawals = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
@@ -125,7 +165,13 @@ export const WithdrawalsTable: React.FC = () => {
     return labels[status] || status;
   };
 
+  const getBankInfo = (bankCode: string) => {
+    // Try to match by bin first (e.g., "970423"), then by code (e.g., "VBA")
+    return banks.find(b => b.bin === bankCode || b.code === bankCode);
+  };
+
   return (
+    <>
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -274,13 +320,14 @@ export const WithdrawalsTable: React.FC = () => {
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('wd.col.bank')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('wd.col.description')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('wd.col.date')}</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i}>
-                  {[...Array(6)].map((__, j) => (
+                  {[...Array(7)].map((__, j) => (
                     <td key={j} className="px-6 py-4">
                       <div className="h-4 bg-slate-100 rounded animate-pulse" style={{ width: `${50 + Math.random() * 50}%` }} />
                     </td>
@@ -289,7 +336,7 @@ export const WithdrawalsTable: React.FC = () => {
               ))
             ) : withdrawals.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
+                <td colSpan={7} className="px-6 py-12 text-center">
                   <ArrowUpCircle className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                   <p className="text-sm font-medium text-slate-500">{t('wd.noData')}</p>
                 </td>
@@ -327,12 +374,22 @@ export const WithdrawalsTable: React.FC = () => {
                   {/* Bank Info */}
                   <td className="px-6 py-4">
                     {wd.bank_info ? (
-                      <div className="flex items-center gap-2">
-                        <Landmark className="w-4 h-4 text-slate-400 shrink-0" />
+                      <div className="flex items-center gap-2.5">
+                        {getBankInfo(wd.bank_info.bank_code)?.logo && (
+                          <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-white to-slate-50 border border-slate-200 flex items-center justify-center p-1.5 shrink-0 shadow-sm hover:shadow-md transition-all hover:scale-105">
+                            <img 
+                              src={getBankInfo(wd.bank_info.bank_code)?.logo} 
+                              alt={wd.bank_info.bank_code}
+                              className="w-full h-full object-contain"
+                            />
+                            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-transparent to-slate-100/10 pointer-events-none" />
+                          </div>
+                        )}
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-slate-700">{wd.bank_info.bank_code}</p>
-                          <p className="text-xs text-slate-400 truncate max-w-[100px]">{wd.bank_info.account_number}</p>
-                          <p className="text-xs text-slate-400 truncate max-w-[100px]">{wd.bank_info.account_name}</p>
+                          <p className="text-xs font-semibold text-slate-800">
+                            {getBankInfo(wd.bank_info.bank_code)?.short_name || wd.bank_info.bank_code}
+                          </p>
+                          <p className="text-xs text-slate-400 truncate max-w-[100px] font-mono">{wd.bank_info.account_number}</p>
                         </div>
                       </div>
                     ) : (
@@ -353,6 +410,19 @@ export const WithdrawalsTable: React.FC = () => {
                   {/* Date */}
                   <td className="px-6 py-4">
                     <span className="text-xs text-slate-500">{formatDate(wd.created_at)}</span>
+                  </td>
+                  {/* Actions */}
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedWithdrawal(wd);
+                        setShowDetailModal(true);
+                      }}
+                      title="Xem chi tiết"
+                      className="p-1.5 text-slate-400 hover:text-[#d4af37] bg-slate-50 hover:bg-[#d4af37]/10 rounded transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -406,5 +476,184 @@ export const WithdrawalsTable: React.FC = () => {
       )}
       </div>
     </div>
+
+    {/* Withdrawal Detail Modal */}
+    <Dialog open={showDetailModal} onOpenChange={handleDialogChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden border-[#d4af37]/20 rounded-2xl p-0 gap-0 [&>button]:hidden">
+        {/* Header */}
+        <DialogHeader className="p-5 pb-4 border-b border-slate-200">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5 text-left">
+              <DialogTitle className="text-lg font-semibold text-slate-900">
+                {t('wd.title')}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t('wd.title')}
+              </DialogDescription>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDetailModal(false)}
+              className="rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        </DialogHeader>
+
+        {/* Body */}
+        <div className="p-5 overflow-y-auto max-h-[calc(90vh-140px)]">
+          {selectedWithdrawal && (
+            <div className="space-y-5">
+              {/* Amount hero */}
+              <div className="bg-gradient-to-br from-[#f5f3ee] to-[#ede8db] rounded-2xl p-5 text-center border border-[#d4af37]/15">
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#8a6d1c]/70 mb-2">
+                  Số tiền rút
+                </p>
+                <p className="text-3xl font-extrabold tracking-tight text-slate-900">
+                  {formatCurrency(selectedWithdrawal.amount)}
+                </p>
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <Badge
+                    variant="outline"
+                    className={`gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(selectedWithdrawal.status)}`}
+                  >
+                    {getStatusIcon(selectedWithdrawal.status)}
+                    {getStatusLabel(selectedWithdrawal.status)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* User */}
+              <div className="bg-[#f5f3ee] rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="shrink-0">
+                    {selectedWithdrawal.user.avatar_url ? (
+                      <img
+                        src={selectedWithdrawal.user.avatar_url}
+                        alt=""
+                        className="w-11 h-11 rounded-full object-cover border-2 border-[#d4af37]/30"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8a6d1c] to-[#d4af37] flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {selectedWithdrawal.user.full_name}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {selectedWithdrawal.user.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bank info */}
+              {selectedWithdrawal.bank_info && (
+                <div className="bg-gradient-to-br from-[#f5f3ee] via-white to-[#f5f3ee] rounded-xl p-4 border border-[#d4af37]/20">
+                  <div className="flex items-center gap-2 text-[#8a6d1c] mb-3">
+                    <Landmark className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Thông tin ngân hàng</span>
+                  </div>
+                  <div className="flex items-center gap-3 mb-3">
+                    {getBankInfo(selectedWithdrawal.bank_info.bank_code)?.logo && (
+                      <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 flex items-center justify-center p-2.5 shrink-0 shadow-md hover:shadow-lg transition-shadow">
+                        <img 
+                          src={getBankInfo(selectedWithdrawal.bank_info.bank_code)?.logo} 
+                          alt={selectedWithdrawal.bank_info.bank_code}
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-slate-100/20 pointer-events-none" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-bold text-slate-900 mb-0.5">
+                        {getBankInfo(selectedWithdrawal.bank_info.bank_code)?.name || selectedWithdrawal.bank_info.bank_code}
+                      </p>
+                      <p className="text-xs text-[#8a6d1c] font-medium">
+                        {getBankInfo(selectedWithdrawal.bank_info.bank_code)?.short_name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 bg-white/60 rounded-lg p-3 border border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-medium">Số tài khoản</span>
+                      <span className="text-sm text-slate-900 font-bold font-mono">{selectedWithdrawal.bank_info.account_number}</span>
+                    </div>
+                    <div className="h-px bg-slate-100" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-medium">Chủ tài khoản</span>
+                      <span className="text-sm text-slate-900 font-semibold">{selectedWithdrawal.bank_info.account_name}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="bg-[#f5f3ee] rounded-xl p-4">
+                <div className="flex items-center gap-2 text-[#8a6d1c] mb-2">
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Mô tả</span>
+                </div>
+                <p className="text-sm font-medium text-slate-800 break-words leading-relaxed">
+                  {selectedWithdrawal.description}
+                </p>
+              </div>
+
+              {/* Error Message */}
+              {selectedWithdrawal.error_message && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-red-600 mb-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Lỗi</span>
+                  </div>
+                  <p className="text-sm text-red-600 leading-relaxed">
+                    {selectedWithdrawal.error_message}
+                  </p>
+                </div>
+              )}
+
+              {/* Timestamps */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#f5f3ee] rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
+                    <CalendarDays className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium">Ngày tạo</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700">{formatDate(selectedWithdrawal.created_at)}</p>
+                </div>
+                <div className="bg-[#f5f3ee] rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 text-[#8a6d1c] mb-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium">Cập nhật</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700">{formatDate(selectedWithdrawal.updated_at)}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {selectedWithdrawal && (
+          <div className="p-4 border-t border-slate-200 flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowDetailModal(false)}
+              className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
+            >
+              Đóng
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };

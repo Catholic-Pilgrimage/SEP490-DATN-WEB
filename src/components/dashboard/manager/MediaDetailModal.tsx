@@ -341,6 +341,8 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                                 src={currentMedia.url}
                                 alt={currentMedia.caption || '3D Model'}
                                 className="w-full h-full"
+                                audioUrl={currentMedia.audio_url}
+                                narrationText={currentMedia.narration_text}
                             />
                         ) : (
                             <Video className="w-16 h-16 text-white/30" />

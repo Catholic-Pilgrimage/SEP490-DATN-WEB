@@ -85,6 +85,8 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({
                         src={media.url}
                         alt={media.caption || '3D Model Viewer'}
                         className="w-full aspect-video rounded-lg border border-slate-700 shadow-2xl"
+                        audioUrl={media.audio_url}
+                        narrationText={media.narration_text}
                     />
                 ) : (
                     <div className="w-full aspect-video bg-slate-900 rounded-lg flex items-center justify-center">
