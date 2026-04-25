@@ -320,7 +320,7 @@ export const SiteMediaTab: React.FC<SiteMediaTabProps> = ({ siteId }) => {
 
             {/* Preview Modal */}
             <Dialog open={!!previewMedia} onOpenChange={(open) => { if (!open) setPreviewMedia(null); }}>
-                <DialogContent className={`p-0 overflow-hidden bg-black/90 border-white/10 [&>button]:hidden ${previewMedia?.type === 'model_3d' ? 'max-w-4xl' : 'max-w-5xl'}`}>
+                <DialogContent className={`p-0 overflow-hidden bg-black/90 border-white/10 [&>button]:hidden max-w-6xl`}>
                     <DialogHeader className="sr-only">
                         <DialogTitle>Preview</DialogTitle>
                     </DialogHeader>
