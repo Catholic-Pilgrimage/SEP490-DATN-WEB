@@ -6,11 +6,11 @@
 <p align="center"><b>Admin & Site Manager Portal for Catholic Pilgrimage System</b></p>
 
 <p align="center">
-  <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React"></a>
-  <a href="https://vite.dev"><img src="https://img.shields.io/badge/Vite-5.4.2-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"></a>
-  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"></a>
-  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"></a>
-  <a href="https://github.com/Catholic-Pilgrimage/SEP490-DATN-WEB/actions"><img src="https://img.shields.io/github/actions/workflow/status/Catholic-Pilgrimage/SEP490-DATN-WEB/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20Build" alt="CI Build"></a>
+  <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"></a>
+  <a href="https://vite.dev"><img src="https://img.shields.io/badge/Vite-5.4.2-646CFF?style=for-the-badge&logo=vite&logoColor=FFD62B" alt="Vite"></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=3178C6" alt="TypeScript"></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=38B2AC" alt="Tailwind CSS"></a>
+  <a href="https://github.com/Catholic-Pilgrimage/SEP490-DATN-WEB/actions"><img src="https://img.shields.io/github/actions/workflow/status/Catholic-Pilgrimage/SEP490-DATN-WEB/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=2088FF&label=CI%20Build" alt="CI Build"></a>
 </p>
 
 ---
