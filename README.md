@@ -2,7 +2,7 @@
   <img src="./assets/logo.png" width="160" alt="Catholic Pilgrimage Logo">
 </p>
 
-<h1 align="center">⛪ Catholic Pilgrimage System Web Portal</h1>
+<h1 align="center">Catholic Pilgrimage System Web Portal</h1>
 <p align="center"><b>Admin & Site Manager Portal for Catholic Pilgrimage System</b></p>
 
 <p align="center">
