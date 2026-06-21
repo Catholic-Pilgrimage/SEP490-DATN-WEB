@@ -91,10 +91,9 @@ The repository is protected by a continuous integration pipeline (`.github/workf
 #### 1. Configure Environment variables
 Create a `.env` file in the root directory:
 ```env
-VITE_API_URL=http://localhost:3000/api
-VITE_SOCKET_URL=http://localhost:3000
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
+VITE_API_BASE_URL=http://localhost:3000
+VITE_VIETMAP_SERVICES_KEY=your_vietmap_services_key
+VITE_VIETMAP_TILEMAP_KEY=your_vietmap_tilemap_key
 ```
 
 #### 2. Execute Local Server
@@ -171,10 +170,9 @@ Repository được cấu hình quy trình tích hợp liên tục tự động 
 #### 1. Cấu hình Biến môi trường
 Tạo file `.env` ở thư mục gốc dự án:
 ```env
-VITE_API_URL=http://localhost:3000/api
-VITE_SOCKET_URL=http://localhost:3000
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
+VITE_API_BASE_URL=http://localhost:3000
+VITE_VIETMAP_SERVICES_KEY=khoa_dich_vu_vietmap_cua_ban
+VITE_VIETMAP_TILEMAP_KEY=khoa_ban_do_vietmap_cua_ban
 ```
 
 #### 2. Khởi động Client
